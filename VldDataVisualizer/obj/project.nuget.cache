@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "uZr6olv5h7jEbA88ja8R5K8ZS2yOytAtDhalaz0v+QZvH8tXOGJjy4hT1DIlQI3bMSnlqJtbhzQpkyOB1bzlPg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\VldDataVisualizer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\yakup\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512"
+  ],
+  "logs": []
+}
