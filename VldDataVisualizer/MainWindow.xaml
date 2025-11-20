@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:VldDataVisualizer.ViewModels"
-        Title="VLD-TFPR Data Visualizer - 36kV Sistem" Height="900" Width="1400"
+        Title="VLD-TFPR - Sinyalizasyon İzleme - Gebze Darıca Metro"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -18,6 +18,22 @@
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Background" Value="#ffebee"/>
         </Style>
+
+        <Style x:Key="EmergencyButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#d32f2f"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#b71c1c"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="3"/>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -28,235 +44,438 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="#2c3e50" CornerRadius="5" Padding="15">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="VLD-TFPR 36kV Sistem Simülasyon ve İzleme" 
-                          Foreground="White" FontSize="18" FontWeight="Bold"/>
+        <Border Grid.Row="0" Background="#2c3e50" CornerRadius="5" Padding="15" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <Button x:Name="StartButton" Content="Simülasyonu Başlat" 
-                        Click="StartButton_Click" Margin="20,0,10,0" Padding="10,5"/>
-                <Button x:Name="StopButton" Content="Simülasyonu Durdur" 
-                        Click="StopButton_Click" Padding="10,5" IsEnabled="False"/>
+                <!-- Başlık -->
+                <TextBlock Grid.Column="0" 
+                          Text="🎯 VLD-TFPR - Sinyalizasyon İzleme - Gebze Darıca Metro Hattı" 
+                          Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
 
-                <Button x:Name="VoltageSagButton" Content="Gerilim Düşüşü Senaryosu" 
-                        Click="VoltageSagButton_Click" Margin="10,0,5,0" Padding="8,5" Background="#ff9800"/>
-                <Button x:Name="OverloadButton" Content="Aşırı Yük Senaryosu" 
-                        Click="OverloadButton_Click" Margin="5,0,5,0" Padding="8,5" Background="#f44336"/>
-                <Button x:Name="ResetButton" Content="Normal Mod" 
-                        Click="ResetButton_Click" Margin="5,0,20,0" Padding="8,5" Background="#4caf50"/>
+                <!-- Ana Kontroller -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="StartAllButton" Content="▶ Tümünü Başlat" 
+                            Click="StartAllButton_Click" Background="#4caf50" 
+                            Padding="15,8" FontWeight="SemiBold"/>
+                    <Button x:Name="StopAllButton" Content="⏹ Tümünü Durdur" 
+                            Click="StopAllButton_Click" Background="#f44336" 
+                            Padding="15,8" Margin="10,0,0,0" FontWeight="SemiBold" IsEnabled="False"/>
+                    <Button x:Name="EmergencyButton" Content="🚨 ACİL DUR" 
+                            Click="EmergencyButton_Click" Style="{StaticResource EmergencyButtonStyle}"
+                            Margin="20,0,0,0"/>
+                </StackPanel>
 
-                <TextBlock x:Name="StatusText" Text=" Durum: Hazır" 
-                          Foreground="LightGreen" FontSize="12" 
-                          VerticalAlignment="Center" Margin="20,0,0,0"/>
-            </StackPanel>
+                <!-- Sistem Durumu -->
+                <Border Grid.Column="2" Background="#34495e" CornerRadius="15" Padding="10,5">
+                    <TextBlock x:Name="HeaderStatusText" Text="🟢 Sistem Hazır" 
+                              Foreground="White" FontSize="11" FontWeight="Bold"/>
+                </Border>
+            </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0">
-            <StackPanel>
+        <!-- Ana İçerik - 3 Sekme -->
+        <TabControl Grid.Row="1" Margin="0,10,0,0">
 
-                <!-- System Overview -->
-                <GroupBox Header="Sistem Genel Bakış" Margin="0,0,0,10">
-                    <WrapPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="DeviceIdText" Text="Cihaz: VLD-TFPR_001" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
-                            <TextBlock x:Name="LocationText" Text="Lokasyon: TRAFO MERKEZİ" FontWeight="Bold"/>
-                        </Border>
-                        <Border x:Name="CommunicationStatusBorder" Style="{StaticResource StatusIndicator}" Background="#4caf50">
-                            <TextBlock x:Name="CommunicationText" Text="İletişim: AKTİF" FontWeight="Bold" Foreground="White"/>
-                        </Border>
-                    </WrapPanel>
-                </GroupBox>
-
-                <!-- Real-time Power Values -->
-                <GroupBox Header="Anlık Güç Değerleri" Margin="0,0,0,10">
-                    <WrapPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="VoltageInText" Text="Giriş Gerilimi: -- kV" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="VoltageOutText" Text="Çıkış Gerilimi: -- kV" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
-                            <TextBlock x:Name="CurrentText" Text="Toplam Akım: -- A" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
-                            <TextBlock x:Name="ActivePowerText" Text="Aktif Güç: -- kW" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
-                            <TextBlock x:Name="ReactivePowerText" Text="Reaktif Güç: -- kVAr" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
-                            <TextBlock x:Name="PowerFactorText" Text="Güç Faktörü: --" FontWeight="Bold"/>
-                        </Border>
-                    </WrapPanel>
-                </GroupBox>
-
-                <!-- Phase Values -->
-                <GroupBox Header="Faz Değerleri" Margin="0,0,0,10">
-                    <WrapPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
-                            <TextBlock x:Name="VoltageL1Text" Text="L1 Gerilimi: -- kV" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
-                            <TextBlock x:Name="VoltageL2Text" Text="L2 Gerilimi: -- kV" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
-                            <TextBlock x:Name="VoltageL3Text" Text="L3 Gerilimi: -- kV" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="CurrentL1Text" Text="L1 Akımı: -- A" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="CurrentL2Text" Text="L2 Akımı: -- A" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="CurrentL3Text" Text="L3 Akımı: -- A" FontWeight="Bold"/>
-                        </Border>
-                    </WrapPanel>
-                </GroupBox>
-
-                <!-- System Parameters -->
-                <GroupBox Header="Sistem Parametreleri" Margin="0,0,0,10">
-                    <WrapPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatusIndicator}" Background="#ffebee">
-                            <TextBlock x:Name="TemperatureText" Text="Sıcaklık: -- °C" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
-                            <TextBlock x:Name="FrequencyText" Text="Frekans: -- Hz" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
-                            <TextBlock x:Name="GroundCurrentText" Text="Toprak Akımı: -- A" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
-                            <TextBlock x:Name="THDVoltageText" Text="Gerilim THD: -- %" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
-                            <TextBlock x:Name="THDCurrentText" Text="Akım THD: -- %" FontWeight="Bold"/>
-                        </Border>
-                    </WrapPanel>
-                </GroupBox>
-
-                <!-- Alarms -->
-                <GroupBox Header="Aktif Alarmlar" Margin="0,0,0,10">
-                    <ItemsControl x:Name="AlarmsItemsControl">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Style="{StaticResource AlarmIndicator}">
-                                    <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#d32f2f"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </GroupBox>
-
-                <!-- Status -->
-                <GroupBox Header="Sistem Durumu" Margin="0,0,0,10">
-                    <WrapPanel Orientation="Horizontal">
-                        <Border x:Name="StatusBorder" Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="StatusValueText" Text="Durum: NORMAL" FontWeight="Bold"/>
-                        </Border>
-                        <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
-                            <TextBlock x:Name="EnergyImportText" Text="Tüketilen Enerji: -- kWh" FontWeight="Bold"/>
-                        </Border>
-                    </WrapPanel>
-                </GroupBox>
-
-                <!-- Charts -->
+            <!-- SEKME 1: Tren Hatları ve TFPR Akım Grafiği -->
+            <TabItem Header="🚆 Hat Görünümü - Akım">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="300"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="300"/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <!-- Voltage vs Time Chart -->
-                    <GroupBox Grid.Row="0" Grid.Column="0" Header="Zaman - Gerilim Grafiği" Margin="0,0,5,5">
-                        <local:SimpleChart x:Name="VoltageChart" 
-                          Title="Çıkış Gerilimi (kV)" 
-                          YAxisTitle="kV"
-                          MinY="20" 
-                          MaxY="40"
-                          AutoScaleY="True"
-                          LineColor="Blue"
-                          BackgroundColor="White"/>
+                    <!-- Tren Hatları Görseli -->
+                    <GroupBox Grid.Row="0" Header="Gebze-Darıca Metro Hattı - Gerçek Zamanlı Tren Konumları" Margin="5">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <Canvas x:Name="RailwayCanvas" Height="200" Background="#f5f5f5" 
+                                    MinWidth="1200" Margin="10">
+                                <!-- Canvas içeriği code-behind'de çizilecek -->
+                                <TextBlock Text="Tren hatları görseli burada gösterilecek..." 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="Gray" FontStyle="Italic"/>
+                            </Canvas>
+                        </ScrollViewer>
                     </GroupBox>
 
-                    <!-- Current vs Time Chart -->
-                    <GroupBox Grid.Row="0" Grid.Column="1" Header="Zaman - Akım Grafiği" Margin="5,0,0,5">
-                        <local:SimpleChart x:Name="CurrentChart" 
-                          Title="Toplam Akım (A)" 
-                          YAxisTitle="A"
-                          MinY="0" 
-                          MaxY="800"
-                          AutoScaleY="True"
-                          LineColor="Red"
-                          BackgroundColor="White"/>
-                    </GroupBox>
-
-                    <!-- Power vs Time Chart -->
-                    <GroupBox Grid.Row="1" Grid.Column="0" Header="Zaman - Güç Grafiği" Margin="0,5,5,0">
-                        <local:SimpleChart x:Name="PowerChart" 
-                          Title="Aktif Güç (kW)" 
-                          YAxisTitle="kW"
-                          MinY="0" 
-                          MaxY="25000"
-                          AutoScaleY="True"
-                          LineColor="Green"
-                          BackgroundColor="White"/>
-                    </GroupBox>
-
-                    <!-- Temperature vs Time Chart -->
-                    <GroupBox Grid.Row="1" Grid.Column="1" Header="Zaman - Sıcaklık Grafiği" Margin="5,5,0,0">
-                        <local:SimpleChart x:Name="TemperatureChart" 
-                          Title="Sıcaklık (°C)" 
-                          YAxisTitle="°C"
-                          MinY="20" 
-                          MaxY="100"
-                          AutoScaleY="True"
-                          LineColor="Orange"
-                          BackgroundColor="White"/>
+                    <!-- TFPR Akım Grafiği -->
+                    <GroupBox Grid.Row="1" Header="TFPR Cihazı - Zaman-Akım Grafiği" Margin="5">
+                        <local:ChartsProperties x:Name="CurrentChart" 
+                                  Title="TFPR Akım Ölçümü (A)" 
+                                  YAxisTitle="Akım (A)"
+                                  MinY="0" 
+                                  MaxY="800"
+                                  AutoScaleY="True"
+                                  LineColor="Red"
+                                  BackgroundColor="White"/>
                     </GroupBox>
                 </Grid>
+            </TabItem>
 
-                <!-- Data Table -->
-                <GroupBox Header="Son Ölçüm Verileri" Margin="0,10,0,0">
-                    <DataGrid x:Name="DataGrid" AutoGenerateColumns="False" Height="250">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Zaman" Binding="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
-                            <DataGridTextColumn Header="Gerilim Giriş (kV)" Binding="{Binding VoltageIn, StringFormat=N1}"/>
-                            <DataGridTextColumn Header="Gerilim Çıkış (kV)" Binding="{Binding VoltageOut, StringFormat=N1}"/>
-                            <DataGridTextColumn Header="Akım (A)" Binding="{Binding Current, StringFormat=N0}"/>
-                            <DataGridTextColumn Header="Aktif Güç (kW)" Binding="{Binding ActivePower, StringFormat=N0}"/>
-                            <DataGridTextColumn Header="Sıcaklık (°C)" Binding="{Binding Temperature, StringFormat=N1}"/>
-                            <DataGridTextColumn Header="Frekans (Hz)" Binding="{Binding Frequency, StringFormat=N2}"/>
-                            <DataGridTextColumn Header="Durum" Binding="{Binding Status}"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </GroupBox>
+            <!-- SEKME 2: Detaylı Sinyalizasyon Bilgileri -->
+            <TabItem Header="📡 Sinyalizasyon Detay">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
 
-            </StackPanel>
-        </ScrollViewer>
+                        <!-- Sinyalizasyon Kontroller -->
+                        <GroupBox Header="Sinyalizasyon Kontroller" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Button x:Name="StartSignalizationButton" Content="Sinyalizasyonu Başlat" 
+                                        Click="StartSignalizationButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#2196f3"/>
+                                <Button x:Name="StopSignalizationButton" Content="Sinyalizasyonu Durdur" 
+                                        Click="StopSignalizationButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#ff9800" IsEnabled="False"/>
+                                <Button x:Name="AddTrainButton" Content="+ Tren Ekle" 
+                                        Click="AddTrainButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#4caf50" ToolTip="Simülasyona yeni tren ekler"/>
+                                <Button x:Name="RemoveTrainButton" Content="- Tren Çıkar" 
+                                        Click="RemoveTrainButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#f44336" ToolTip="Simülasyondan tren çıkarır"/>
+
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd" Margin="10,0,0,0">
+                                    <TextBlock x:Name="SignalizationStatusText" Text="🔵 Sinyalizasyon: Hazır" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Sistem Genel Bakış -->
+                        <GroupBox Header="Sistem Genel Bakış" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="TotalTrainsText" Text="🚆 Aktif Tren: 0" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
+                                    <TextBlock x:Name="SystemStatusText" Text="📡 Sistem: NORMAL" FontWeight="Bold"/>
+                                </Border>
+                                <Border x:Name="SignalCommunicationBorder" Style="{StaticResource StatusIndicator}" Background="#4caf50">
+                                    <TextBlock x:Name="SignalCommunicationText" Text="📶 İletişim: AKTİF" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="AvgSpeedText" Text="⚡ Ort. Hız: 0 km/s" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="TotalPassengersText" Text="👥 Toplam Yolcu: 0" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Aktif Trenler Detaylı -->
+                        <GroupBox Header="Aktif Trenler - Detaylı Bilgiler" Margin="0,0,0,10">
+                            <DataGrid x:Name="TrainsDataGrid" AutoGenerateColumns="False" Height="250"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tren No" Binding="{Binding TrainNumber}" Width="70"/>
+                                    <DataGridTextColumn Header="Tren Adı" Binding="{Binding TrainName}" Width="100"/>
+                                    <DataGridTextColumn Header="Hız" Binding="{Binding Speed, StringFormat={}{0} km/s}" Width="80"/>
+                                    <DataGridTextColumn Header="Konum (m)" Binding="{Binding CurrentPosition, StringFormat=N0}" Width="90"/>
+                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding CurrentBlockId}" Width="70"/>
+                                    <DataGridTextColumn Header="Sonraki İstasyon" Binding="{Binding NextStationName}" Width="150"/>
+                                    <DataGridTextColumn Header="Mesafe (m)" Binding="{Binding DistanceToNextStation, StringFormat=N0}" Width="80"/>
+                                    <DataGridTextColumn Header="Yolcu" Binding="{Binding PassengerCount}" Width="70"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
+                                    <DataGridTextColumn Header="Son Güncelleme" Binding="{Binding LastUpdateTime, StringFormat=HH:mm:ss}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <!-- İstasyonlar Detaylı -->
+                        <GroupBox Header="İstasyonlar - Detaylı Bilgiler" Margin="0,0,0,10">
+                            <DataGrid x:Name="StationsDataGrid" AutoGenerateColumns="False" Height="200"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="İstasyon ID" Binding="{Binding StationId}" Width="80"/>
+                                    <DataGridTextColumn Header="İstasyon Adı" Binding="{Binding StationName}" Width="180"/>
+                                    <DataGridTextColumn Header="Bekleyen Yolcu" Binding="{Binding WaitingPassengers}" Width="100"/>
+                                    <DataGridTextColumn Header="Gelen Tren" Binding="{Binding ArrivingTrains.Count}" Width="90"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
+                                    <DataGridTemplateColumn Header="Yaklaşan Trenler" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ItemsControl ItemsSource="{Binding ArrivingTrains}" MaxHeight="60"
+                                                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding TrainName, StringFormat={}{0} → {1}dk}" 
+                                                                       FontSize="10" Foreground="#2e7d32" Margin="0,1"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <!-- Kilometre Bazlı Detaylar -->
+                        <GroupBox Header="Kilometre Bazlı Sistem Durumu" Margin="0,0,0,10">
+                            <DataGrid x:Name="BlockDataGrid" AutoGenerateColumns="False" Height="150"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding BlockId}" Width="70"/>
+                                    <DataGridTextColumn Header="Başlangıç (m)" Binding="{Binding StartPosition, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Bitiş (m)" Binding="{Binding EndPosition, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Üzerindeki Tren" Binding="{Binding CurrentTrain}" Width="120"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
+                                    <DataGridTextColumn Header="Sinyal" Binding="{Binding SignalStatus}" Width="80"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- SEKME 3: TFPR Cihazının Tüm Bilgileri -->
+            <TabItem Header="⚡ TFPR Cihaz Detay">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+
+                        <!-- TFPR Kontroller -->
+                        <GroupBox Header="TFPR Cihaz Kontroller" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Button x:Name="StartVLDButton" Content="VLD Simülasyonu Başlat" 
+                                        Click="StartVLDButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#2196f3"/>
+                                <Button x:Name="StopVLDButton" Content="VLD Simülasyonu Durdur" 
+                                        Click="StopVLDButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#ff9800" IsEnabled="False"/>
+
+                                <Border BorderBrush="#ddd" BorderThickness="1" CornerRadius="5" Margin="10,0,0,0" Padding="5">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Senaryolar:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                        <Button x:Name="VoltageSagButton" Content="Gerilim Düşüşü" 
+                                                Click="VoltageSagButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                                Background="#ff9800" ToolTip="Gerilim düşüşü senaryosunu başlatır"/>
+                                        <Button x:Name="OverloadButton" Content="Aşırı Yük" 
+                                                Click="OverloadButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                                Background="#f44336" ToolTip="Aşırı yük senaryosunu başlatır"/>
+                                        <Button x:Name="ResetButton" Content="Normal Mod" 
+                                                Click="ResetButton_Click" Style="{StaticResource PrimaryButtonStyle}"
+                                                Background="#4caf50" ToolTip="Normal çalışma moduna döner"/>
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Sistem Genel Bakış -->
+                        <GroupBox Header="TFPR Sistem Genel Bakış" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="DeviceIdText" Text="🔧 Cihaz: VLD-TFPR_001" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
+                                    <TextBlock x:Name="LocationText" Text="📍 Lokasyon: TRAFO MERKEZİ" FontWeight="Bold"/>
+                                </Border>
+                                <Border x:Name="CommunicationStatusBorder" Style="{StaticResource StatusIndicator}" Background="#4caf50">
+                                    <TextBlock x:Name="CommunicationText" Text="📶 İletişim: AKTİF" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <Border x:Name="VLDStatusBorder" Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="VLDStatusText" Text="⚡ Durum: NORMAL" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Anlık Güç Değerleri -->
+                        <GroupBox Header="Anlık Güç Değerleri" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="VoltageInText" Text="🔌 Giriş Gerilimi: -- kV" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="VoltageOutText" Text="⚡ Çıkış Gerilimi: -- kV" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
+                                    <TextBlock x:Name="CurrentText" Text="🔋 Toplam Akım: -- A" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="ActivePowerText" Text="📊 Aktif Güç: -- kW" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="ReactivePowerText" Text="📈 Reaktif Güç: -- kVAr" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
+                                    <TextBlock x:Name="PowerFactorText" Text="🎯 Güç Faktörü: --" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Faz Değerleri -->
+                        <GroupBox Header="Faz Değerleri" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="VoltageL1Text" Text="L1 🔌 Gerilim: -- kV" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="VoltageL2Text" Text="L2 🔌 Gerilim: -- kV" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="VoltageL3Text" Text="L3 🔌 Gerilim: -- kV" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="CurrentL1Text" Text="L1 🔋 Akım: -- A" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="CurrentL2Text" Text="L2 🔋 Akım: -- A" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="CurrentL3Text" Text="L3 🔋 Akım: -- A" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Sistem Parametreleri -->
+                        <GroupBox Header="Sistem Parametreleri" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#ffebee">
+                                    <TextBlock x:Name="TemperatureText" Text="🌡️ Sıcaklık: -- °C" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd">
+                                    <TextBlock x:Name="FrequencyText" Text="📏 Frekans: -- Hz" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="GroundCurrentText" Text="⚡ Toprak Akımı: -- A" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="THDVoltageText" Text="📉 Gerilim THD: -- %" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
+                                    <TextBlock x:Name="THDCurrentText" Text="📉 Akım THD: -- %" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Enerji Ölçümleri -->
+                        <GroupBox Header="Enerji Ölçümleri" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="EnergyImportText" Text="🔋 Tüketilen Enerji: -- kWh" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e8f5e8">
+                                    <TextBlock x:Name="EnergyExportText" Text="🔌 Üretilen Enerji: -- kWh" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="ReactiveEnergyImportText" Text="📊 Tüketilen Reaktif: -- kVArh" FontWeight="Bold"/>
+                                </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#fff3e0">
+                                    <TextBlock x:Name="ReactiveEnergyExportText" Text="📈 Üretilen Reaktif: -- kVArh" FontWeight="Bold"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <!-- Alarmlar -->
+                        <GroupBox Header="TFPR Aktif Alarmlar" Margin="0,0,0,10">
+                            <ItemsControl x:Name="AlarmsItemsControl">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource AlarmIndicator}">
+                                            <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#d32f2f"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </GroupBox>
+
+                        <!-- TFPR Grafikleri -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="300"/>
+                                <RowDefinition Height="300"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <GroupBox Grid.Row="0" Grid.Column="0" Header="Zaman - Gerilim Grafiği" Margin="0,0,5,5">
+                                <local:ChartsProperties x:Name="VoltageChart" 
+                                          Title="Çıkış Gerilimi (kV)" 
+                                          YAxisTitle="kV"
+                                          MinY="20" 
+                                          MaxY="40"
+                                          AutoScaleY="True"
+                                          LineColor="Blue"
+                                          BackgroundColor="White"/>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="0" Grid.Column="1" Header="Zaman - Güç Grafiği" Margin="5,0,0,5">
+                                <local:ChartsProperties x:Name="PowerChart" 
+                                          Title="Aktif Güç (kW)" 
+                                          YAxisTitle="kW"
+                                          MinY="0" 
+                                          MaxY="25000"
+                                          AutoScaleY="True"
+                                          LineColor="Green"
+                                          BackgroundColor="White"/>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="1" Grid.Column="0" Header="Zaman - Sıcaklık Grafiği" Margin="0,5,5,0">
+                                <local:ChartsProperties x:Name="TemperatureChart" 
+                                          Title="Sıcaklık (°C)" 
+                                          YAxisTitle="°C"
+                                          MinY="20" 
+                                          MaxY="100"
+                                          AutoScaleY="True"
+                                          LineColor="Orange"
+                                          BackgroundColor="White"/>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="1" Grid.Column="1" Header="Zaman - THD Grafiği" Margin="5,5,0,0">
+                                <local:ChartsProperties x:Name="THDChart" 
+                                          Title="Gerilim THD (%)" 
+                                          YAxisTitle="%"
+                                          MinY="0" 
+                                          MaxY="20"
+                                          AutoScaleY="True"
+                                          LineColor="Purple"
+                                          BackgroundColor="White"/>
+                            </GroupBox>
+                        </Grid>
+
+                        <!-- TFPR Veri Tablosu -->
+                        <GroupBox Header="TFPR Son Ölçüm Verileri" Margin="0,10,0,0">
+                            <DataGrid x:Name="DataGrid" AutoGenerateColumns="False" Height="250"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Zaman" Binding="{Binding Timestamp, StringFormat=HH:mm:ss}" Width="80"/>
+                                    <DataGridTextColumn Header="Gerilim Giriş (kV)" Binding="{Binding VoltageIn, StringFormat=N1}" Width="100"/>
+                                    <DataGridTextColumn Header="Gerilim Çıkış (kV)" Binding="{Binding VoltageOut, StringFormat=N1}" Width="100"/>
+                                    <DataGridTextColumn Header="Akım (A)" Binding="{Binding Current, StringFormat=N0}" Width="80"/>
+                                    <DataGridTextColumn Header="Aktif Güç (kW)" Binding="{Binding ActivePower, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Reaktif Güç (kVAr)" Binding="{Binding ReactivePower, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Sıcaklık (°C)" Binding="{Binding Temperature, StringFormat=N1}" Width="90"/>
+                                    <DataGridTextColumn Header="Frekans (Hz)" Binding="{Binding Frequency, StringFormat=N2}" Width="80"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
 
         <!-- Status Bar -->
         <StatusBar Grid.Row="2">
-            <StatusBarItem Content="VLD-TFPR 36kV Sistem İzleme"/>
+            <StatusBarItem Content="🚆 VLD-TFPR - Sinyalizasyon İzleme - Gebze Darıca Metro"/>
             <Separator/>
-            <StatusBarItem x:Name="DataCountText" Content="Veri Sayısı: 0"/>
+            <StatusBarItem x:Name="DataCountText" Content="TFPR Veri: 0"/>
+            <Separator/>
+            <StatusBarItem x:Name="TrainCountText" Content="Aktif Tren: 0"/>
             <Separator/>
             <StatusBarItem x:Name="LastUpdateText" Content="Son Güncelleme: --"/>
             <Separator/>
-            <StatusBarItem Content="Hazır"/>
+            <StatusBarItem Content="🟢 Hazır"/>
         </StatusBar>
 
     </Grid>
