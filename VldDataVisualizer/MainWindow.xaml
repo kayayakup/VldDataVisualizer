@@ -34,6 +34,13 @@
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Margin" Value="3"/>
         </Style>
+
+        <!-- Yeni Stiller -->
+        <Style x:Key="CoordinateDisplay" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -91,27 +98,44 @@
 
                     <!-- Tren Hatları Görseli -->
                     <GroupBox Grid.Row="0" Header="Gebze-Darıca Metro Hattı - Gerçek Zamanlı Tren Konumları" Margin="5">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                            <Canvas x:Name="RailwayCanvas" Height="200" Background="#f5f5f5" 
-                                    MinWidth="1200" Margin="10">
-                                <!-- Canvas içeriği code-behind'de çizilecek -->
-                                <TextBlock Text="Tren hatları görseli burada gösterilecek..." 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Foreground="Gray" FontStyle="Italic"/>
-                            </Canvas>
-                        </ScrollViewer>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <Canvas x:Name="RailwayCanvas" Height="400" Background="#f5f5f5" 
+                                        MinWidth="2000" Margin="10">
+                                    <!-- Canvas içeriği code-behind'de çizilecek -->
+                                    <TextBlock Text="Tren hatları görseli yükleniyor..." 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="Gray" FontStyle="Italic"/>
+                                </Canvas>
+                            </ScrollViewer>
+
+                            <!-- Koordinat ve Ölçek Bilgisi -->
+                            <Border Grid.Row="1" Background="#f8f9fa" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="5">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📏 Hat Uzunluğu: 15,391.246 m" FontWeight="SemiBold" Margin="0,0,15,0"/>
+                                    <TextBlock Text="🎯 Ölçek: 1:1000" FontWeight="SemiBold" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="CanvasInfoText" Text="Bloklar: 36 | Aktif Trenler: 0" FontSize="10" Foreground="#666"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </GroupBox>
 
                     <!-- TFPR Akım Grafiği -->
-                    <GroupBox Grid.Row="1" Header="TFPR Cihazı - Zaman-Akım Grafiği" Margin="5">
-                        <local:ChartsProperties x:Name="CurrentChart" 
-                                  Title="TFPR Akım Ölçümü (A)" 
-                                  YAxisTitle="Akım (A)"
-                                  MinY="0" 
-                                  MaxY="800"
-                                  AutoScaleY="True"
-                                  LineColor="Red"
-                                  BackgroundColor="White"/>
+                    <GroupBox Grid.Row="1" Header="TFPR Cihazı - Zaman-Güç Grafiği" Margin="5">
+                        <local:ChartsProperties x:Name="PowerChart" 
+              Title="TFPR Güç Ölçümü" 
+              YAxisTitle="Güç (kW)"
+              XAxisTitle="Zaman"
+              MinY="0" 
+              MaxY="25000"
+              AutoScaleY="True"
+              LineColor="Green"
+              BackgroundColor="White"/>
                     </GroupBox>
                 </Grid>
             </TabItem>
@@ -136,6 +160,10 @@
                                 <Button x:Name="RemoveTrainButton" Content="- Tren Çıkar" 
                                         Click="RemoveTrainButton_Click" Style="{StaticResource PrimaryButtonStyle}"
                                         Background="#f44336" ToolTip="Simülasyondan tren çıkarır"/>
+                                
+                                <Button x:Name="AddUpTrackTrainButton" Content="Üst Hata Tren Ekle" Click="AddUpTrackTrainButton_Click"/>
+                                
+                                <Button x:Name="AddDownTrackTrainButton" Content="Alt Hata Tren Ekle" Click="AddDownTrackTrainButton_Click"/>
 
                                 <Border Style="{StaticResource StatusIndicator}" Background="#e3f2fd" Margin="10,0,0,0">
                                     <TextBlock x:Name="SignalizationStatusText" Text="🔵 Sinyalizasyon: Hazır" FontWeight="Bold"/>
@@ -161,24 +189,31 @@
                                 <Border Style="{StaticResource StatusIndicator}" Background="#f3e5f5">
                                     <TextBlock x:Name="TotalPassengersText" Text="👥 Toplam Yolcu: 0" FontWeight="Bold"/>
                                 </Border>
+                                <Border Style="{StaticResource StatusIndicator}" Background="#e1f5fe">
+                                    <TextBlock x:Name="TotalRouteLengthText" Text="📏 Toplam Hat: 18,000 m" FontWeight="Bold"/>
+                                </Border>
                             </WrapPanel>
                         </GroupBox>
 
                         <!-- Aktif Trenler Detaylı -->
                         <GroupBox Header="Aktif Trenler - Detaylı Bilgiler" Margin="0,0,0,10">
-                            <DataGrid x:Name="TrainsDataGrid" AutoGenerateColumns="False" Height="250"
+                            <DataGrid x:Name="TrainsDataGrid" AutoGenerateColumns="False" Height="300"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Tren No" Binding="{Binding TrainNumber}" Width="70"/>
+                                    <DataGridTextColumn Header="Tren No" Binding="{Binding TrainNumber}" Width="60"/>
                                     <DataGridTextColumn Header="Tren Adı" Binding="{Binding TrainName}" Width="100"/>
-                                    <DataGridTextColumn Header="Hız" Binding="{Binding Speed, StringFormat={}{0} km/s}" Width="80"/>
-                                    <DataGridTextColumn Header="Konum (m)" Binding="{Binding CurrentPosition, StringFormat=N0}" Width="90"/>
-                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding CurrentBlockId}" Width="70"/>
-                                    <DataGridTextColumn Header="Sonraki İstasyon" Binding="{Binding NextStationName}" Width="150"/>
+                                    <DataGridTextColumn Header="Hız" Binding="{Binding Speed, StringFormat={}{0} km/s}" Width="70"/>
+                                    <DataGridTextColumn Header="Konum (m)" Binding="{Binding CurrentPosition, StringFormat=N0}" Width="80"/>
+                                    <DataGridTextColumn Header="Blok Konumu" Binding="{Binding PositionInBlock, StringFormat=N0}" Width="80"/>
+                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding CurrentBlockId}" Width="60"/>
+                                    <DataGridTextColumn Header="Yön" Binding="{Binding Direction}" Width="80"/>
+                                    <DataGridTextColumn Header="Koordinat X" Binding="{Binding GridX, StringFormat={}{0}}" Width="70"/>
+                                    <DataGridTextColumn Header="Koordinat Y" Binding="{Binding GridY, StringFormat={}{0}}" Width="70"/>
+                                    <DataGridTextColumn Header="Sonraki İstasyon" Binding="{Binding NextStationName}" Width="120"/>
                                     <DataGridTextColumn Header="Mesafe (m)" Binding="{Binding DistanceToNextStation, StringFormat=N0}" Width="80"/>
-                                    <DataGridTextColumn Header="Yolcu" Binding="{Binding PassengerCount}" Width="70"/>
+                                    <DataGridTextColumn Header="Yolcu" Binding="{Binding PassengerCount}" Width="60"/>
                                     <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
-                                    <DataGridTextColumn Header="Son Güncelleme" Binding="{Binding LastUpdateTime, StringFormat=HH:mm:ss}" Width="100"/>
+                                    <DataGridTextColumn Header="Son Güncelleme" Binding="{Binding LastUpdateTime, StringFormat=HH:mm:ss}" Width="90"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </GroupBox>
@@ -188,11 +223,15 @@
                             <DataGrid x:Name="StationsDataGrid" AutoGenerateColumns="False" Height="200"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="İstasyon ID" Binding="{Binding StationId}" Width="80"/>
-                                    <DataGridTextColumn Header="İstasyon Adı" Binding="{Binding StationName}" Width="180"/>
-                                    <DataGridTextColumn Header="Bekleyen Yolcu" Binding="{Binding WaitingPassengers}" Width="100"/>
-                                    <DataGridTextColumn Header="Gelen Tren" Binding="{Binding ArrivingTrains.Count}" Width="90"/>
-                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
+                                    <DataGridTextColumn Header="İstasyon ID" Binding="{Binding StationId}" Width="70"/>
+                                    <DataGridTextColumn Header="İstasyon Adı" Binding="{Binding StationName}" Width="150"/>
+                                    <DataGridTextColumn Header="Koordinat X" Binding="{Binding GridX, StringFormat={}{0}}" Width="70"/>
+                                    <DataGridTextColumn Header="Koordinat Y" Binding="{Binding GridY, StringFormat={}{0}}" Width="70"/>
+                                    <DataGridTextColumn Header="Platform Uzunluğu" Binding="{Binding PlatformLength, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Platform Sayısı" Binding="{Binding PlatformCount}" Width="90"/>
+                                    <DataGridTextColumn Header="Bekleyen Yolcu" Binding="{Binding WaitingPassengers}" Width="90"/>
+                                    <DataGridTextColumn Header="Gelen Tren" Binding="{Binding ArrivingTrains.Count}" Width="80"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="90"/>
                                     <DataGridTemplateColumn Header="Yaklaşan Trenler" Width="200">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -212,17 +251,38 @@
                             </DataGrid>
                         </GroupBox>
 
-                        <!-- Kilometre Bazlı Detaylar -->
-                        <GroupBox Header="Kilometre Bazlı Sistem Durumu" Margin="0,0,0,10">
-                            <DataGrid x:Name="BlockDataGrid" AutoGenerateColumns="False" Height="150"
+                        <!-- Blok ve Pozisyon Detayları -->
+                        <GroupBox Header="Blok ve Pozisyon Detayları" Margin="0,0,0,10">
+                            <DataGrid x:Name="BlockDataGrid" AutoGenerateColumns="False" Height="200"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding BlockId}" Width="70"/>
-                                    <DataGridTextColumn Header="Başlangıç (m)" Binding="{Binding StartPosition, StringFormat=N0}" Width="100"/>
-                                    <DataGridTextColumn Header="Bitiş (m)" Binding="{Binding EndPosition, StringFormat=N0}" Width="100"/>
-                                    <DataGridTextColumn Header="Üzerindeki Tren" Binding="{Binding CurrentTrain}" Width="120"/>
-                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="100"/>
-                                    <DataGridTextColumn Header="Sinyal" Binding="{Binding SignalStatus}" Width="80"/>
+                                    <DataGridTextColumn Header="Blok ID" Binding="{Binding BlockId}" Width="60"/>
+                                    <DataGridTextColumn Header="Blok Adı" Binding="{Binding BlockName}" Width="100"/>
+                                    <DataGridTextColumn Header="Başlangıç (m)" Binding="{Binding StartPosition, StringFormat=N0}" Width="90"/>
+                                    <DataGridTextColumn Header="Bitiş (m)" Binding="{Binding EndPosition, StringFormat=N0}" Width="90"/>
+                                    <DataGridTextColumn Header="Uzunluk (m)" Binding="{Binding BlockLength, StringFormat=N0}" Width="80"/>
+                                    <DataGridTextColumn Header="Hız Limiti" Binding="{Binding SpeedLimit, StringFormat={}{0} km/s}" Width="80"/>
+                                    <DataGridTextColumn Header="Blok Tipi" Binding="{Binding BlockType}" Width="90"/>
+                                    <DataGridTextColumn Header="Üzerindeki Tren" Binding="{Binding OccupyingTrainId, StringFormat={}Tren #{0}}" Width="90"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="80"/>
+                                    <DataGridTextColumn Header="Eğim" Binding="{Binding Gradient, StringFormat={}{0}%}" Width="70"/>
+                                    <DataGridTextColumn Header="Eğrilik" Binding="{Binding Curvature, StringFormat={}{0}°}" Width="70"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <!-- Aktif Rotalar -->
+                        <GroupBox Header="Aktif Rotalar" Margin="0,0,0,10">
+                            <DataGrid x:Name="RoutesDataGrid" AutoGenerateColumns="False" Height="150"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Rota ID" Binding="{Binding RouteId}" Width="70"/>
+                                    <DataGridTextColumn Header="Rota Adı" Binding="{Binding RouteName}" Width="150"/>
+                                    <DataGridTextColumn Header="Toplam Uzunluk" Binding="{Binding TotalRouteLength, StringFormat=N0}" Width="100"/>
+                                    <DataGridTextColumn Header="Aktif Tren" Binding="{Binding ActiveTrainCount}" Width="80"/>
+                                    <DataGridTextColumn Header="Durum" Binding="{Binding RouteStatus}" Width="90"/>
+                                    <DataGridTextColumn Header="Başlangıç Koordinat" Binding="{Binding StartLatitude, StringFormat={}Lat:{0:N4}}" Width="120"/>
+                                    <DataGridTextColumn Header="Bitiş Koordinat" Binding="{Binding EndLongitude, StringFormat={}Lon:{0:N4}}" Width="120"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </GroupBox>
@@ -397,48 +457,56 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
+                            <!-- Zaman - Gerilim Grafiği -->
                             <GroupBox Grid.Row="0" Grid.Column="0" Header="Zaman - Gerilim Grafiği" Margin="0,0,5,5">
                                 <local:ChartsProperties x:Name="VoltageChart" 
-                                          Title="Çıkış Gerilimi (kV)" 
-                                          YAxisTitle="kV"
-                                          MinY="20" 
-                                          MaxY="40"
-                                          AutoScaleY="True"
-                                          LineColor="Blue"
-                                          BackgroundColor="White"/>
+              Title="Çıkış Gerilimi" 
+              YAxisTitle="Gerilim (kV)"
+              XAxisTitle="Zaman"
+              MinY="20" 
+              MaxY="40"
+              AutoScaleY="True"
+              LineColor="Blue"
+              BackgroundColor="White"/>
                             </GroupBox>
 
-                            <GroupBox Grid.Row="0" Grid.Column="1" Header="Zaman - Güç Grafiği" Margin="5,0,0,5">
-                                <local:ChartsProperties x:Name="PowerChart" 
-                                          Title="Aktif Güç (kW)" 
-                                          YAxisTitle="kW"
-                                          MinY="0" 
-                                          MaxY="25000"
-                                          AutoScaleY="True"
-                                          LineColor="Green"
-                                          BackgroundColor="White"/>
+                            <!-- Zaman - Güç Grafiği -->
+                            <GroupBox Grid.Row="0" Grid.Column="1" Header="Zaman - Akım Grafiği" Margin="5,0,0,5">
+                                <local:ChartsProperties x:Name="CurrentChart" 
+              Title="TFPR Akım Ölçümü" 
+              YAxisTitle="Akım (A)"
+              XAxisTitle="Zaman"
+              MinY="0" 
+              MaxY="800"
+              AutoScaleY="True"
+              LineColor="Red"
+              BackgroundColor="White"/>
                             </GroupBox>
 
+                            <!-- Zaman - Sıcaklık Grafiği -->
                             <GroupBox Grid.Row="1" Grid.Column="0" Header="Zaman - Sıcaklık Grafiği" Margin="0,5,5,0">
                                 <local:ChartsProperties x:Name="TemperatureChart" 
-                                          Title="Sıcaklık (°C)" 
-                                          YAxisTitle="°C"
-                                          MinY="20" 
-                                          MaxY="100"
-                                          AutoScaleY="True"
-                                          LineColor="Orange"
-                                          BackgroundColor="White"/>
+              Title="Sıcaklık Değişimi" 
+              YAxisTitle="Sıcaklık (°C)"
+              XAxisTitle="Zaman"
+              MinY="20" 
+              MaxY="100"
+              AutoScaleY="True"
+              LineColor="Orange"
+              BackgroundColor="White"/>
                             </GroupBox>
 
+                            <!-- Zaman - THD Grafiği -->
                             <GroupBox Grid.Row="1" Grid.Column="1" Header="Zaman - THD Grafiği" Margin="5,5,0,0">
                                 <local:ChartsProperties x:Name="THDChart" 
-                                          Title="Gerilim THD (%)" 
-                                          YAxisTitle="%"
-                                          MinY="0" 
-                                          MaxY="20"
-                                          AutoScaleY="True"
-                                          LineColor="Purple"
-                                          BackgroundColor="White"/>
+              Title="Gerilim THD" 
+              YAxisTitle="THD (%)"
+              XAxisTitle="Zaman"
+              MinY="0" 
+              MaxY="20"
+              AutoScaleY="True"
+              LineColor="Purple"
+              BackgroundColor="White"/>
                             </GroupBox>
                         </Grid>
 
@@ -466,12 +534,14 @@
         </TabControl>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="2">
+        <StatusBar x:Name="StatusBar" Grid.Row="2">
             <StatusBarItem Content="🚆 VLD-TFPR - Sinyalizasyon İzleme - Gebze Darıca Metro"/>
             <Separator/>
             <StatusBarItem x:Name="DataCountText" Content="TFPR Veri: 0"/>
             <Separator/>
             <StatusBarItem x:Name="TrainCountText" Content="Aktif Tren: 0"/>
+            <Separator/>
+            <StatusBarItem x:Name="BlockCountText" Content="Aktif Blok: 0"/>
             <Separator/>
             <StatusBarItem x:Name="LastUpdateText" Content="Son Güncelleme: --"/>
             <Separator/>

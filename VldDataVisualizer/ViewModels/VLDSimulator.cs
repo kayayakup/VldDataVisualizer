@@ -20,8 +20,11 @@ namespace VldDataVisualizer.ViewModels
         private double _baseTemperature = 45.0;         // °C
         private double _energyCounter = 0.0;
 
+        public bool IsRunning { get; private set; }
+
         public void StartSimulation()
         {
+            IsRunning = true;
             if (_isSimulationRunning) return;
 
             _isSimulationRunning = true;
@@ -35,6 +38,7 @@ namespace VldDataVisualizer.ViewModels
 
         public void StopSimulation()
         {
+            IsRunning = false;
             _isSimulationRunning = false;
             _simulationTimer?.Stop();
             _simulationTimer?.Dispose();

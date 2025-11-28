@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -8,13 +10,15 @@ namespace VldDataVisualizer.ViewModels
     public class ChartsProperties : Canvas
     {
         private List<double> _values = new List<double>();
+        private List<DateTime> _timestamps = new List<DateTime>();
         private string _title = "Chart";
         private string _yAxisTitle = "Value";
+        private string _xAxisTitle = "Zaman"; // X ekseni başlığı eklendi
         private double _minY = 0;
         private double _maxY = 100;
         private Brush _lineColor = Brushes.Blue;
         private Brush _backgroundColor = Brushes.White;
-        private bool _autoScaleY = true; // Yeni özellik: Otomatik Y ekseni ölçekleme
+        private bool _autoScaleY = true;
 
         public List<double> Values
         {
@@ -42,6 +46,16 @@ namespace VldDataVisualizer.ViewModels
             set
             {
                 _yAxisTitle = value;
+                UpdateChart();
+            }
+        }
+
+        public string XAxisTitle
+        {
+            get => _xAxisTitle;
+            set
+            {
+                _xAxisTitle = value;
                 UpdateChart();
             }
         }
@@ -86,7 +100,6 @@ namespace VldDataVisualizer.ViewModels
             }
         }
 
-        // Yeni özellik: Otomatik Y ekseni ölçekleme
         public bool AutoScaleY
         {
             get => _autoScaleY;
@@ -97,11 +110,30 @@ namespace VldDataVisualizer.ViewModels
             }
         }
 
+        private bool _isPaused = false;
+
+        public bool IsPaused
+        {
+            get => _isPaused;
+            set
+            {
+                _isPaused = value;
+                // Gerekirse paused durumunda görsel değişiklik yap
+            }
+        }
+
         public void AddValue(double value)
         {
+            if (_isPaused) return; // Eğer paused ise değer ekleme
+
             _values.Add(value);
-            if (_values.Count > 50) // Son 50 değeri tut
+            _timestamps.Add(DateTime.Now);
+
+            if (_values.Count > 50)
+            {
                 _values.RemoveAt(0);
+                _timestamps.RemoveAt(0);
+            }
 
             UpdateChart();
         }
@@ -109,6 +141,7 @@ namespace VldDataVisualizer.ViewModels
         public void Clear()
         {
             _values.Clear();
+            _timestamps.Clear();
             UpdateChart();
         }
 
@@ -133,7 +166,7 @@ namespace VldDataVisualizer.ViewModels
                 max = max + 1;
             }
 
-            // %10 margin ekle (verinin 50 fazlası değil, %10'u daha iyi)
+            // %10 margin ekle
             double range = max - min;
             double margin = range * 0.1;
 
@@ -147,7 +180,7 @@ namespace VldDataVisualizer.ViewModels
             if (_values.Count == 0) return;
 
             double canvasWidth = ActualWidth - 60; // Eksenler için margin
-            double canvasHeight = ActualHeight - 40;
+            double canvasHeight = ActualHeight - 60; // X ekseni etiketi için daha fazla margin
 
             if (canvasWidth <= 0 || canvasHeight <= 0) return;
 
@@ -186,10 +219,11 @@ namespace VldDataVisualizer.ViewModels
                 Text = _title,
                 FontWeight = FontWeights.Bold,
                 Foreground = Brushes.Black,
+                FontSize = 12,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
             Canvas.SetTop(titleText, 5);
-            Canvas.SetLeft(titleText, ActualWidth / 2 - titleText.Text.Length * 3);
+            Canvas.SetLeft(titleText, ActualWidth / 2 - (_title.Length * 4)); // Daha iyi merkezleme
             Children.Add(titleText);
 
             // Draw Y-axis title
@@ -198,11 +232,25 @@ namespace VldDataVisualizer.ViewModels
                 Text = _yAxisTitle,
                 FontSize = 10,
                 Foreground = Brushes.Black,
+                FontWeight = FontWeights.SemiBold,
                 RenderTransform = new RotateTransform(-90)
             };
-            Canvas.SetTop(yAxisText, ActualHeight / 2);
+            Canvas.SetTop(yAxisText, ActualHeight / 2 - 20);
             Canvas.SetLeft(yAxisText, 5);
             Children.Add(yAxisText);
+
+            // Draw X-axis title
+            var xAxisText = new TextBlock
+            {
+                Text = _xAxisTitle,
+                FontSize = 10,
+                Foreground = Brushes.Black,
+                FontWeight = FontWeights.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            Canvas.SetTop(xAxisText, ActualHeight - 20);
+            Canvas.SetLeft(xAxisText, ActualWidth / 2 - (_xAxisTitle.Length * 3));
+            Children.Add(xAxisText);
 
             // Calculate scaling factors
             double xStep = canvasWidth / Math.Max(1, _values.Count - 1);
@@ -213,7 +261,7 @@ namespace VldDataVisualizer.ViewModels
             for (int i = 0; i <= 5; i++)
             {
                 double value = minY + (yRange * i / 5);
-                double y = canvasHeight - (value - minY) / yRange * canvasHeight + 20;
+                double y = canvasHeight - (value - minY) / yRange * canvasHeight + 30;
 
                 // Grid line
                 var gridLine = new Line
@@ -239,8 +287,46 @@ namespace VldDataVisualizer.ViewModels
                     Foreground = Brushes.Black
                 };
                 Canvas.SetTop(yLabel, y - 8);
-                Canvas.SetLeft(yLabel, 30);
+                Canvas.SetLeft(yLabel, 25);
                 Children.Add(yLabel);
+            }
+
+            // Draw X-axis time labels
+            if (_timestamps.Count > 0)
+            {
+                // Başlangıç, orta ve bitiş zamanlarını göster
+                int[] keyIndices = { 0, _timestamps.Count / 2, _timestamps.Count - 1 };
+
+                foreach (int index in keyIndices)
+                {
+                    if (index < _timestamps.Count)
+                    {
+                        double x = 50 + index * xStep;
+                        var timeLabel = new TextBlock
+                        {
+                            Text = _timestamps[index].ToString("HH:mm:ss"),
+                            FontSize = 8,
+                            Foreground = Brushes.Black,
+                            Background = Brushes.White
+                        };
+                        Canvas.SetTop(timeLabel, canvasHeight + 35);
+                        Canvas.SetLeft(timeLabel, x - 20);
+                        Children.Add(timeLabel);
+
+                        // Zaman çizgisi
+                        var timeLine = new Line
+                        {
+                            X1 = x,
+                            Y1 = 30,
+                            X2 = x,
+                            Y2 = canvasHeight + 30,
+                            Stroke = Brushes.LightGray,
+                            StrokeThickness = 0.3,
+                            StrokeDashArray = new DoubleCollection { 2, 2 }
+                        };
+                        Children.Add(timeLine);
+                    }
+                }
             }
 
             // Draw data line
@@ -254,10 +340,10 @@ namespace VldDataVisualizer.ViewModels
             for (int i = 0; i < _values.Count; i++)
             {
                 double x = 50 + i * xStep;
-                double y = canvasHeight - (_values[i] - minY) / yRange * canvasHeight + 20;
+                double y = canvasHeight - (_values[i] - minY) / yRange * canvasHeight + 30;
 
                 // Değerleri sınırla (chart dışına çıkmasın)
-                y = Math.Max(20, Math.Min(canvasHeight + 20, y));
+                y = Math.Max(30, Math.Min(canvasHeight + 30, y));
 
                 polyline.Points.Add(new Point(x, y));
             }
@@ -268,9 +354,9 @@ namespace VldDataVisualizer.ViewModels
             var xAxis = new Line
             {
                 X1 = 50,
-                Y1 = canvasHeight + 20,
+                Y1 = canvasHeight + 30,
                 X2 = ActualWidth - 10,
-                Y2 = canvasHeight + 20,
+                Y2 = canvasHeight + 30,
                 Stroke = Brushes.Black,
                 StrokeThickness = 1
             };
@@ -280,24 +366,27 @@ namespace VldDataVisualizer.ViewModels
             var yAxis = new Line
             {
                 X1 = 50,
-                Y1 = 20,
+                Y1 = 30,
                 X2 = 50,
-                Y2 = canvasHeight + 20,
+                Y2 = canvasHeight + 30,
                 Stroke = Brushes.Black,
                 StrokeThickness = 1
             };
             Children.Add(yAxis);
 
-            // Auto-scale bilgisini göster (debug için)
-            var scaleInfo = new TextBlock
+            // Auto-scale bilgisini göster (debug için - isteğe bağlı)
+            if (_autoScaleY)
             {
-                Text = $"Range: {minY:0} - {maxY:0}",
-                FontSize = 8,
-                Foreground = Brushes.Gray
-            };
-            Canvas.SetTop(scaleInfo, ActualHeight - 15);
-            Canvas.SetLeft(scaleInfo, ActualWidth - 80);
-            Children.Add(scaleInfo);
+                var scaleInfo = new TextBlock
+                {
+                    Text = $"Y: {minY:0} - {maxY:0}",
+                    FontSize = 7,
+                    Foreground = Brushes.Gray
+                };
+                Canvas.SetTop(scaleInfo, ActualHeight - 40);
+                Canvas.SetLeft(scaleInfo, ActualWidth - 60);
+                Children.Add(scaleInfo);
+            }
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
