@@ -11,7 +11,7 @@ using VldDataVisualizer.ViewModels;
 using System.Windows.Controls.Primitives;
 using System.Windows.Shapes;
 
-namespace VldDataVisualizer
+namespace VldDataVisualizer.Views
 {
     public partial class MainWindow : Window
     {
