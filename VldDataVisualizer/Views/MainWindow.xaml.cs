@@ -998,12 +998,12 @@ namespace VldDataVisualizer.Views
             var text = new TextBlock
             {
                 Text = station.StationName,
-                FontSize = 8,
+                FontSize = 18,
                 Foreground = Brushes.Black,
-                RenderTransform = new RotateTransform(-45)
+                RenderTransform = new RotateTransform(-25)
             };
             Canvas.SetLeft(text, xPos - 10);
-            Canvas.SetTop(text, UP_TRACK_Y - 30);
+            Canvas.SetTop(text, UP_TRACK_Y - 60);
             RailwayCanvas.Children.Add(text);
         }
 
