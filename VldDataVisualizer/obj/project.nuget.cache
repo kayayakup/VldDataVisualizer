@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "uZr6olv5h7jEbA88ja8R5K8ZS2yOytAtDhalaz0v+QZvH8tXOGJjy4hT1DIlQI3bMSnlqJtbhzQpkyOB1bzlPg==",
+  "dgSpecHash": "0WWGn24DjrmjPv+IY0zK5EhBRiSPSdOk6rvaNRWTrtuceVWHcNsbM4zdjoAMvmiCNkYwMWMNh+2FGUAZWs7KXw==",
   "success": true,
   "projectFilePath": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\VldDataVisualizer.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\yakup\\.nuget\\packages\\actiprosoftware.controls.wpf.shared\\25.1.2\\actiprosoftware.controls.wpf.shared.25.1.2.nupkg.sha512",
+    "C:\\Users\\yakup\\.nuget\\packages\\actiprosoftware.controls.wpf.syntaxeditor\\25.1.2\\actiprosoftware.controls.wpf.syntaxeditor.25.1.2.nupkg.sha512",
     "C:\\Users\\yakup\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512"
   ],
   "logs": []

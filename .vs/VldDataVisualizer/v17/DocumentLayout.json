@@ -7,7 +7,7 @@
       "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|c:\\users\\yakup\\onedrive\\belgeler\\github\\vlddatavisualizer\\vlddatavisualizer\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     }
   ],
@@ -32,7 +32,7 @@
               "RelativeDocumentMoniker": "VldDataVisualizer\\Views\\MainWindow.xaml.cs",
               "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml.cs",
               "RelativeToolTip": "VldDataVisualizer\\Views\\MainWindow.xaml.cs",
-              "ViewState": "AQIAANgDAAAAAAAAAAAQwO0DAAAuAAAA",
+              "ViewState": "AQIAAEIBAAAAAAAAAAAiwFEBAAAnAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-01T06:24:05.974Z",
               "EditorCaption": ""
@@ -46,8 +46,7 @@
               "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml",
               "RelativeToolTip": "VldDataVisualizer\\Views\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-11-30T13:34:33.476Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-30T13:34:33.476Z"
             }
           ]
         }

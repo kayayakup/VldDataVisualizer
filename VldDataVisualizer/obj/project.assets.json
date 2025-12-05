@@ -2,6 +2,53 @@
   "version": 3,
   "targets": {
     "net8.0-windows7.0": {
+      "ActiproSoftware.Controls.WPF.Shared/25.1.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0-windows/ActiproSoftware.Shared.Wpf.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0-windows/ActiproSoftware.Shared.Wpf.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.WindowsDesktop.App.WPF"
+        ]
+      },
+      "ActiproSoftware.Controls.WPF.SyntaxEditor/25.1.2": {
+        "type": "package",
+        "dependencies": {
+          "ActiproSoftware.Controls.WPF.Shared": "[25.1.2]"
+        },
+        "compile": {
+          "lib/net8.0-windows/ActiproSoftware.SyntaxEditor.Wpf.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.LLParser.Wpf.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.Wpf.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0-windows/ActiproSoftware.SyntaxEditor.Wpf.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.LLParser.Wpf.dll": {
+            "related": ".xml"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.Wpf.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.WindowsDesktop.App.WPF"
+        ]
+      },
       "CommunityToolkit.Mvvm/8.4.0": {
         "type": "package",
         "compile": {
@@ -21,6 +68,82 @@
     }
   },
   "libraries": {
+    "ActiproSoftware.Controls.WPF.Shared/25.1.2": {
+      "sha512": "cTAv5RVA4lBkihPgOzH8CTSqTK2SQtjyYee+VgqyCYHWa20tgL8F6HNgICuf4WfzYbMnn2l92A3dJd7E+D0Pjg==",
+      "type": "package",
+      "path": "actiprosoftware.controls.wpf.shared/25.1.2",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "License.txt",
+        "actiprosoftware.controls.wpf.shared.25.1.2.nupkg.sha512",
+        "actiprosoftware.controls.wpf.shared.nuspec",
+        "images/ActiproIcon.png",
+        "lib/net462/ActiproSoftware.Shared.Wpf.dll",
+        "lib/net462/ActiproSoftware.Shared.Wpf.xml",
+        "lib/net462/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net462/Design/ActiproSoftware.Shared.Wpf.Design.dll",
+        "lib/net462/Design/ActiproSoftware.Shared.Wpf.DesignTools.dll",
+        "lib/net6.0-windows/ActiproSoftware.Shared.Wpf.dll",
+        "lib/net6.0-windows/ActiproSoftware.Shared.Wpf.xml",
+        "lib/net6.0-windows/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net6.0-windows/Design/ActiproSoftware.Shared.Wpf.DesignTools.dll",
+        "lib/net8.0-windows/ActiproSoftware.Shared.Wpf.dll",
+        "lib/net8.0-windows/ActiproSoftware.Shared.Wpf.xml",
+        "lib/net8.0-windows/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net8.0-windows/Design/ActiproSoftware.Shared.Wpf.DesignTools.dll",
+        "tools/VisualStudioToolsManifest.xml"
+      ]
+    },
+    "ActiproSoftware.Controls.WPF.SyntaxEditor/25.1.2": {
+      "sha512": "zCMA6RYjaeukyAFnWmsZJTys8zUBEvout4BwWxuiR/xEkinfHe5nHN8wirBmk0ZuanDHH68LJmWqazoNVT92XA==",
+      "type": "package",
+      "path": "actiprosoftware.controls.wpf.syntaxeditor/25.1.2",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "License.txt",
+        "actiprosoftware.controls.wpf.syntaxeditor.25.1.2.nupkg.sha512",
+        "actiprosoftware.controls.wpf.syntaxeditor.nuspec",
+        "images/ActiproIcon.png",
+        "lib/net462/ActiproSoftware.SyntaxEditor.Wpf.dll",
+        "lib/net462/ActiproSoftware.SyntaxEditor.Wpf.xml",
+        "lib/net462/ActiproSoftware.Text.LLParser.Wpf.dll",
+        "lib/net462/ActiproSoftware.Text.LLParser.Wpf.xml",
+        "lib/net462/ActiproSoftware.Text.Wpf.dll",
+        "lib/net462/ActiproSoftware.Text.Wpf.xml",
+        "lib/net462/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net462/Design/ActiproSoftware.SyntaxEditor.Wpf.Design.dll",
+        "lib/net462/Design/ActiproSoftware.SyntaxEditor.Wpf.DesignTools.dll",
+        "lib/net6.0-windows/ActiproSoftware.SyntaxEditor.Wpf.dll",
+        "lib/net6.0-windows/ActiproSoftware.SyntaxEditor.Wpf.xml",
+        "lib/net6.0-windows/ActiproSoftware.Text.LLParser.Wpf.dll",
+        "lib/net6.0-windows/ActiproSoftware.Text.LLParser.Wpf.xml",
+        "lib/net6.0-windows/ActiproSoftware.Text.Wpf.dll",
+        "lib/net6.0-windows/ActiproSoftware.Text.Wpf.xml",
+        "lib/net6.0-windows/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net6.0-windows/Design/ActiproSoftware.SyntaxEditor.Wpf.DesignTools.dll",
+        "lib/net8.0-windows/ActiproSoftware.SyntaxEditor.Wpf.dll",
+        "lib/net8.0-windows/ActiproSoftware.SyntaxEditor.Wpf.xml",
+        "lib/net8.0-windows/ActiproSoftware.Text.LLParser.Wpf.dll",
+        "lib/net8.0-windows/ActiproSoftware.Text.LLParser.Wpf.xml",
+        "lib/net8.0-windows/ActiproSoftware.Text.Wpf.dll",
+        "lib/net8.0-windows/ActiproSoftware.Text.Wpf.xml",
+        "lib/net8.0-windows/Design/ActiproSoftware.Core.Wpf.DesignTools.dll",
+        "lib/net8.0-windows/Design/ActiproSoftware.SyntaxEditor.Wpf.DesignTools.dll",
+        "lib/net8.0/ActiproSoftware.Text.LLParser.Wpf.dll",
+        "lib/net8.0/ActiproSoftware.Text.LLParser.Wpf.xml",
+        "lib/net8.0/ActiproSoftware.Text.Wpf.dll",
+        "lib/net8.0/ActiproSoftware.Text.Wpf.xml",
+        "lib/netstandard2.0/ActiproSoftware.Text.LLParser.Wpf.dll",
+        "lib/netstandard2.0/ActiproSoftware.Text.LLParser.Wpf.xml",
+        "lib/netstandard2.0/ActiproSoftware.Text.Wpf.dll",
+        "lib/netstandard2.0/ActiproSoftware.Text.Wpf.xml",
+        "tools/VisualStudioToolsManifest.xml"
+      ]
+    },
     "CommunityToolkit.Mvvm/8.4.0": {
       "sha512": "tqVU8yc/ADO9oiTRyTnwhFN68hCwvkliMierptWOudIAvWY1mWCh5VFh+guwHJmpMwfg0J0rY+yyd5Oy7ty9Uw==",
       "type": "package",
@@ -66,6 +189,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
+      "ActiproSoftware.Controls.WPF.SyntaxEditor >= 25.1.2",
       "CommunityToolkit.Mvvm >= 8.4.0"
     ]
   },
@@ -119,6 +243,10 @@
       "net8.0-windows7.0": {
         "targetAlias": "net8.0-windows",
         "dependencies": {
+          "ActiproSoftware.Controls.WPF.SyntaxEditor": {
+            "target": "Package",
+            "version": "[25.1.2, )"
+          },
           "CommunityToolkit.Mvvm": {
             "target": "Package",
             "version": "[8.4.0, )"

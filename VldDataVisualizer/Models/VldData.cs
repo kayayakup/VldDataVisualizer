@@ -6,6 +6,10 @@
         public string DeviceId { get; set; } = "VLD_TFPR_001";
         public string DeviceType { get; set; } = "VLD-TFPR";
         public string Location { get; set; } = "TRANSFORMER_STATION";
+        public int StationId { get; set; } // Hangi istasyona ait
+        public string StationName { get; set; } // İstasyon adı
+        public double StartPosition { get; set; } // Kontrol başlangıç pozisyonu (metre)
+        public double EndPosition { get; set; } // Kontrol bitiş pozisyonu (metre)
         public DateTime Timestamp { get; set; }
 
         // Güç parametreleri (dokümanda 36kV'a kadar gerilim mevcut)
@@ -44,5 +48,8 @@
         public double ActiveEnergyExport { get; set; }  // Üretilen aktif enerji (kWh)
         public double ReactiveEnergyImport { get; set; } // Tüketilen reaktif enerji (kVArh)
         public double ReactiveEnergyExport { get; set; } // Üretilen reaktif enerji (kVArh)
+
+        // Bölge içindeki tren sayısı
+        public int TrainsInSection { get; set; } = 0;
     }
 }

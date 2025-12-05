@@ -8,7 +8,6 @@ using System.Linq;
 using System.Collections.Generic;
 using VldDataVisualizer.Models;
 using VldDataVisualizer.ViewModels;
-using System.Windows.Controls.Primitives;
 using System.Windows.Shapes;
 
 namespace VldDataVisualizer.Views
@@ -18,40 +17,37 @@ namespace VldDataVisualizer.Views
         private VLDSimulator _vldSimulator;
         private SignalizationSimulator _signalizationSimulator;
 
+        // 12 cihaz için ayrı veri koleksiyonları
+        private Dictionary<int, ObservableCollection<VldData>> _deviceDataCollections;
+        private Dictionary<int, List<string>> _deviceAlarms;
+
         // Collections
-        private ObservableCollection<VldData> _vldDataCollection;
         private ObservableCollection<TrainInfo> _activeTrains;
         private ObservableCollection<StationInfo> _stations;
         private ObservableCollection<TrackBlock> _blocks;
         private ObservableCollection<RouteInfo> _routes;
-        private ObservableCollection<string> _vldAlarms;
 
         // Timers
         private DispatcherTimer _chartUpdateTimer;
         private DispatcherTimer _railwayUpdateTimer;
+        private DispatcherTimer _detailUpdateTimer;
 
         // Railway drawing constants
         private const double CANVAS_HEIGHT = 400;
         private const double CANVAS_WIDTH = 2000;
-        private const double BLOCK_WIDTH = 50;
-        private const double TRAIN_WIDTH = 30;
-        private const double STATION_WIDTH = 40;
         private const double TRACK_SPACING = 60;
-
-        // Hat konumları
-        private const double UP_TRACK_Y = CANVAS_HEIGHT / 2 - TRACK_SPACING / 2; // Üst hat
-        private const double DOWN_TRACK_Y = CANVAS_HEIGHT / 2 + TRACK_SPACING / 2; // Alt hat
-
-        // Sınırlar ve Yönler
-        // 0 metre (Sol taraf) = Darıca Sahil
-        // 15391 metre (Sağ taraf) = Depo
+        private const double UP_TRACK_Y = CANVAS_HEIGHT / 2 - TRACK_SPACING / 2;
+        private const double DOWN_TRACK_Y = CANVAS_HEIGHT / 2 + TRACK_SPACING / 2;
         private const double TOTAL_TRACK_LENGTH = 15391.246;
-
         private const int MAX_TOTAL_TRAINS = 7;
         private const double TRAIN_LENGTH = 88;
         private const double MIN_TRAIN_DISTANCE = 500;
-        private const double STATION_STOP_TIME = 30; // saniye
+        private const double STATION_STOP_TIME = 30;
         private Random _random = new Random();
+
+        // Chart referansları
+        private List<ChartsProperties> _allCharts;
+        private int _selectedStationId = 1;
 
         public MainWindow()
         {
@@ -64,31 +60,44 @@ namespace VldDataVisualizer.Views
             _vldSimulator = new VLDSimulator();
             _signalizationSimulator = new SignalizationSimulator();
 
-            _vldDataCollection = new ObservableCollection<VldData>();
+            // 12 cihaz için koleksiyonlar
+            _deviceDataCollections = new Dictionary<int, ObservableCollection<VldData>>();
+            _deviceAlarms = new Dictionary<int, List<string>>();
+
+            for (int i = 1; i <= 12; i++)
+            {
+                _deviceDataCollections[i] = new ObservableCollection<VldData>();
+                _deviceAlarms[i] = new List<string>();
+            }
+
             _activeTrains = new ObservableCollection<TrainInfo>();
             _stations = new ObservableCollection<StationInfo>();
             _blocks = new ObservableCollection<TrackBlock>();
             _routes = new ObservableCollection<RouteInfo>();
-            _vldAlarms = new ObservableCollection<string>();
+
+            // Chart listesi
+            _allCharts = new List<ChartsProperties>
+    {
+        Chart1, Chart2, Chart3, Chart4, Chart5, Chart6,
+        Chart7, Chart8, Chart9, Chart10, Chart11, Chart12
+    };
 
             // Event handler'lar
             _vldSimulator.DataGenerated += OnVLDDataGenerated;
             _vldSimulator.StatusChanged += OnVLDStatusChanged;
-
-            // DİKKAT: SignalizationDataGenerated artık trenleri doğrudan ezmeyecek,
-            // sadece istatistik güncelleyecek.
             _signalizationSimulator.DataGenerated += OnSignalizationDataGenerated;
-            _signalizationSimulator.StatusChanged += OnSignalizationStatusChanged;
-
-            DataGrid.ItemsSource = _vldDataCollection;
-            AlarmsItemsControl.ItemsSource = _vldAlarms;
-            TrainsDataGrid.ItemsSource = _activeTrains;
-            StationsDataGrid.ItemsSource = _stations;
-            BlockDataGrid.ItemsSource = _blocks;
-            RoutesDataGrid.ItemsSource = _routes;
 
             InitializeTimers();
             InitializeTrackSystem();
+
+            // YENİ: VLD-TFPR kontrol bölgelerini başlat
+            InitializeDeviceControlAreas();
+
+            CreateDeviceTabs(); // 12 alt sekme oluştur
+
+            // DataGrid ItemsSource'larını bağla
+            TrainsDataGrid.ItemsSource = _activeTrains;
+            StationsDataGrid.ItemsSource = _stations;
 
             // Başlangıç trenleri ekle
             Dispatcher.BeginInvoke(new Action(() =>
@@ -97,35 +106,130 @@ namespace VldDataVisualizer.Views
                 DrawRailwaySystem();
             }), DispatcherPriority.Background);
 
-            UpdateHeaderStatus("🟢 Sistem Hazır", Colors.Green);
+            UpdateHeaderStatus("🟢 12 Cihaz Hazır", Colors.Green);
         }
 
-        private void AddInitialTrains()
+        // InitializeSystems metoduna ekleyin
+        private void InitializeDeviceControlAreas()
         {
-            // ÜST HAT (UP): Sola gidecek (Depo -> Darıca)
-            // Başlangıç noktası yüksek metre (sağ taraf) olmalı
-            AddTrainToTrack("UP", 15000);  // Depo çıkışı
-            AddTrainToTrack("UP", 12000);  // Yolun başı
+            // İstasyon pozisyonları
+            var stationPositions = new Dictionary<int, double>
+    {
+        {1, 15391.246},   // Depo
+        {2, 13873.215},   // OSB
+        {3, 12081.341},   // Mutlukent
+        {4, 10385.942},   // Adliye
+        {5, 9070.108},    // Akse Sapağı
+        {6, 8234.420},    // Gebze Stadyum
+        {7, 7101.599},    // Gebze Kent Meydanı
+        {8, 5781.120},    // Fatih D.H.
+        {9, 4389.210},    // TCDD Gar
+        {10, 3298.624},   // Farabi D.H.
+        {11, 1379.242},   // Darıca Cumhuriyet
+        {12, 136.100}     // Darıca Sahil
+    };
 
-            // ALT HAT (DOWN): Sağa gidecek (Darıca -> Depo)
-            // Başlangıç noktası düşük metre (sol taraf) olmalı
-            AddTrainToTrack("DOWN", 500);   // Darıca çıkışı
-            AddTrainToTrack("DOWN", 4000);  // Yolun başı
+            // Her VLD-TFPR için boş veri oluştur
+            for (int stationId = 1; stationId <= 12; stationId++)
+            {
+                // Kontrol bölgesi başlangıç ve bitiş
+                double startPos, endPos;
+
+                if (stationId <= 10) // İlk 10 cihaz: 3 istasyon
+                {
+                    startPos = stationPositions[stationId];
+                    endPos = stationPositions[stationId + 2];
+                }
+                else if (stationId == 11) // Darıca Cumhuriyet
+                {
+                    startPos = stationPositions[11];
+                    endPos = stationPositions[12];
+                }
+                else // Darıca Sahil
+                {
+                    startPos = stationPositions[12];
+                    endPos = 0; // Hat sonu
+                }
+
+                // Veri oluştur veya güncelle
+                if (_deviceDataCollections[stationId].Count == 0)
+                {
+                    var data = new VldData
+                    {
+                        StationId = stationId,
+                        DeviceId = $"VLD-TFPR-{stationId:D3}",
+                        StartPosition = startPos,
+                        EndPosition = endPos,
+                        Timestamp = DateTime.Now,
+                        Status = "NORMAL",
+                        IsCommunicationActive = true,
+                        TrainsInSection = 0
+                    };
+                    _deviceDataCollections[stationId].Add(data);
+                }
+                else
+                {
+                    var data = _deviceDataCollections[stationId].First();
+                    data.StartPosition = startPos;
+                    data.EndPosition = endPos;
+                }
+
+                Console.WriteLine($"VLD-TFPR-{stationId:D3}: {startPos} → {endPos}");
+            }
+        }
+
+        private void CreateDeviceTabs()
+        {
+            var stationNames = new string[]
+            {
+                "İdari Bina ve Atölye", "OSB", "Mutlukent", "Adliye", "Akse Sapağı",
+                "Gebze Stadyum", "Gebze Kent Meydanı", "Fatih Devlet Hastanesi",
+                "TCDD Gar", "Farabi Devlet Hastanesi", "Darıca Cumhuriyet", "Darıca Sahil"
+            };
+
+            for (int i = 1; i <= 12; i++)
+            {
+                int stationId = i; // Closure için local copy
+
+                var tabItem = new TabItem
+                {
+                    Header = $"🚉 {stationNames[i - 1]}",
+                    Tag = stationId
+                };
+
+                var scrollViewer = new ScrollViewer
+                {
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                };
+
+                var stackPanel = new StackPanel
+                {
+                    Margin = new Thickness(10),
+                    Name = $"DevicePanel{stationId}"
+                };
+
+                scrollViewer.Content = stackPanel;
+                tabItem.Content = scrollViewer;
+
+                DeviceTabControl.Items.Add(tabItem);
+            }
         }
 
         private void InitializeTimers()
         {
+            // Chart güncelleme timer'ı
             _chartUpdateTimer = new DispatcherTimer();
-            _chartUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
-            _chartUpdateTimer.Tick += ChartUpdateTimer_Tick;
-            _chartUpdateTimer.Start();
+            _chartUpdateTimer.Interval = TimeSpan.FromMilliseconds(1000);
 
-            // Tren hareketi için daha akıcı bir timer (örn: 100ms)
-            // Ancak mevcut kod yapısını korumak için 500ms devam ettiriyoruz,
-            // movement hesaplamasını buna göre yapacağız.
+            // Tren hareketi timer'ı
             _railwayUpdateTimer = new DispatcherTimer();
-            _railwayUpdateTimer.Interval = TimeSpan.FromMilliseconds(100); // Daha akıcı hareket için hızlandırdım
+            _railwayUpdateTimer.Interval = TimeSpan.FromMilliseconds(100);
             _railwayUpdateTimer.Tick += RailwayUpdateTimer_Tick;
+
+            // Detay paneli güncelleme timer'ı
+            _detailUpdateTimer = new DispatcherTimer();
+            _detailUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _detailUpdateTimer.Tick += DetailUpdateTimer_Tick;
         }
 
         private void InitializeTrackSystem()
@@ -175,7 +279,6 @@ namespace VldDataVisualizer.Views
         private void InitializeStations()
         {
             _stations.Clear();
-            // Bu pozisyonlar soldan sağa (0 -> 15391) metre cinsindendir
             var stationPositions = new double[]
             {
                 15391.246, 13873.215, 12081.341, 10385.942, 9070.108,
@@ -183,13 +286,9 @@ namespace VldDataVisualizer.Views
                 1379.242, 136.100
             };
 
-            // İsimler Depo'dan (Sağ) Darıca'ya (Sol) sıralanmış.
-            // Koordinat sistemi 0=Darıca olduğu için ters çevirmemiz veya dikkatli eşleştirmemiz lazım.
-            // Yukarıdaki array'de 15391 Depo'ya denk geliyor. Doğru.
-
             var stationNames = new string[]
             {
-                "Depo", "OSB", "Mutlukent", "Adliye", "Akse Sapağı",
+                "İdari Bina ve Atölye", "OSB", "Mutlukent", "Adliye", "Akse Sapağı",
                 "Gebze Stadyum", "Gebze Kent Meydanı", "Fatih Devlet Hastanesi",
                 "TCDD Gar", "Farabi Devlet Hastanesi", "Darıca Cumhuriyet", "Darıca Sahil"
             };
@@ -205,7 +304,7 @@ namespace VldDataVisualizer.Views
                     PlatformLength = 120,
                     PlatformCount = 2,
                     StationLength = 200,
-                    WaitingPassengers = new Random().Next(50, 200),
+                    WaitingPassengers = _random.Next(50, 200),
                     Status = "NORMAL"
                 });
             }
@@ -218,7 +317,7 @@ namespace VldDataVisualizer.Views
             _routes.Add(new RouteInfo
             {
                 RouteId = 1,
-                RouteName = "Depo → Darıca Sahil (ÜST HAT)",
+                RouteName = "İdari Bina ve Atölye → Darıca Sahil",
                 BlockSequence = Enumerable.Range(1, 31).ToList(),
                 TotalRouteLength = TOTAL_TRACK_LENGTH,
                 ActiveTrainCount = 0,
@@ -228,7 +327,7 @@ namespace VldDataVisualizer.Views
             _routes.Add(new RouteInfo
             {
                 RouteId = 2,
-                RouteName = "Darıca Sahil → Depo (ALT HAT)",
+                RouteName = "Darıca Sahil → İdari Bina ve Atölye",
                 BlockSequence = Enumerable.Range(101, 31).ToList(),
                 TotalRouteLength = TOTAL_TRACK_LENGTH,
                 ActiveTrainCount = 0,
@@ -236,7 +335,22 @@ namespace VldDataVisualizer.Views
             });
         }
 
-        #region BUTON CLICK EVENT HANDLERS
+        private void AddInitialTrains()
+        {
+            AddTrainToTrack("UP", 15000);
+            AddTrainToTrack("UP", 12000);
+            AddTrainToTrack("UP", 9000);
+            AddTrainToTrack("DOWN", 500);
+            AddTrainToTrack("DOWN", 1500);
+            AddTrainToTrack("DOWN", 3000);
+            AddTrainToTrack("DOWN", 7000);
+        }
+
+        #region Signalization Info
+
+        #endregion
+
+        #region BUTON CLICK EVENTS
 
         private void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
@@ -246,9 +360,10 @@ namespace VldDataVisualizer.Views
                 _signalizationSimulator.StartSimulation();
                 _railwayUpdateTimer.Start();
                 _chartUpdateTimer.Start();
+                _detailUpdateTimer.Start();
 
                 UpdateButtonStates(true);
-                UpdateHeaderStatus("🟡 Sistem Çalışıyor", Colors.Orange);
+                UpdateHeaderStatus("🟡 12 Cihaz Çalışıyor", Colors.Orange);
                 ShowStatusMessage("Tüm simülasyonlar başlatıldı", StatusType.Info);
             }
             catch (Exception ex)
@@ -265,9 +380,10 @@ namespace VldDataVisualizer.Views
                 _signalizationSimulator.StopSimulation();
                 _railwayUpdateTimer.Stop();
                 _chartUpdateTimer.Stop();
+                _detailUpdateTimer.Stop();
 
                 UpdateButtonStates(false);
-                UpdateHeaderStatus("🟢 Sistem Hazır", Colors.Green);
+                UpdateHeaderStatus("🟢 12 Cihaz Hazır", Colors.Green);
                 ShowStatusMessage("Tüm simülasyonlar durduruldu", StatusType.Info);
             }
             catch (Exception ex)
@@ -293,194 +409,122 @@ namespace VldDataVisualizer.Views
         private void StartSignalizationButton_Click(object sender, RoutedEventArgs e)
         {
             _signalizationSimulator.StartSimulation();
-            StartSignalizationButton.IsEnabled = false;
-            StopSignalizationButton.IsEnabled = true;
-            _railwayUpdateTimer.Start(); // Tren hareketi için gerekli
+            _railwayUpdateTimer.Start();
             ShowStatusMessage("Sinyalizasyon simülasyonu başlatıldı", StatusType.Info);
         }
 
         private void StopSignalizationButton_Click(object sender, RoutedEventArgs e)
         {
             _signalizationSimulator.StopSimulation();
-            StartSignalizationButton.IsEnabled = true;
-            StopSignalizationButton.IsEnabled = false;
             _railwayUpdateTimer.Stop();
             ShowStatusMessage("Sinyalizasyon simülasyonu durduruldu", StatusType.Info);
-        }
-
-        private void AddTrainButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_activeTrains.Count >= MAX_TOTAL_TRAINS) return;
-
-            // Dengeli ekleme
-            int upTrackCount = _activeTrains.Count(t => t.TrackType == "UP");
-            int downTrackCount = _activeTrains.Count(t => t.TrackType == "DOWN");
-            string trackType = upTrackCount <= downTrackCount ? "UP" : "DOWN";
-
-            double startPosition = GetSafeStartPosition(trackType);
-            AddTrainToTrack(trackType, startPosition);
-        }
-
-        private void AddTrainToTrack(string trackType, double startPosition)
-        {
-            // UP Track (Üst) = Depo -> Darıca = Sola Gider (Position Azalır) = NORTHBOUND
-            // DOWN Track (Alt) = Darıca -> Depo = Sağa Gider (Position Artar) = SOUTHBOUND
-
-            string direction = trackType == "UP" ? "NORTHBOUND" : "SOUTHBOUND";
-            int startBlockId = trackType == "UP" ? 1 : 101;
-            int gridY = trackType == "UP" ? (int)UP_TRACK_Y : (int)DOWN_TRACK_Y;
-
-            var newTrain = new TrainInfo
-            {
-                TrainNumber = _activeTrains.Count + 1,
-                TrainId = _activeTrains.Count + 100 + new Random().Next(1000), // Unique ID
-                TrainName = $"TR-{new Random().Next(100, 999)}",
-                Speed = 60 + _random.Next(0, 20),
-                CurrentBlockId = startBlockId,
-                CurrentPosition = startPosition,
-                PositionInBlock = 0,
-                Status = "MOVING",
-                IsInService = true,
-                PassengerCount = _random.Next(50, 200),
-                LastUpdateTime = DateTime.Now,
-                GridX = (int)(startPosition / 8),
-                GridY = gridY,
-                Direction = direction,
-                Heading = trackType == "UP" ? 180 : 0,
-                TrainLength = TRAIN_LENGTH,
-                TrackType = trackType
-            };
-
-            _activeTrains.Add(newTrain);
-            UpdateBlockOccupancyForAllTrains();
-        }
-
-        private double GetSafeStartPosition(string trackType)
-        {
-            var sameTrackTrains = _activeTrains.Where(t => t.TrackType == trackType).ToList();
-
-            if (trackType == "UP")
-            {
-                // Üst hat: Sağdan (15391) sola (0) gider.
-                // Yeni tren en sağdan (Depo) girmeli.
-                if (!sameTrackTrains.Any()) return 15391;
-
-                // En sağdaki treni bul (Pozisyonu en büyük olan)
-                double maxPos = sameTrackTrains.Max(t => t.CurrentPosition);
-                // Eğer en sağdaki tren 15391'den yeterince uzaklaştıysa başlangıca koy
-                if (15391 - maxPos > MIN_TRAIN_DISTANCE) return 15391;
-
-                // Aksi takdirde, en arkadaki trenin biraz arkasına koy (güvenlik mesafesi)
-                // Ama ekran dışına taşmamalı
-                return Math.Min(15391, maxPos + MIN_TRAIN_DISTANCE);
-            }
-            else // DOWN
-            {
-                // Alt hat: Soldan (0) sağa (15391) gider.
-                // Yeni tren en soldan (Darıca) girmeli.
-                if (!sameTrackTrains.Any()) return 0;
-
-                // En soldaki treni bul (Pozisyonu en küçük olan)
-                double minPos = sameTrackTrains.Min(t => t.CurrentPosition);
-
-                if (minPos > MIN_TRAIN_DISTANCE) return 0;
-
-                return Math.Max(0, minPos - MIN_TRAIN_DISTANCE);
-            }
-        }
-
-        private void RemoveTrainButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_activeTrains.Count > 0)
-            {
-                var lastTrain = _activeTrains.Last();
-                _activeTrains.Remove(lastTrain);
-                UpdateBlockOccupancyForAllTrains();
-            }
-        }
-
-        private void AddUpTrackTrainButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_activeTrains.Count >= MAX_TOTAL_TRAINS) return;
-            // Üst hat başlangıcı (Sağ taraf)
-            AddTrainToTrack("UP", 15391);
-        }
-
-        private void AddDownTrackTrainButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_activeTrains.Count >= MAX_TOTAL_TRAINS) return;
-            // Alt hat başlangıcı (Sol taraf)
-            AddTrainToTrack("DOWN", 0);
-        }
-
-        private void ResetTrainsButton_Click(object sender, RoutedEventArgs e)
-        {
-            _activeTrains.Clear();
-            _trainStates.Clear();
-            AddInitialTrains();
-            ShowStatusMessage("Trenler sıfırlandı", StatusType.Info);
-        }
-
-        // TFPR Butonları
-        private void StartVLDButton_Click(object sender, RoutedEventArgs e)
-        {
-            _vldSimulator.StartSimulation();
-            StartVLDButton.IsEnabled = false;
-            StopVLDButton.IsEnabled = true;
-            _chartUpdateTimer.Start();
-        }
-
-        private void StopVLDButton_Click(object sender, RoutedEventArgs e)
-        {
-            _vldSimulator.StopSimulation();
-            StartVLDButton.IsEnabled = true;
-            StopVLDButton.IsEnabled = false;
-            _chartUpdateTimer.Stop();
-        }
-
-        private void VoltageSagButton_Click(object sender, RoutedEventArgs e)
-        {
-            _vldSimulator.SimulateVoltageSag();
-        }
-
-        private void OverloadButton_Click(object sender, RoutedEventArgs e)
-        {
-            _vldSimulator.SimulateOverload();
-        }
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            _vldSimulator.ResetToNormal();
         }
 
         #endregion
 
         #region EVENT HANDLERS
 
-        private void OnVLDDataGenerated(object sender, VldData data)
+        private void OnVLDDataGenerated(object sender, List<VldData> allDevicesData)
         {
             Dispatcher.Invoke(() =>
             {
-                UpdateVLDRealTimeValues(data);
-                UpdateVLDAlarms(data);
+                double totalPower = 0;
+                double totalCurrent = 0;
+                int activeDevices = 0;
 
-                _vldDataCollection.Insert(0, data);
-                if (_vldDataCollection.Count > 100)
-                    _vldDataCollection.RemoveAt(_vldDataCollection.Count - 1);
+                // Her cihazın verisini işle
+                for (int i = 0; i < allDevicesData.Count && i < 12; i++)
+                {
+                    var data = allDevicesData[i];
+                    int stationId = data.StationId;
 
-                DataCountText.Content = $"TFPR Veri: {_vldDataCollection.Count}";
+                    // Mevcut kontrol bölgesi bilgilerini koru
+                    var existingData = _deviceDataCollections[stationId].FirstOrDefault();
+                    if (existingData != null)
+                    {
+                        data.StartPosition = existingData.StartPosition;
+                        data.EndPosition = existingData.EndPosition;
+
+                        // Bölgedeki tren sayısını hesapla
+                        double minPos = Math.Min(data.StartPosition, data.EndPosition);
+                        double maxPos = Math.Max(data.StartPosition, data.EndPosition);
+                        data.TrainsInSection = _activeTrains.Count(train =>
+                        {
+                            double pos = train.CurrentPosition;
+                            return pos >= minPos && pos <= maxPos;
+                        });
+                    }
+
+                    // Veri koleksiyonuna ekle
+                    _deviceDataCollections[stationId].Insert(0, data);
+                    if (_deviceDataCollections[stationId].Count > 100)
+                        _deviceDataCollections[stationId].RemoveAt(_deviceDataCollections[stationId].Count - 1);
+
+                    // Alarm listesini güncelle
+                    _deviceAlarms[stationId] = data.ActiveAlarms;
+
+                    // Toplam değerleri hesapla
+                    totalPower += data.ActivePower;
+                    totalCurrent += data.Current;
+                    if (data.IsCommunicationActive) activeDevices++;
+
+                    // İlgili chart'ı güncelle (index 0-11)
+                    if (i < _allCharts.Count)
+                    {
+                        _allCharts[i].AddValue(data.VoltageOut); // Gerilim grafiği
+
+                        // Header'ı güncelle
+                        UpdateStationHeader(stationId, data.Status, data.VoltageOut);
+                    }
+                }
+
+                DataCountText.Content = $"TFPR Veri: {_deviceDataCollections.Sum(d => d.Value.Count)}";
+                LastUpdateText.Content = $"Son Güncelleme: {DateTime.Now:HH:mm:ss}";
             });
+        }
+
+        private void UpdateStationHeader(int stationId, string status, double voltage)
+        {
+            TextBlock header = null;
+
+            switch (stationId)
+            {
+                case 1: header = Station1Header; break;
+                case 2: header = Station2Header; break;
+                case 3: header = Station3Header; break;
+                case 4: header = Station4Header; break;
+                case 5: header = Station5Header; break;
+                case 6: header = Station6Header; break;
+                case 7: header = Station7Header; break;
+                case 8: header = Station8Header; break;
+                case 9: header = Station9Header; break;
+                case 10: header = Station10Header; break;
+                case 11: header = Station11Header; break;
+                case 12: header = Station12Header; break;
+            }
+
+            if (header != null)
+            {
+                var station = _stations.FirstOrDefault(s => s.StationId == stationId);
+                string stationName = station?.StationName ?? $"İstasyon {stationId}";
+
+                header.Text = $"🚉 {stationName}\n{voltage:N1} kV"; // DEĞİŞTİ: kW -> kV
+
+                // Durum rengine göre başlık rengi
+                header.Foreground = status switch
+                {
+                    "NORMAL" => new SolidColorBrush(Colors.Green),
+                    "WARNING" => new SolidColorBrush(Colors.Orange),
+                    "ALARM" => new SolidColorBrush(Colors.Red),
+                    _ => new SolidColorBrush(Colors.Gray)
+                };
+            }
         }
 
         private void OnSignalizationDataGenerated(object sender, SignalizationData data)
         {
             Dispatcher.Invoke(() =>
             {
-                // ÇOK ÖNEMLİ DÜZELTME:
-                // Simülatörden gelen tren verileri (_activeTrains) ile yerel hareket mantığını çakıştırmıyoruz.
-                // Burada sadece genel istatistikleri güncelliyoruz.
-                // Trenlerin konumu RailwayUpdateTimer tarafından yönetilecek.
-
                 TotalTrainsText.Text = $"🚆 Aktif Tren: {_activeTrains.Count}"; // Yerel sayıyı kullan
                 SystemStatusText.Text = $"📡 Sistem: {data.SystemStatus}";
 
@@ -488,16 +532,10 @@ namespace VldDataVisualizer.Views
                 SignalCommunicationBorder.Background = data.IsCommunicationActive ?
                     new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
 
-                double avgSpeed = _activeTrains.Any() ? _activeTrains.Average(t => t.Speed) : 0;
-                AvgSpeedText.Text = $"⚡ Ort. Hız: {avgSpeed:0} km/s";
-
-                int totalPassengers = _activeTrains.Sum(t => t.PassengerCount) + _stations.Sum(s => s.WaitingPassengers);
-                TotalPassengersText.Text = $"👥 Toplam Yolcu: {totalPassengers}";
-
-                // UpdateTrainsCollection(data.ActiveTrains); // <--- BU SATIR SİLİNDİ/YORUMLANDI (Flickering sebebi)
-                // UpdateBlocksOccupancy(data.TrackBlocks, data.ActiveTrains); // <--- Bunu yerel verilerle yapacağız
-
                 UpdateStationsDynamicData(data.Stations);
+
+                TrainsDataGrid.Items.Refresh();
+                StationsDataGrid.Items.Refresh();
 
                 // Blok ve route doluluklarını yerel trenlere göre güncelle
                 UpdateBlocksOccupancy(_blocks.ToList(), _activeTrains.ToList());
@@ -505,68 +543,6 @@ namespace VldDataVisualizer.Views
 
                 CanvasInfoText.Text = $"İstasyonlar: {_stations.Count} | Bloklar: {_blocks.Count} | Trenler: {_activeTrains.Count}";
             });
-        }
-
-        private void OnVLDStatusChanged(object sender, string status)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                HeaderStatusText.Text = $"🔵 {status}";
-                ShowStatusMessage(status, StatusType.Info);
-            });
-        }
-
-        private void OnSignalizationStatusChanged(object sender, string status)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                SignalizationStatusText.Text = $"🔵 {status}";
-            });
-        }
-
-        #endregion
-
-        #region REAL-TIME UPDATES
-
-        private void UpdateVLDRealTimeValues(VldData data)
-        {
-            DeviceIdText.Text = $"🔧 Cihaz: {data.DeviceId}";
-            LocationText.Text = $"📍 Lokasyon: {data.Location}";
-
-            CommunicationText.Text = $"📶 İletişim: {(data.IsCommunicationActive ? "AKTİF" : "KESİNTİ")}";
-            CommunicationStatusBorder.Background = data.IsCommunicationActive ?
-                new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
-
-            VoltageInText.Text = $"🔌 Giriş Gerilimi: {data.VoltageIn:0.0} kV";
-            VoltageOutText.Text = $"⚡ Çıkış Gerilimi: {data.VoltageOut:0.0} kV";
-            CurrentText.Text = $"🔋 Toplam Akım: {data.Current:0} A";
-            ActivePowerText.Text = $"📊 Aktif Güç: {data.ActivePower:0} kW";
-            ReactivePowerText.Text = $"📈 Reaktif Güç: {data.ReactivePower:0} kVAr";
-            PowerFactorText.Text = $"🎯 Güç Faktörü: {data.PowerFactor:0.00}";
-
-            VoltageL1Text.Text = $"L1 🔌 Gerilim: {data.VoltageL1:0.0} kV";
-            VoltageL2Text.Text = $"L2 🔌 Gerilim: {data.VoltageL2:0.0} kV";
-            VoltageL3Text.Text = $"L3 🔌 Gerilim: {data.VoltageL3:0.0} kV";
-            CurrentL1Text.Text = $"L1 🔋 Akım: {data.CurrentL1:0} A";
-            CurrentL2Text.Text = $"L2 🔋 Akım: {data.CurrentL2:0} A";
-            CurrentL3Text.Text = $"L3 🔋 Akım: {data.CurrentL3:0} A";
-
-            TemperatureText.Text = $"🌡️ Sıcaklık: {data.Temperature:0.0} °C";
-            FrequencyText.Text = $"📏 Frekans: {data.Frequency:0.00} Hz";
-            GroundCurrentText.Text = $"⚡ Toprak Akımı: {data.GroundCurrent:0.0} A";
-            THDVoltageText.Text = $"📉 Gerilim THD: {data.THDVoltage:0.0} %";
-            THDCurrentText.Text = $"📉 Akım THD: {data.THDCurrent:0.0} %";
-
-            EnergyImportText.Text = $"🔋 Tüketilen Enerji: {data.ActiveEnergyImport:0} kWh";
-            VLDStatusText.Text = $"⚡ Durum: {data.Status}";
-
-            VLDStatusBorder.Background = data.Status switch
-            {
-                "NORMAL" => new SolidColorBrush(Colors.LightGreen),
-                "WARNING" => new SolidColorBrush(Colors.LightYellow),
-                "ALARM" => new SolidColorBrush(Colors.LightCoral),
-                _ => new SolidColorBrush(Colors.LightGray)
-            };
         }
 
         private void UpdateStationsDynamicData(List<StationInfo> newStations)
@@ -615,18 +591,828 @@ namespace VldDataVisualizer.Views
             }
         }
 
-        private void UpdateVLDAlarms(VldData data)
+        private void OnVLDStatusChanged(object sender, string status)
         {
-            _vldAlarms.Clear();
-            foreach (var alarm in data.ActiveAlarms)
+            Dispatcher.Invoke(() =>
             {
-                _vldAlarms.Add(alarm);
+                HeaderStatusText.Text = $"🔵 {status}";
+                ShowStatusMessage(status, StatusType.Info);
+            });
+        }
+        #endregion
+
+        #region TIMER EVENTS
+
+        private void RailwayUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            UpdateTrainPositions();
+            UpdateTrainCountsInSections();
+            DrawRailwaySystem();
+        }
+
+        private void DetailUpdateTimer_Tick(object sender, EventArgs e)
+{
+    // Sadece aktif sekmeyi güncelle
+    var selectedTab = DeviceTabControl.SelectedItem as TabItem;
+    if (selectedTab != null && selectedTab.Tag is int stationId)
+    {
+        UpdateDevicePanel(stationId);
+        
+        // Hat görselini güncelle
+        var scrollViewer = selectedTab.Content as ScrollViewer;
+        var stackPanel = scrollViewer?.Content as StackPanel;
+        if (stackPanel != null && stackPanel.Children.Count > 1)
+        {
+            if (stackPanel.Children[1] is GroupBox controlAreaGroup)
+            {
+                if (controlAreaGroup.Content is Grid grid && grid.Children[0] is Canvas canvas)
+                {
+                    DrawStationControlArea(canvas, stationId);
+                }
             }
+        }
+    }
+}
+
+        #endregion
+
+        #region DEVICE PANEL UPDATES
+
+        private void UpdateDevicePanel(int stationId)
+        {
+            // İlgili TabItem'ı bul
+            var tabItem = DeviceTabControl.Items.Cast<TabItem>()
+        .FirstOrDefault(t => (int)t.Tag == stationId);
+
+            if (tabItem == null) return;
+
+            var scrollViewer = tabItem.Content as ScrollViewer;
+            var stackPanel = scrollViewer?.Content as StackPanel;
+            if (stackPanel == null) return;
+
+            // Panel içeriğini temizle
+            stackPanel.Children.Clear();
+
+            var station = _stations.FirstOrDefault(s => s.StationId == stationId);
+            if (station == null) return;
+
+            // Başlık
+            var titleText = new TextBlock
+            {
+                Text = $"🚉 {station.StationName} - VLD-TFPR-{stationId:D3}",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            stackPanel.Children.Add(titleText);
+
+            // YENİ: İstasyon Kontrol Bölgesi Hat Görseli
+            var controlAreaGroup = CreateGroupBox($"Kontrol Bölgesi: {GetControlSectionName(stationId)}");
+            var controlAreaGrid = new Grid { Height = 250, Margin = new Thickness(0, 0, 0, 20) };
+
+            var localCanvas = new Canvas
+            {
+                Width = 800,
+                Height = 250,
+                Background = Brushes.White,
+                Margin = new Thickness(10)
+            };
+
+            // ÖNCE BASİT BİR TEST ÇİZİMİ
+            DrawTestControlArea(localCanvas, stationId);
+
+            // Sonra gerçek çizimi yap
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                DrawStationControlArea(localCanvas, stationId);
+            }), DispatcherPriority.Background);
+
+            controlAreaGrid.Children.Add(localCanvas);
+            controlAreaGroup.Content = controlAreaGrid;
+            stackPanel.Children.Add(controlAreaGroup);
+
+            // Son veri
+            var latestData = _deviceDataCollections[stationId].FirstOrDefault();
+            if (latestData == null)
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = "Henüz veri yok",
+                    FontStyle = FontStyles.Italic,
+                    Foreground = Brushes.Gray,
+                    Margin = new Thickness(0, 10, 0, 0)
+                });
+                return;
+            }
+
+            // Cihaz Bilgileri
+            var deviceInfoGroup = CreateGroupBox("Cihaz Bilgileri");
+            var deviceInfoPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            deviceInfoPanel.Children.Add(CreateInfoBorder("🔧 Cihaz ID", latestData.DeviceId, "#e3f2fd"));
+            deviceInfoPanel.Children.Add(CreateInfoBorder("📍 Lokasyon", latestData.Location, "#e3f2fd"));
+            deviceInfoPanel.Children.Add(CreateInfoBorder("📏 Kontrol Bölgesi",
+                $"{latestData.StartPosition:N0}m - {latestData.EndPosition:N0}m", "#fff3e0"));
+            deviceInfoPanel.Children.Add(CreateInfoBorder("🚆 Bölgedeki Tren",
+                latestData.TrainsInSection.ToString(), "#e8f5e8"));
+            deviceInfoPanel.Children.Add(CreateInfoBorder("⚡ Durum", latestData.Status,
+                latestData.Status == "NORMAL" ? "#e8f5e8" : "#ffebee"));
+            deviceInfoPanel.Children.Add(CreateInfoBorder("📶 İletişim",
+                latestData.IsCommunicationActive ? "AKTİF" : "KESİNTİ",
+                latestData.IsCommunicationActive ? "#e8f5e8" : "#ffebee"));
+
+            deviceInfoGroup.Content = deviceInfoPanel;
+            stackPanel.Children.Add(deviceInfoGroup);
+
+            // Anlık Güç Değerleri
+            var powerGroup = CreateGroupBox("Anlık Güç Değerleri");
+            var powerPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            powerPanel.Children.Add(CreateInfoBorder("🔌 Giriş Gerilimi", $"{latestData.VoltageIn:N1} kV", "#e8f5e8"));
+            powerPanel.Children.Add(CreateInfoBorder("⚡ Çıkış Gerilimi", $"{latestData.VoltageOut:N1} kV", "#e8f5e8"));
+            powerPanel.Children.Add(CreateInfoBorder("🔋 Akım", $"{latestData.Current:N0} A", "#e3f2fd"));
+            powerPanel.Children.Add(CreateInfoBorder("📊 Aktif Güç", $"{latestData.ActivePower:N0} kW", "#fff3e0"));
+            powerPanel.Children.Add(CreateInfoBorder("📈 Reaktif Güç", $"{latestData.ReactivePower:N0} kVAr", "#fff3e0"));
+            powerPanel.Children.Add(CreateInfoBorder("🎯 Güç Faktörü", $"{latestData.PowerFactor:N2}", "#e3f2fd"));
+
+            powerGroup.Content = powerPanel;
+            stackPanel.Children.Add(powerGroup);
+
+            // Faz Değerleri
+            var phaseGroup = CreateGroupBox("Faz Değerleri");
+            var phasePanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            phasePanel.Children.Add(CreateInfoBorder("L1 Gerilim", $"{latestData.VoltageL1:N1} kV", "#f3e5f5"));
+            phasePanel.Children.Add(CreateInfoBorder("L2 Gerilim", $"{latestData.VoltageL2:N1} kV", "#f3e5f5"));
+            phasePanel.Children.Add(CreateInfoBorder("L3 Gerilim", $"{latestData.VoltageL3:N1} kV", "#f3e5f5"));
+            phasePanel.Children.Add(CreateInfoBorder("L1 Akım", $"{latestData.CurrentL1:N0} A", "#e8f5e8"));
+            phasePanel.Children.Add(CreateInfoBorder("L2 Akım", $"{latestData.CurrentL2:N0} A", "#e8f5e8"));
+            phasePanel.Children.Add(CreateInfoBorder("L3 Akım", $"{latestData.CurrentL3:N0} A", "#e8f5e8"));
+
+            phaseGroup.Content = phasePanel;
+            stackPanel.Children.Add(phaseGroup);
+
+            // Sistem Parametreleri
+            var systemGroup = CreateGroupBox("Sistem Parametreleri");
+            var systemPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            systemPanel.Children.Add(CreateInfoBorder("🌡️ Sıcaklık", $"{latestData.Temperature:N1} °C", "#ffebee"));
+            systemPanel.Children.Add(CreateInfoBorder("📏 Frekans", $"{latestData.Frequency:N2} Hz", "#e3f2fd"));
+            systemPanel.Children.Add(CreateInfoBorder("⚡ Toprak Akımı", $"{latestData.GroundCurrent:N1} A", "#fff3e0"));
+            systemPanel.Children.Add(CreateInfoBorder("📉 Gerilim THD", $"{latestData.THDVoltage:N1} %", "#f3e5f5"));
+            systemPanel.Children.Add(CreateInfoBorder("📉 Akım THD", $"{latestData.THDCurrent:N1} %", "#f3e5f5"));
+
+            systemGroup.Content = systemPanel;
+            stackPanel.Children.Add(systemGroup);
+
+            // Enerji Ölçümleri
+            var energyGroup = CreateGroupBox("Enerji Ölçümleri");
+            var energyPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            energyPanel.Children.Add(CreateInfoBorder("🔋 Tüketilen Enerji", $"{latestData.ActiveEnergyImport:N2} kWh", "#e8f5e8"));
+            energyPanel.Children.Add(CreateInfoBorder("📊 Tüketilen Reaktif", $"{latestData.ReactiveEnergyImport:N2} kVArh", "#fff3e0"));
+
+            energyGroup.Content = energyPanel;
+            stackPanel.Children.Add(energyGroup);
+
+            // Alarmlar
+            if (latestData.ActiveAlarms.Any())
+            {
+                var alarmGroup = CreateGroupBox("⚠️ Aktif Alarmlar");
+                var alarmPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+                foreach (var alarm in latestData.ActiveAlarms)
+                {
+                    var alarmBorder = new Border
+                    {
+                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffebee")),
+                        BorderBrush = Brushes.Red,
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(5),
+                        //Padding = new Thickness(8, 4),
+                        Margin = new Thickness(3)
+                    };
+
+                    alarmBorder.Child = new TextBlock
+                    {
+                        Text = alarm,
+                        Foreground = Brushes.Red,
+                        FontWeight = FontWeights.Bold
+                    };
+
+                    alarmPanel.Children.Add(alarmBorder);
+                }
+
+                alarmGroup.Content = alarmPanel;
+                stackPanel.Children.Add(alarmGroup);
+            }
+
+            // 4 Grafik (2x2) - TAMAMEN YENİ
+            var chartsGrid = new Grid { Margin = new Thickness(0, 10, 0, 10) };
+            chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(250) });
+            chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(250) });
+            chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            // 1. GRAFİK: GÜÇ Grafiği (ESKİ: Gerilim Grafiği)
+            var powerChartGroup = CreateGroupBox("Zaman - Güç Grafiği");
+            var powerChart = new ChartsProperties
+            {
+                Name = $"PowerChart{stationId}",
+                Title = "Aktif Güç",
+                YAxisTitle = "Güç (kW)",
+                XAxisTitle = "Zaman",
+                MinY = 0,
+                MaxY = 3000,
+                AutoScaleY = true,
+                LineColor = Brushes.Green,
+                BackgroundColor = Brushes.White
+            };
+            powerChartGroup.Content = powerChart;
+            Grid.SetRow(powerChartGroup, 0);
+            Grid.SetColumn(powerChartGroup, 0);
+            chartsGrid.Children.Add(powerChartGroup);
+
+            // 2. GRAFİK: GERİLİM Grafiği (ESKİ: Akım Grafiği)
+            var voltageChartGroup = CreateGroupBox("Zaman - Gerilim Grafiği");
+            var voltageChart = new ChartsProperties
+            {
+                Name = $"VoltageChart{stationId}",
+                Title = "Çıkış Gerilimi",
+                YAxisTitle = "Gerilim (kV)",
+                XAxisTitle = "Zaman",
+                MinY = 20,
+                MaxY = 40,
+                AutoScaleY = true,
+                LineColor = Brushes.Blue,
+                BackgroundColor = Brushes.White
+            };
+            voltageChartGroup.Content = voltageChart;
+            Grid.SetRow(voltageChartGroup, 0);
+            Grid.SetColumn(voltageChartGroup, 1);
+            chartsGrid.Children.Add(voltageChartGroup);
+
+            // 3. GRAFİK: AKIM Grafiği (ESKİ: Sıcaklık Grafiği)
+            var currentChartGroup = CreateGroupBox("Zaman - Akım Grafiği");
+            var currentChart = new ChartsProperties
+            {
+                Name = $"CurrentChart{stationId}",
+                Title = "Akım",
+                YAxisTitle = "Akım (A)",
+                XAxisTitle = "Zaman",
+                MinY = 500,
+                MaxY = 2500,
+                AutoScaleY = true,
+                LineColor = Brushes.Red,
+                BackgroundColor = Brushes.White
+            };
+            currentChartGroup.Content = currentChart;
+            Grid.SetRow(currentChartGroup, 1);
+            Grid.SetColumn(currentChartGroup, 0);
+            chartsGrid.Children.Add(currentChartGroup);
+
+            // 4. GRAFİK: SICAKLIK Grafiği (ESKİ: THD Grafiği)
+            var tempChartGroup = CreateGroupBox("Zaman - Sıcaklık Grafiği");
+            var tempChart = new ChartsProperties
+            {
+                Name = $"TempChart{stationId}",
+                Title = "Sıcaklık",
+                YAxisTitle = "Sıcaklık (°C)",
+                XAxisTitle = "Zaman",
+                MinY = -20,
+                MaxY = 100,
+                AutoScaleY = true,
+                LineColor = Brushes.Orange,
+                BackgroundColor = Brushes.White
+            };
+            tempChartGroup.Content = tempChart;
+            Grid.SetRow(tempChartGroup, 1);
+            Grid.SetColumn(tempChartGroup, 1);
+            chartsGrid.Children.Add(tempChartGroup);
+
+            stackPanel.Children.Add(chartsGrid);
+
+            // Grafiklere veri ekle
+            if (_deviceDataCollections[stationId].Count > 0)
+            {
+                foreach (var data in _deviceDataCollections[stationId].Take(50).Reverse())
+                {
+                    powerChart.AddValue(data.ActivePower);     // Güç grafiği
+                    voltageChart.AddValue(data.VoltageOut);    // Gerilim grafiği
+                    currentChart.AddValue(data.Current);       // Akım grafiği
+                    tempChart.AddValue(data.Temperature);      // Sıcaklık grafiği
+                }
+            }
+
+            // Son 10 Veri Tablosu
+            var dataTableGroup = CreateGroupBox("Son 10 Ölçüm");
+            var dataGrid = new DataGrid
+            {
+                AutoGenerateColumns = false,
+                Height = 250,
+                ItemsSource = _deviceDataCollections[stationId].Take(10)
+            };
+
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Zaman", Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" }, Width = 80 });
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Gerilim (kV)", Binding = new System.Windows.Data.Binding("VoltageOut") { StringFormat = "N1" }, Width = 80 });
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Akım (A)", Binding = new System.Windows.Data.Binding("Current") { StringFormat = "N0" }, Width = 80 });
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Güç (kW)", Binding = new System.Windows.Data.Binding("ActivePower") { StringFormat = "N0" }, Width = 80 });
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Sıcaklık (°C)", Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" }, Width = 90 });
+            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Durum", Binding = new System.Windows.Data.Binding("Status"), Width = 80 });
+
+            dataTableGroup.Content = dataGrid;
+            stackPanel.Children.Add(dataTableGroup);
+        }
+        private void DrawTestControlArea(Canvas canvas, int stationId)
+        {
+            var testText = new TextBlock
+            {
+                Text = $"VLD-TFPR-{stationId:D3}\nKontrol Bölgesi\nYükleniyor...",
+                FontSize = 16,
+                Foreground = Brushes.Gray,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            Canvas.SetLeft(testText, 300);
+            Canvas.SetTop(testText, 100);
+            canvas.Children.Add(testText);
+        }
+
+        private string GetControlSectionName(int stationId)
+        {
+            var stationNames = new string[]
+            {
+        "İdari Bina ve Atölye", "OSB", "Mutlukent", "Adliye", "Akse Sapağı",
+        "Gebze Stadyum", "Gebze Kent Meydanı", "Fatih Devlet Hastanesi",
+        "TCDD Gar", "Farabi Devlet Hastanesi", "Darıca Cumhuriyet", "Darıca Sahil"
+            };
+
+            // Her VLD-TFPR cihazı: Kendisi -> 2 sonraki istasyon
+            return stationId switch
+            {
+                1 => $"{stationNames[0]} → {stationNames[1]} → {stationNames[2]}",  // Depo → OSB → Mutlukent
+                2 => $"{stationNames[1]} → {stationNames[2]} → {stationNames[3]}",  // OSB → Mutlukent → Adliye
+                3 => $"{stationNames[2]} → {stationNames[3]} → {stationNames[4]}",  // Mutlukent → Adliye → Akse
+                4 => $"{stationNames[3]} → {stationNames[4]} → {stationNames[5]}",  // Adliye → Akse → Gebze Stadyum
+                5 => $"{stationNames[4]} → {stationNames[5]} → {stationNames[6]}",  // Akse → Gebze Stadyum → Gebze KM
+                6 => $"{stationNames[5]} → {stationNames[6]} → {stationNames[7]}",  // Gebze Stadyum → Gebze KM → Fatih
+                7 => $"{stationNames[6]} → {stationNames[7]} → {stationNames[8]}",  // Gebze KM → Fatih → TCDD
+                8 => $"{stationNames[7]} → {stationNames[8]} → {stationNames[9]}",  // Fatih → TCDD → Farabi
+                9 => $"{stationNames[8]} → {stationNames[9]} → {stationNames[10]}", // TCDD → Farabi → Darıca C.
+                10 => $"{stationNames[9]} → {stationNames[10]} → {stationNames[11]}", // Farabi → Darıca C. → Darıca S.
+                11 => $"{stationNames[10]} → {stationNames[11]} → Hat Sonu", // Darıca C. → Darıca S. → Son
+                12 => $"{stationNames[11]} → Hat Sonu", // Darıca S. → Son
+                _ => $"İstasyon {stationId} Bölgesi"
+            };
+        }
+
+        private void DrawStationControlArea(Canvas canvas, int stationId)
+        {
+            canvas.Children.Clear();
+
+            var latestData = _deviceDataCollections[stationId].FirstOrDefault();
+            if (latestData == null)
+            {
+                DrawEmptyControlArea(canvas, stationId);
+                return;
+            }
+
+            // İstasyon pozisyonları
+            var stationPositions = new Dictionary<int, (string name, double position)>
+    {
+        {1, ("İdari Bina ve Atölye", 15391.246)},
+        {2, ("OSB", 13873.215)},
+        {3, ("Mutlukent", 12081.341)},
+        {4, ("Adliye", 10385.942)},
+        {5, ("Akse Sapağı", 9070.108)},
+        {6, ("Gebze Stadyum", 8234.420)},
+        {7, ("Gebze Kent Meydanı", 7101.599)},
+        {8, ("Fatih D.H.", 5781.120)},
+        {9, ("TCDD Gar", 4389.210)},
+        {10, ("Farabi D.H.", 3298.624)},
+        {11, ("Darıca C.", 1379.242)},
+        {12, ("Darıca Sahil", 136.100)}
+    };
+
+            // Kontrol edilen istasyonları belirle
+            List<int> controlledStations = GetControlledStations(stationId);
+
+            // Kontrol edilen istasyonların verilerini al ve sırala
+            var controlledStationData = controlledStations
+                .Where(id => id >= 1 && id <= 12)
+                .Select(id => (id, stationPositions[id]))
+                .OrderBy(s => s.Item2.position)
+                .ToList();
+
+            if (!controlledStationData.Any())
+            {
+                DrawEmptyControlArea(canvas, stationId);
+                return;
+            }
+
+            // Canvas ayarları
+            double canvasWidth = 750;
+            double canvasHeight = 200;
+            double upTrackY = canvasHeight / 2 + 70;
+            double downTrackY = canvasHeight / 2 + 130;
+
+            // Ölçeklendirme
+            double minPos = controlledStationData.Min(s => s.Item2.position);
+            double maxPos = controlledStationData.Max(s => s.Item2.position);
+            double sectionLength = maxPos - minPos;
+            double scaleFactor = (canvasWidth - 100) / (sectionLength + 400);
+
+            // Hat çizgileri
+            DrawTrackLines(canvas, sectionLength, scaleFactor, upTrackY, downTrackY);
+
+            // İstasyonları çiz
+            DrawStations(canvas, controlledStationData, stationId, minPos, scaleFactor, upTrackY);
+
+            // Mesafe çizgileri
+            DrawDistanceLines(canvas, controlledStationData, minPos, scaleFactor, upTrackY);
+
+            // Trenleri çiz
+            DrawTrainsInSection(canvas, minPos, maxPos, scaleFactor, upTrackY, downTrackY);
+
+            // Başlık ve etiketler
+            DrawLabels(canvas, stationId, controlledStationData, trainsInSection, sectionLength, upTrackY, downTrackY);
+
+            // Cihaz konumu
+            DrawDeviceLocation(canvas, stationId, stationPositions[stationId].position, minPos, scaleFactor, upTrackY);
+        }
+
+        private List<int> GetControlledStations(int stationId)
+        {
+            switch (stationId)
+            {
+                case 1:  // Depo: Sadece Depo ve OSB
+                    return new List<int> { 1, 2 };
+                case 12: // Darıca Sahil: Sadece Darıca C. ve Darıca Sahil
+                    return new List<int> { 11, 12 };
+                default: // Diğer tüm istasyonlar: Önceki, kendisi, sonraki (3 istasyon)
+                    if (stationId > 1 && stationId < 12)
+                        return new List<int> { stationId - 1, stationId, stationId + 1 };
+                    else
+                        return new List<int> { stationId };
+            }
+        }
+
+        private void DrawTrackLines(Canvas canvas, double sectionLength, double scaleFactor, double upTrackY, double downTrackY)
+        {
+            // Üst hat (Mavi - Darıca Yönü)
+            var upTrack = new Line
+            {
+                X1 = 50,
+                Y1 = upTrackY,
+                X2 = 50 + (sectionLength * scaleFactor),
+                Y2 = upTrackY,
+                Stroke = Brushes.Blue,
+                StrokeThickness = 4,
+                Opacity = 0.8
+            };
+            canvas.Children.Add(upTrack);
+
+            // Alt hat (Kırmızı - Depo Yönü)
+            var downTrack = new Line
+            {
+                X1 = 50,
+                Y1 = downTrackY,
+                X2 = 50 + (sectionLength * scaleFactor),
+                Y2 = downTrackY,
+                Stroke = Brushes.Red,
+                StrokeThickness = 4,
+                Opacity = 0.8
+            };
+            canvas.Children.Add(downTrack);
+        }
+
+        private void DrawStations(Canvas canvas, List<(int id, (string name, double position) station)> stationData,
+                                  int selectedStationId, double minPos, double scaleFactor, double upTrackY)
+        {
+            foreach (var (stationIndex, (name, position)) in stationData)
+            {
+                double xPos = 50 + ((position - minPos) * scaleFactor);
+                bool isSelected = stationIndex == selectedStationId;
+
+                // İstasyon işaretleyici
+                var stationMarker = new Ellipse
+                {
+                    Width = 20,
+                    Height = 20,
+                    Fill = isSelected ? Brushes.Green : Brushes.DarkOrange,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 2,
+                    ToolTip = $"{name} ({position / 1000:0.00}km)"
+                };
+                Canvas.SetLeft(stationMarker, xPos - 10);
+                Canvas.SetTop(stationMarker, upTrackY - 10);
+                canvas.Children.Add(stationMarker);
+
+                // İstasyon numarası
+                var stationNumber = new TextBlock
+                {
+                    Text = $"{stationIndex}",
+                    FontSize = 10,
+                    Foreground = Brushes.White,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                    Width = 14, // Sabit genişlik
+                    Height = 14 // Sabit yükseklik
+                };
+
+                // TextBlock'u tam ortalamak için
+                Canvas.SetLeft(stationNumber, xPos - 7);  // -7 yerine -8 veya -9 deneyebilirsiniz
+                Canvas.SetTop(stationNumber, upTrackY - 8);
+                canvas.Children.Add(stationNumber);
+
+                // İstasyon adı
+                var stationName = new TextBlock
+                {
+                    Text = name,
+                    FontSize = 11,
+                    FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal,
+                    Foreground = isSelected ? Brushes.Green : Brushes.DarkOrange,
+                    MaxWidth = 120,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center,
+                    Background = Brushes.WhiteSmoke,
+                    Padding = new Thickness(5, 2, 5, 2)
+                };
+                Canvas.SetLeft(stationName, xPos - 60);
+                Canvas.SetTop(stationName, upTrackY - 50);
+                canvas.Children.Add(stationName);
+
+                // Kilometre bilgisi
+                var kmText = new TextBlock
+                {
+                    Text = $"{position / 1000:0.00}km",
+                    FontSize = 9,
+                    Foreground = Brushes.DarkSlateGray,
+                    Background = Brushes.LightYellow,
+                    Padding = new Thickness(4, 1, 4, 1),
+                    FontWeight = FontWeights.SemiBold
+                };
+                Canvas.SetLeft(kmText, xPos - 25);
+                Canvas.SetTop(kmText, upTrackY + 20);
+                canvas.Children.Add(kmText);
+            }
+        }
+
+        private void DrawDistanceLines(Canvas canvas, List<(int id, (string name, double position) station)> stationData,
+                                       double minPos, double scaleFactor, double upTrackY)
+        {
+            for (int i = 0; i < stationData.Count - 1; i++)
+            {
+                var current = stationData[i];
+                var next = stationData[i + 1];
+
+                double currentX = 50 + ((current.station.position - minPos) * scaleFactor);
+                double nextX = 50 + ((next.station.position - minPos) * scaleFactor);
+                double distance = Math.Abs(current.station.position - next.station.position);
+
+                // Mesafe çizgisi
+                var distanceLine = new Line
+                {
+                    X1 = currentX,
+                    Y1 = upTrackY - 25,
+                    X2 = nextX,
+                    Y2 = upTrackY - 25,
+                    Stroke = Brushes.DarkGray,
+                    StrokeThickness = 1,
+                    StrokeDashArray = new DoubleCollection { 5, 3 }
+                };
+                canvas.Children.Add(distanceLine);
+
+                // Mesafe bilgisi
+                var distanceText = new TextBlock
+                {
+                    Text = $"{distance:0}m",
+                    FontSize = 8,
+                    Foreground = Brushes.DarkSlateGray,
+                    Background = Brushes.White,
+                    Padding = new Thickness(3, 1, 3, 1),
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(distanceText, (currentX + nextX) / 2 - 15);
+                Canvas.SetTop(distanceText, upTrackY - 40);
+                canvas.Children.Add(distanceText);
+            }
+        }
+
+        private List<TrainInfo> trainsInSection; // Sınıf seviyesinde tanımlanmalı veya döndürülmeli
+
+        private void DrawTrainsInSection(Canvas canvas, double minPos, double maxPos,
+                                         double scaleFactor, double upTrackY, double downTrackY)
+        {
+            trainsInSection = _activeTrains.Where(train =>
+            {
+                if (train == null) return false;
+                double pos = train.CurrentPosition;
+                return pos >= minPos - 500 && pos <= maxPos + 500;
+            }).ToList();
+
+            foreach (var train in trainsInSection)
+            {
+                double xPos = 50 + ((train.CurrentPosition - minPos) * scaleFactor);
+                double yPos = train.TrackType == "UP" ? upTrackY : downTrackY;
+
+                // Tren simgesi
+                var trainRect = new Rectangle
+                {
+                    Width = 40,
+                    Height = 18,
+                    Fill = train.TrackType == "UP" ? Brushes.Blue : Brushes.Red,
+                    Stroke = Brushes.White,
+                    StrokeThickness = 2,
+                    RadiusX = 5,
+                    RadiusY = 5,
+                    ToolTip = $"Tren {train.TrainId}\nHız: {train.Speed:0}km/h\nKonum: {train.CurrentPosition:0}m"
+                };
+                Canvas.SetLeft(trainRect, xPos - 20);
+                Canvas.SetTop(trainRect, yPos - 10);
+                canvas.Children.Add(trainRect);
+
+                // Tren yön oku
+                var directionArrow = new TextBlock
+                {
+                    Text = train.TrackType == "UP" ? "◀" : "▶",
+                    Foreground = Brushes.White,
+                    FontSize = 11,
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(directionArrow, xPos - 6);
+                Canvas.SetTop(directionArrow, yPos - 8);
+                canvas.Children.Add(directionArrow);
+
+                // Tren hızı
+                var speedText = new TextBlock
+                {
+                    Text = $"{train.Speed:0}",
+                    FontSize = 8,
+                    Foreground = Brushes.Black,
+                    Background = Brushes.WhiteSmoke,
+                    Padding = new Thickness(3, 1, 3, 1),
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(speedText, xPos - 10);
+                Canvas.SetTop(speedText, train.TrackType == "UP" ? yPos - 35 : yPos + 12);
+                canvas.Children.Add(speedText);
+            }
+        }
+
+        private void DrawLabels(Canvas canvas, int stationId, List<(int id, (string name, double position) station)> stationData,
+                               List<TrainInfo> trains, double sectionLength, double upTrackY, double downTrackY)
+        {
+            // BÖLGE BAŞLIĞI
+            var sectionHeader = new TextBlock
+            {
+                Text = $"VLD-TFPR-{stationId:D3} KONTROL BÖLGESİ",
+                FontSize = 14,
+                Foreground = Brushes.DarkBlue,
+                FontWeight = FontWeights.Bold,
+                Background = Brushes.LightCyan,
+                Padding = new Thickness(15, 8, 15, 8)
+            };
+            Canvas.SetLeft(sectionHeader, 250);
+            Canvas.SetTop(sectionHeader, 10);
+            canvas.Children.Add(sectionHeader);
+
+            // BÖLGE BİLGİLERİ
+            string stationList = string.Join(" → ", stationData.Select(s => s.station.name));
+            var sectionInfo = new TextBlock
+            {
+                Text = $"📍 Kontrol Edilen İstasyonlar: {stationList}\n" +
+                       $"🚆 Aktif Tren Sayısı: {trains.Count}\n" +
+                       $"📏 Bölge Uzunluğu: {sectionLength:0}m",
+                FontSize = 10,
+                Foreground = Brushes.DarkGreen,
+                FontWeight = FontWeights.Bold,
+                Background = Brushes.Honeydew,
+                Padding = new Thickness(10, 6, 10, 6)
+            };
+            Canvas.SetLeft(sectionInfo, 200);
+            Canvas.SetTop(sectionInfo, 45);
+            canvas.Children.Add(sectionInfo);
+
+            // YÖN ETİKETLERİ
+            var upLabel = new TextBlock
+            {
+                Text = "← Darıca Yönü",
+                FontSize = 11,
+                Foreground = Brushes.Blue,
+                FontWeight = FontWeights.Bold,
+                Background = Brushes.AliceBlue,
+                Padding = new Thickness(10, 4, 10, 4)
+            };
+            Canvas.SetLeft(upLabel, -75);
+            Canvas.SetTop(upLabel, upTrackY - 15);
+            canvas.Children.Add(upLabel);
+
+            var downLabel = new TextBlock
+            {
+                Text = "İdari Bina ve Atölye Yönü →",
+                FontSize = 11,
+                Foreground = Brushes.Red,
+                FontWeight = FontWeights.Bold,
+                Background = Brushes.MistyRose,
+                Padding = new Thickness(10, 4, 10, 4)
+            };
+            Canvas.SetLeft(downLabel, -145);
+            Canvas.SetTop(downLabel, downTrackY - 15);
+            canvas.Children.Add(downLabel);
+        }
+
+        private void DrawDeviceLocation(Canvas canvas, int stationId, double devicePosition,
+                                       double minPos, double scaleFactor, double upTrackY)
+        {
+            double deviceXPos = 50 + ((devicePosition - minPos) * scaleFactor);
+            var deviceMarker = new TextBlock
+            {
+                Text = "★",
+                FontSize = 20,
+                Foreground = Brushes.Green,
+                FontWeight = FontWeights.Bold,
+                ToolTip = $"VLD-TFPR-{stationId:D3} Konumu"
+            };
+            Canvas.SetLeft(deviceMarker, deviceXPos - 10);
+            Canvas.SetTop(deviceMarker, upTrackY - 75);
+            canvas.Children.Add(deviceMarker);
+        }
+
+        // Boş kontrol bölgesi çizmek için yardımcı metod (ZATEN VAR)
+        private void DrawEmptyControlArea(Canvas canvas, int stationId)
+        {
+            canvas.Children.Clear();
+
+            var errorText = new TextBlock
+            {
+                Text = $"VLD-TFPR-{stationId:D3} Kontrol Bölgesi\n\n" +
+                       "⚠️ Veri yükleniyor...\n" +
+                       "Kontrol bölgesi henüz başlatılmadı.",
+                FontSize = 14,
+                Foreground = Brushes.OrangeRed,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            Canvas.SetLeft(errorText, 200);
+            Canvas.SetTop(errorText, 80);
+            canvas.Children.Add(errorText);
+        }
+        #endregion
+
+        #region DETAIL PANEL (Artık kullanılmıyor - DevicePanel'e taşındı)
+
+        private GroupBox CreateGroupBox(string header)
+        {
+            return new GroupBox
+            {
+                Header = header,
+                Margin = new Thickness(0, 0, 0, 10),
+                Padding = new Thickness(10),
+                FontWeight = FontWeights.Bold
+            };
+        }
+
+        private Border CreateInfoBorder(string label, string value, string bgColor)
+        {
+            var border = new Border
+            {
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgColor)),
+                BorderBrush = Brushes.LightGray,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(5),
+                Margin = new Thickness(3)
+            };
+
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = label,
+                FontSize = 16,
+                Foreground = Brushes.Gray
+            });
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = value,
+                FontSize = 18,
+                FontWeight = FontWeights.Bold
+            });
+
+            border.Child = stackPanel;
+            return border;
         }
 
         #endregion
 
-        #region TREN HAREKET SİSTEMİ - DÜZELTİLMİŞ
+        #region TREN HAREKET SİSTEMİ
 
         private class TrainState
         {
@@ -638,6 +1424,36 @@ namespace VldDataVisualizer.Views
 
         private Dictionary<int, TrainState> _trainStates = new Dictionary<int, TrainState>();
 
+        private void AddTrainToTrack(string trackType, double startPosition)
+        {
+            string direction = trackType == "UP" ? "NORTHBOUND" : "SOUTHBOUND";
+            int startBlockId = trackType == "UP" ? 1 : 101;
+            int gridY = trackType == "UP" ? (int)UP_TRACK_Y : (int)DOWN_TRACK_Y;
+
+            var newTrain = new TrainInfo
+            {
+                TrainNumber = _activeTrains.Count + 1,
+                TrainId = _activeTrains.Count + 100 + _random.Next(1000),
+                TrainName = $"TR-{_random.Next(100, 999)}",
+                Speed = 60 + _random.Next(0, 20),
+                CurrentBlockId = startBlockId,
+                CurrentPosition = startPosition,
+                PositionInBlock = 0,
+                Status = "MOVING",
+                IsInService = true,
+                PassengerCount = _random.Next(50, 200),
+                LastUpdateTime = DateTime.Now,
+                GridX = (int)(startPosition / 8),
+                GridY = gridY,
+                Direction = direction,
+                Heading = trackType == "UP" ? 180 : 0,
+                TrainLength = TRAIN_LENGTH,
+                TrackType = trackType
+            };
+
+            _activeTrains.Add(newTrain);
+        }
+
         private void UpdateTrainPositions()
         {
             try
@@ -646,41 +1462,28 @@ namespace VldDataVisualizer.Views
 
                 foreach (var train in _activeTrains.ToList())
                 {
-                    // TrainState yönetimi (Yoksa oluştur)
                     if (!_trainStates.ContainsKey(train.TrainId))
                         _trainStates[train.TrainId] = new TrainState();
 
                     var trainState = _trainStates[train.TrainId];
 
-                    // ---------------------------------------------------------
-                    // 1. İSTASYONDA BEKLEME MANTIĞI
-                    // ---------------------------------------------------------
                     if (trainState.IsStoppedAtStation)
                     {
-                        trainState.StopTimer += 0.1; // Timer interval'ı 100ms
+                        trainState.StopTimer += 0.1;
                         train.Status = "STOPPED";
                         train.Speed = 0;
 
-                        // Süre doldu mu?
                         if (trainState.StopTimer >= STATION_STOP_TIME)
                         {
-                            // KALKIŞ ANI
                             trainState.IsStoppedAtStation = false;
                             trainState.StopTimer = 0;
-
-                            // ÖNEMLİ: Hangi istasyondan kalktığımızı kaydediyoruz
-                            // Böylece döngü bir sonraki adımda bizi tekrar durdurmayacak.
                             trainState.LastDepartureStationId = trainState.CurrentStationId;
-
                             train.Status = "MOVING";
-                            train.Speed = 60 + _random.Next(0, 20); // Hız ver
+                            train.Speed = 60 + _random.Next(0, 20);
                         }
-                        continue; // Tren duruyorsa hareket hesaplamasına geçme
+                        continue;
                     }
 
-                    // ---------------------------------------------------------
-                    // 2. ÖNDEKİ TREN KONTROLÜ (Mesafe Koruma)
-                    // ---------------------------------------------------------
                     if (IsTrainAhead(train))
                     {
                         train.Status = "WAITING";
@@ -688,23 +1491,15 @@ namespace VldDataVisualizer.Views
                         continue;
                     }
 
-                    // ---------------------------------------------------------
-                    // 3. İSTASYON YAKLAŞIM VE DURMA MANTIĞI
-                    // ---------------------------------------------------------
                     var approachingStation = GetApproachingStation(train);
-
-                    // Eğer bir istasyona yaklaşıyorsak VE bu istasyon az önce kalktığımız istasyon DEĞİLSE
-                    if (approachingStation != null &&
-                        approachingStation.StationId != trainState.LastDepartureStationId)
+                    if (approachingStation != null && approachingStation.StationId != trainState.LastDepartureStationId)
                     {
                         double distanceToStation = Math.Abs(train.CurrentPosition - approachingStation.GridX);
 
-                        // 200m kala yavaşla
                         if (distanceToStation < 200)
                         {
                             train.Speed = Math.Max(20, train.Speed - 2);
 
-                            // 20m kala DUR
                             if (distanceToStation < 20)
                             {
                                 train.Status = "STOPPED";
@@ -712,83 +1507,61 @@ namespace VldDataVisualizer.Views
                                 trainState.IsStoppedAtStation = true;
                                 trainState.StopTimer = 0;
                                 trainState.CurrentStationId = approachingStation.StationId;
-
-                                // Yolcu simülasyonu
                                 train.PassengerCount = _random.Next(50, 200);
                                 approachingStation.WaitingPassengers = _random.Next(20, 100);
-
-                                continue; // Döngüyü kır, hareket etme
+                                continue;
                             }
                         }
                     }
 
-                    // ---------------------------------------------------------
-                    // 4. SON KALKILAN İSTASYON HAFIZASINI TEMİZLEME
-                    // ---------------------------------------------------------
-                    // Eğer son kalktığımız istasyondan yeterince uzaklaştıysak (örn: 250m),
-                    // hafızayı temizle. (Geri dönüşlerde veya hat değişimlerinde sorun olmasın diye)
                     if (trainState.LastDepartureStationId != -1)
                     {
                         var lastStation = _stations.FirstOrDefault(s => s.StationId == trainState.LastDepartureStationId);
                         if (lastStation != null)
                         {
                             double dist = Math.Abs(train.CurrentPosition - lastStation.GridX);
-                            if (dist > 250) // 250 metre uzaklaştıysak
-                            {
-                                trainState.LastDepartureStationId = -1; // Artık unutabiliriz
-                            }
+                            if (dist > 250)
+                                trainState.LastDepartureStationId = -1;
                         }
                     }
 
-                    // ---------------------------------------------------------
-                    // 5. HAREKET MANTIĞI (FİZİKSEL POZİSYON GÜNCELLEME)
-                    // ---------------------------------------------------------
                     if (train.Status == "MOVING" || train.Status == "WAITING")
                     {
-                        // Bekliyorsa hızı 0 yap, değilse mevcut hız
                         double currentSpeed = (train.Status == "WAITING") ? 0 : train.Speed;
-
-                        // Formül: (km/h / 3.6) * zaman(s) -> Timer 100ms olduğu için 0.1 ile çarpıyoruz
-                        // Hareketi biraz daha belirgin yapmak için çarpanı 0.5 kullanabiliriz (daha akıcı görünür)
                         double movement = (currentSpeed / 3.6) * 0.5;
 
                         if (train.TrackType == "UP")
                         {
-                            // ÜST HAT: Sağa (15391) -> Sola (0)
                             train.CurrentPosition -= movement;
-
                             if (train.CurrentPosition <= -100) trainsToRemove.Add(train);
                         }
                         else
                         {
-                            // ALT HAT: Soldan (0) -> Sağa (15391)
                             train.CurrentPosition += movement;
-
                             if (train.CurrentPosition >= TOTAL_TRACK_LENGTH + 100) trainsToRemove.Add(train);
                         }
 
-                        // Grid ve Blok Güncelleme
                         train.GridX = (int)(train.CurrentPosition / 8);
                         UpdateTrainCurrentBlock(train);
 
-                        // Blok içi pozisyon
                         var block = _blocks.FirstOrDefault(b => b.BlockId == train.CurrentBlockId + (train.TrackType == "DOWN" ? 100 : 0));
                         if (block != null)
                             train.PositionInBlock = Math.Abs(train.CurrentPosition - block.StartPosition);
                     }
+
+                    else
+                    {
+                        train.Status = "MOVING";
+                        continue;
+                    }
                 }
 
-                // Biten trenleri temizle
                 foreach (var train in trainsToRemove)
                 {
                     _activeTrains.Remove(train);
                     _trainStates.Remove(train.TrainId);
-
-                    // Döngü olması için tren bitince başa yeni ekle (İsteğe bağlı)
                     AddTrainToTrack(train.TrackType, train.TrackType == "UP" ? 15391 : 0);
                 }
-
-                UpdateBlockOccupancyForAllTrains();
             }
             catch (Exception ex)
             {
@@ -803,16 +1576,13 @@ namespace VldDataVisualizer.Views
                 .ToList();
 
             if (!sameTrackTrains.Any()) return false;
-
-            double safeDistance = 1000; // Güvenli takip mesafesi
+            double safeDistance = 1000;
 
             if (currentTrain.TrackType == "UP")
             {
-                // Üst Hat (Gidiş Yönü Sola/0'a Doğru)
-                // Önündeki trenin pozisyonu daha KÜÇÜK olmalı
                 var aheadTrain = sameTrackTrains
                     .Where(t => t.CurrentPosition < currentTrain.CurrentPosition)
-                    .OrderByDescending(t => t.CurrentPosition) // En yakın olan (pozisyonu en büyük olan)
+                    .OrderByDescending(t => t.CurrentPosition)
                     .FirstOrDefault();
 
                 if (aheadTrain != null)
@@ -821,13 +1591,11 @@ namespace VldDataVisualizer.Views
                     return distance < safeDistance;
                 }
             }
-            else // DOWN
+            else
             {
-                // Alt Hat (Gidiş Yönü Sağa/15000'e Doğru)
-                // Önündeki trenin pozisyonu daha BÜYÜK olmalı
                 var aheadTrain = sameTrackTrains
                     .Where(t => t.CurrentPosition > currentTrain.CurrentPosition)
-                    .OrderBy(t => t.CurrentPosition) // En yakın olan (pozisyonu en küçük olan)
+                    .OrderBy(t => t.CurrentPosition)
                     .FirstOrDefault();
 
                 if (aheadTrain != null)
@@ -842,60 +1610,43 @@ namespace VldDataVisualizer.Views
 
         private StationInfo GetApproachingStation(TrainInfo train)
         {
-            // Basit yakınlık kontrolü
-            // İstasyon pozisyonları sabittir
             foreach (var station in _stations)
             {
                 double dist = Math.Abs(train.CurrentPosition - station.GridX);
-                // Eğer çok yakınsa ve tren istasyona doğru geliyorsa
                 if (dist < 300)
-                {
-                    // İstasyonu geçip geçmediğini kontrol etmeye gerek yok, 
-                    // durma mantığı distance < 20 ile hallediliyor
                     return station;
-                }
             }
             return null;
         }
 
         private void UpdateTrainCurrentBlock(TrainInfo train)
         {
-            // Hangi blokta olduğunu bul
             double pos = train.CurrentPosition;
-            // Blok uzunluğu yaklaşık 500m (Total / 31)
             double blockLen = TOTAL_TRACK_LENGTH / 31.0;
-
             int blockIndex = (int)(pos / blockLen);
             if (blockIndex < 0) blockIndex = 0;
             if (blockIndex > 30) blockIndex = 30;
-
             train.CurrentBlockId = blockIndex + 1;
         }
 
-        private void UpdateBlockOccupancyForAllTrains()
+        private void UpdateTrainCountsInSections()
         {
-            foreach (var block in _blocks)
+            // Her VLD-TFPR cihazının kontrol ettiği bölgedeki tren sayısını hesapla
+            for (int stationId = 1; stationId <= 12; stationId++)
             {
-                block.IsOccupied = false;
-                block.OccupyingTrainId = 0;
-                block.Status = "FREE";
-            }
+                var latestData = _deviceDataCollections[stationId].FirstOrDefault();
+                if (latestData == null) continue;
 
-            foreach (var train in _activeTrains)
-            {
-                // Trenin olduğu blok ID'si
-                int baseBlockId = train.CurrentBlockId;
+                double startPos = latestData.StartPosition;
+                double endPos = latestData.EndPosition;
 
-                // TrackType'a göre gerçek blok ID (UP=1..31, DOWN=101..131)
-                int realBlockId = train.TrackType == "UP" ? baseBlockId : baseBlockId + 100;
-
-                var block = _blocks.FirstOrDefault(b => b.BlockId == realBlockId);
-                if (block != null)
+                int trainCount = _activeTrains.Count(train =>
                 {
-                    block.IsOccupied = true;
-                    block.OccupyingTrainId = train.TrainId;
-                    block.Status = "OCCUPIED";
-                }
+                    double pos = train.CurrentPosition;
+                    return pos >= Math.Min(startPos, endPos) && pos <= Math.Max(startPos, endPos);
+                });
+
+                latestData.TrainsInSection = trainCount;
             }
         }
 
@@ -913,17 +1664,9 @@ namespace VldDataVisualizer.Views
                 double scaleFactor = (CANVAS_WIDTH - 100) / TOTAL_TRACK_LENGTH;
 
                 DrawDoubleTrackSystem(scaleFactor);
-
-                // Blokları çiz
-                foreach (var block in _blocks) DrawBlock(block, scaleFactor);
-
-                // İstasyonları çiz
                 foreach (var station in _stations) DrawStation(station, scaleFactor);
-
-                // Trenleri çiz
                 foreach (var train in _activeTrains.ToList()) DrawTrain(train, scaleFactor);
-
-                DrawGridAndScale(scaleFactor, TOTAL_TRACK_LENGTH);
+                DrawGridAndScale(scaleFactor);
                 DrawTrackLabels();
             }
             catch (Exception) { }
@@ -933,7 +1676,6 @@ namespace VldDataVisualizer.Views
         {
             double scaledLength = TOTAL_TRACK_LENGTH * scaleFactor;
 
-            // Üst Hat (Mavi)
             var upTrack = new Line
             {
                 X1 = 50,
@@ -945,7 +1687,6 @@ namespace VldDataVisualizer.Views
             };
             RailwayCanvas.Children.Add(upTrack);
 
-            // Alt Hat (Kırmızı)
             var downTrack = new Line
             {
                 X1 = 50,
@@ -956,28 +1697,6 @@ namespace VldDataVisualizer.Views
                 StrokeThickness = 4
             };
             RailwayCanvas.Children.Add(downTrack);
-        }
-
-        private void DrawBlock(TrackBlock block, double scaleFactor)
-        {
-            // Blok çizimi
-            double xPos = 50 + (block.StartPosition * scaleFactor);
-            double width = (block.EndPosition - block.StartPosition) * scaleFactor;
-            bool isUp = block.BlockId <= 31;
-            double yPos = isUp ? UP_TRACK_Y : DOWN_TRACK_Y;
-
-            var rect = new Rectangle
-            {
-                Width = width,
-                Height = 10,
-                Fill = block.IsOccupied ? Brushes.Red : Brushes.Transparent, // Doluysa kırmızı
-                Stroke = Brushes.Gray,
-                StrokeThickness = 0.5,
-                Opacity = 0.5
-            };
-            Canvas.SetLeft(rect, xPos);
-            Canvas.SetTop(rect, yPos - 5);
-            RailwayCanvas.Children.Add(rect);
         }
 
         private void DrawStation(StationInfo station, double scaleFactor)
@@ -1003,38 +1722,32 @@ namespace VldDataVisualizer.Views
                 RenderTransform = new RotateTransform(-25)
             };
             Canvas.SetLeft(text, xPos - 10);
-            Canvas.SetTop(text, UP_TRACK_Y - 60);
+            Canvas.SetTop(text, UP_TRACK_Y - 75);
             RailwayCanvas.Children.Add(text);
         }
 
         private void DrawTrain(TrainInfo train, double scaleFactor)
         {
             double xPos = 50 + (train.CurrentPosition * scaleFactor);
-
-            // Ekran dışındaysa çizme (Performans için)
             if (xPos < -50 || xPos > CANVAS_WIDTH + 50) return;
 
             bool isUp = train.TrackType == "UP";
             double yPos = isUp ? UP_TRACK_Y : DOWN_TRACK_Y;
 
-            // 1. TREN GÖVDESİ (DİKDÖRTGEN)
             var rect = new Rectangle
             {
                 Width = 40,
                 Height = 16,
-                // Duruyorsa Turuncu, hareketliyse Mavi/Kırmızı
                 Fill = train.Status == "STOPPED" ? Brushes.Orange : (isUp ? Brushes.Blue : Brushes.Red),
                 Stroke = Brushes.White,
                 StrokeThickness = 1,
                 RadiusX = 2,
                 RadiusY = 2
             };
-
-            Canvas.SetLeft(rect, xPos - 20); // Treni ortala
+            Canvas.SetLeft(rect, xPos - 20);
             Canvas.SetTop(rect, yPos - 8);
             RailwayCanvas.Children.Add(rect);
 
-            // 2. YÖN OKU (TRENİN İÇİNDE)
             var arrow = new TextBlock
             {
                 Text = isUp ? "◀" : "▶",
@@ -1042,43 +1755,28 @@ namespace VldDataVisualizer.Views
                 FontSize = 10,
                 FontWeight = FontWeights.Bold
             };
-            // Ok konumunu ince ayar yap
             Canvas.SetLeft(arrow, xPos - 4);
             Canvas.SetTop(arrow, yPos - 7);
             RailwayCanvas.Children.Add(arrow);
 
-            // 3. BİLGİ KUTUSU (İSİM + HIZ + KONUM)
-            // Durum bilgisine göre metin hazırla
-            string statusInfo = $"{train.TrainId}\n" +
-                                $"{train.Speed:0} km/h\n" +
-                                $"{train.CurrentPosition:0}m";
-
             var infoText = new TextBlock
             {
-                Text = statusInfo,
-                FontSize = 8,
+                Text = $"{train.TrainId}\n{train.Speed:0} km/h\n{train.CurrentPosition:0}m",
+                FontSize = 10,
                 Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
                 TextAlignment = TextAlignment.Center,
-                // Okunabilirlik için yarı saydam siyah arka plan
                 Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
                 Padding = new Thickness(2)
             };
-
-            // Bilgi kutusunu trenin üstüne ortalayarak yerleştir
-            // Metin kutusunun genişliğini tahmini ortalamak için xPos'tan biraz sola kaydırıyoruz
-            Canvas.SetLeft(infoText, xPos - 25);
-            Canvas.SetTop(infoText, yPos - 45); // Trenin gövdesinin üstünde dursun
-
-            // Z-Index vererek en üstte görünmesini sağla (isteğe bağlı ama iyidir)
+            Canvas.SetLeft(infoText, xPos - 22.5f);
+            Canvas.SetTop(infoText, yPos - 50);
             Panel.SetZIndex(infoText, 100);
-
             RailwayCanvas.Children.Add(infoText);
         }
 
-        private void DrawGridAndScale(double scaleFactor, double totalLength)
+        private void DrawGridAndScale(double scaleFactor)
         {
-            // Her 1 km için çizgi
             for (int i = 0; i <= 15; i++)
             {
                 double x = 50 + (i * 1000 * scaleFactor);
@@ -1093,7 +1791,7 @@ namespace VldDataVisualizer.Views
                 };
                 RailwayCanvas.Children.Add(line);
 
-                var txt = new TextBlock { Text = $"{i}km", FontSize = 8, Foreground = Brushes.Gray };
+                var txt = new TextBlock { Text = $"{i}km", FontSize = 16, Foreground = Brushes.Gray };
                 Canvas.SetLeft(txt, x + 2);
                 Canvas.SetTop(txt, DOWN_TRACK_Y + 20);
                 RailwayCanvas.Children.Add(txt);
@@ -1102,53 +1800,28 @@ namespace VldDataVisualizer.Views
 
         private void DrawTrackLabels()
         {
-            var upLabel = new TextBlock { Text = "      DARICA YÖNÜ", Foreground = Brushes.Blue, FontWeight = FontWeights.Bold };
-            Canvas.SetLeft(upLabel, 60); Canvas.SetTop(upLabel, UP_TRACK_Y - 40);
+            var upLabel = new TextBlock { Text = "Darıca Yönü", Foreground = Brushes.Blue, FontWeight = FontWeights.Bold };
+            Canvas.SetLeft(upLabel, 60);
+            Canvas.SetTop(upLabel, UP_TRACK_Y - 40);
             RailwayCanvas.Children.Add(upLabel);
 
-            var downLabel = new TextBlock { Text = "        DEPO YÖNÜ", Foreground = Brushes.Red, FontWeight = FontWeights.Bold };
-            Canvas.SetLeft(downLabel, 60); Canvas.SetTop(downLabel, DOWN_TRACK_Y + 25);
+            var downLabel = new TextBlock { Text = "İdari Bina ve Atölye Yönü", Foreground = Brushes.Red, FontWeight = FontWeights.Bold };
+            Canvas.SetLeft(downLabel, 60);
+            Canvas.SetTop(downLabel, DOWN_TRACK_Y + 45);
             RailwayCanvas.Children.Add(downLabel);
         }
 
         #endregion
 
-        #region TIMER EVENTS & UTILITIES
-
-        private void ChartUpdateTimer_Tick(object sender, EventArgs e)
-        {
-            if (_vldSimulator.IsRunning && _vldDataCollection.Count > 0)
-            {
-                var latestData = _vldDataCollection.First();
-                CurrentChart.AddValue(latestData.Current);
-                VoltageChart.AddValue(latestData.VoltageOut);
-                PowerChart.AddValue(latestData.ActivePower);
-                TemperatureChart.AddValue(latestData.Temperature);
-                THDChart.AddValue(latestData.THDVoltage);
-                LastUpdateText.Content = $"Son Güncelleme: {DateTime.Now:HH:mm:ss}";
-            }
-        }
-
-        private void RailwayUpdateTimer_Tick(object sender, EventArgs e)
-        {
-            UpdateTrainPositions();
-            DrawRailwaySystem();
-        }
+        #region UTILITIES
 
         private void UpdateButtonStates(bool isRunning)
         {
             StartAllButton.IsEnabled = !isRunning;
             StopAllButton.IsEnabled = isRunning;
-            StartVLDButton.IsEnabled = !isRunning;
-            StopVLDButton.IsEnabled = isRunning;
-            StartSignalizationButton.IsEnabled = !isRunning;
-            StopSignalizationButton.IsEnabled = isRunning;
 
-            CurrentChart.IsPaused = !isRunning;
-            VoltageChart.IsPaused = !isRunning;
-            PowerChart.IsPaused = !isRunning;
-            TemperatureChart.IsPaused = !isRunning;
-            THDChart.IsPaused = !isRunning;
+            foreach (var chart in _allCharts)
+                chart.IsPaused = !isRunning;
         }
 
         private void UpdateHeaderStatus(string status, Color color)
@@ -1163,12 +1836,14 @@ namespace VldDataVisualizer.Views
             _signalizationSimulator.StopSimulation();
             _railwayUpdateTimer.Stop();
             _chartUpdateTimer.Stop();
+            _detailUpdateTimer.Stop();
 
             foreach (var train in _activeTrains)
             {
                 train.Status = "ACİL DURDURULDU";
                 train.Speed = 0;
             }
+
             UpdateButtonStates(false);
             UpdateHeaderStatus("🔴 ACİL DUR", Colors.Red);
             ShowStatusMessage("🚨 ACİL DUR: Tüm sistemler durduruldu", StatusType.Emergency);
@@ -1179,6 +1854,7 @@ namespace VldDataVisualizer.Views
             if (type == StatusType.Error || type == StatusType.Emergency)
                 MessageBox.Show(message, type.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
         }
+
         #endregion
 
         protected override void OnClosed(EventArgs e)
@@ -1187,6 +1863,7 @@ namespace VldDataVisualizer.Views
             _signalizationSimulator?.StopSimulation();
             _chartUpdateTimer?.Stop();
             _railwayUpdateTimer?.Stop();
+            _detailUpdateTimer?.Stop();
             base.OnClosed(e);
         }
     }
