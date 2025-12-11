@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using VldDataVisualizer.Models;
 using VldDataVisualizer.ViewModels;
 using System.Windows.Shapes;
+using System.IO;
+using System.Windows.Media.Animation;
+using System.ComponentModel;
 
 namespace VldDataVisualizer.Views
 {
@@ -94,10 +97,6 @@ namespace VldDataVisualizer.Views
             InitializeDeviceControlAreas();
 
             CreateDeviceTabs(); // 12 alt sekme oluştur
-
-            // DataGrid ItemsSource'larını bağla
-            TrainsDataGrid.ItemsSource = _activeTrains;
-            StationsDataGrid.ItemsSource = _stations;
 
             // Başlangıç trenleri ekle
             Dispatcher.BeginInvoke(new Action(() =>
@@ -476,6 +475,8 @@ namespace VldDataVisualizer.Views
                         // Header'ı güncelle
                         UpdateStationHeader(stationId, data.Status, data.VoltageOut);
                     }
+
+                    CheckAndLogVoltageError(data);
                 }
 
                 DataCountText.Content = $"TFPR Veri: {_deviceDataCollections.Sum(d => d.Value.Count)}";
@@ -508,7 +509,7 @@ namespace VldDataVisualizer.Views
                 var station = _stations.FirstOrDefault(s => s.StationId == stationId);
                 string stationName = station?.StationName ?? $"İstasyon {stationId}";
 
-                header.Text = $"🚉 {stationName}\n{voltage:N1} kV"; // DEĞİŞTİ: kW -> kV
+                header.Text = $"🚉 {stationName}\n{voltage:N1} V";
 
                 // Durum rengine göre başlık rengi
                 header.Foreground = status switch
@@ -525,17 +526,7 @@ namespace VldDataVisualizer.Views
         {
             Dispatcher.Invoke(() =>
             {
-                TotalTrainsText.Text = $"🚆 Aktif Tren: {_activeTrains.Count}"; // Yerel sayıyı kullan
-                SystemStatusText.Text = $"📡 Sistem: {data.SystemStatus}";
-
-                SignalCommunicationText.Text = $"📶 İletişim: {(data.IsCommunicationActive ? "AKTİF" : "KESİNTİ")}";
-                SignalCommunicationBorder.Background = data.IsCommunicationActive ?
-                    new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
-
                 UpdateStationsDynamicData(data.Stations);
-
-                TrainsDataGrid.Items.Refresh();
-                StationsDataGrid.Items.Refresh();
 
                 // Blok ve route doluluklarını yerel trenlere göre güncelle
                 UpdateBlocksOccupancy(_blocks.ToList(), _activeTrains.ToList());
@@ -611,38 +602,37 @@ namespace VldDataVisualizer.Views
         }
 
         private void DetailUpdateTimer_Tick(object sender, EventArgs e)
-{
-    // Sadece aktif sekmeyi güncelle
-    var selectedTab = DeviceTabControl.SelectedItem as TabItem;
-    if (selectedTab != null && selectedTab.Tag is int stationId)
-    {
-        UpdateDevicePanel(stationId);
-        
-        // Hat görselini güncelle
-        var scrollViewer = selectedTab.Content as ScrollViewer;
-        var stackPanel = scrollViewer?.Content as StackPanel;
-        if (stackPanel != null && stackPanel.Children.Count > 1)
         {
-            if (stackPanel.Children[1] is GroupBox controlAreaGroup)
+            // Sadece aktif sekmeyi güncelle
+            var selectedTab = DeviceTabControl.SelectedItem as TabItem;
+            if (selectedTab != null && selectedTab.Tag is int stationId)
             {
-                if (controlAreaGroup.Content is Grid grid && grid.Children[0] is Canvas canvas)
+                UpdateDevicePanel(stationId);
+
+                // Hat görselini güncelle
+                var scrollViewer = selectedTab.Content as ScrollViewer;
+                var stackPanel = scrollViewer?.Content as StackPanel;
+                if (stackPanel != null && stackPanel.Children.Count > 1)
                 {
-                    DrawStationControlArea(canvas, stationId);
+                    if (stackPanel.Children[1] is GroupBox controlAreaGroup)
+                    {
+                        if (controlAreaGroup.Content is Grid grid && grid.Children[0] is Canvas canvas)
+                        {
+                            DrawStationControlArea(canvas, stationId);
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
         #endregion
 
         #region DEVICE PANEL UPDATES
-
         private void UpdateDevicePanel(int stationId)
         {
             // İlgili TabItem'ı bul
             var tabItem = DeviceTabControl.Items.Cast<TabItem>()
-        .FirstOrDefault(t => (int)t.Tag == stationId);
+                .FirstOrDefault(t => (int)t.Tag == stationId);
 
             if (tabItem == null) return;
 
@@ -650,279 +640,303 @@ namespace VldDataVisualizer.Views
             var stackPanel = scrollViewer?.Content as StackPanel;
             if (stackPanel == null) return;
 
-            // Panel içeriğini temizle
-            stackPanel.Children.Clear();
-
             var station = _stations.FirstOrDefault(s => s.StationId == stationId);
             if (station == null) return;
 
-            // Başlık
-            var titleText = new TextBlock
-            {
-                Text = $"🚉 {station.StationName} - VLD-TFPR-{stationId:D3}",
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            stackPanel.Children.Add(titleText);
-
-            // YENİ: İstasyon Kontrol Bölgesi Hat Görseli
-            var controlAreaGroup = CreateGroupBox($"Kontrol Bölgesi: {GetControlSectionName(stationId)}");
-            var controlAreaGrid = new Grid { Height = 250, Margin = new Thickness(0, 0, 0, 20) };
-
-            var localCanvas = new Canvas
-            {
-                Width = 800,
-                Height = 250,
-                Background = Brushes.White,
-                Margin = new Thickness(10)
-            };
-
-            // ÖNCE BASİT BİR TEST ÇİZİMİ
-            DrawTestControlArea(localCanvas, stationId);
-
-            // Sonra gerçek çizimi yap
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                DrawStationControlArea(localCanvas, stationId);
-            }), DispatcherPriority.Background);
-
-            controlAreaGrid.Children.Add(localCanvas);
-            controlAreaGroup.Content = controlAreaGrid;
-            stackPanel.Children.Add(controlAreaGroup);
-
-            // Son veri
             var latestData = _deviceDataCollections[stationId].FirstOrDefault();
-            if (latestData == null)
+
+            // ---------------------------------------------------------
+            // 1. AŞAMA: Arayüz Oluşturma (Sadece ilk seferde çalışır)
+            // ---------------------------------------------------------
+            if (stackPanel.Tag == null)
             {
-                stackPanel.Children.Add(new TextBlock
+                var refs = new DevicePanelRefs();
+                stackPanel.Children.Clear(); // Temiz bir başlangıç için
+
+                // Veri Yok Mesajı (Başlangıçta gizli olabilir)
+                refs.NoDataText = new TextBlock
                 {
                     Text = "Henüz veri yok",
                     FontStyle = FontStyles.Italic,
                     Foreground = Brushes.Gray,
-                    Margin = new Thickness(0, 10, 0, 0)
-                });
+                    Margin = new Thickness(0, 10, 0, 0),
+                    Visibility = Visibility.Collapsed
+                };
+                stackPanel.Children.Add(refs.NoDataText);
+
+                // ANA GRID LAYOUT
+                refs.MainContentGrid = new Grid();
+                refs.MainContentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3.5, GridUnitType.Star) }); // Sol (Bilgi)
+                refs.MainContentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(6.5, GridUnitType.Star) }); // Sağ (Grafik)
+
+                // --- SOL SÜTUN ---
+                var leftColumn = new StackPanel { Margin = new Thickness(0, 0, 10, 0) };
+
+                // Helper fonksiyon ile TextBlock referanslarını saklayarak oluşturma
+                leftColumn.Children.Add(CreateRefGroupBox("Cihaz Bilgileri", refs,
+                    ("DevID", "🔧 Cihaz ID", "#e3f2fd"),
+                    ("Loc", "📍 Lokasyon", "#e3f2fd"),
+                    ("Region", "📏 Kontrol Bölgesi", "#fff3e0"),
+                    ("Trains", "🚆 Bölgedeki Tren", "#e8f5e8"),
+                    ("Status", "⚡ Durum", "#e8f5e8"),
+                    ("Comm", "📶 İletişim", "#e8f5e8")
+                ));
+
+                leftColumn.Children.Add(CreateRefGroupBox("Anlık Güç Değerleri", refs,
+                    ("VIn", "🔌 Giriş Gerilimi", "#e8f5e8"),
+                    ("VOut", "⚡ Çıkış Gerilimi", "#e8f5e8"),
+                    ("Curr", "🔋 Akım", "#e3f2fd"),
+                    ("Pow", "📊 Aktif Güç", "#fff3e0"),
+                    ("React", "📈 Reaktif Güç", "#fff3e0"),
+                    ("PF", "🎯 Güç Faktörü", "#e3f2fd")
+                ));
+
+                leftColumn.Children.Add(CreateRefGroupBox("Faz Değerleri", refs,
+                    ("L1V", "L1 Gerilim", "#f3e5f5"), ("L2V", "L2 Gerilim", "#f3e5f5"), ("L3V", "L3 Gerilim", "#f3e5f5"),
+                    ("L1A", "L1 Akım", "#e8f5e8"), ("L2A", "L2 Akım", "#e8f5e8"), ("L3A", "L3 Akım", "#e8f5e8")
+                ));
+
+                leftColumn.Children.Add(CreateRefGroupBox("Sistem Parametreleri", refs,
+                    ("Temp", "🌡️ Sıcaklık", "#ffebee"),
+                    ("Freq", "📏 Frekans", "#e3f2fd"),
+                    ("Gnd", "⚡ Toprak Akımı", "#fff3e0"),
+                    ("THDV", "📉 Gerilim THD", "#f3e5f5"),
+                    ("THDC", "📉 Akım THD", "#f3e5f5")
+                ));
+
+                leftColumn.Children.Add(CreateRefGroupBox("Enerji Ölçümleri", refs,
+                    ("Imp", "🔋 Tüketilen Enerji", "#e8f5e8"),
+                    ("Exp", "📊 Tüketilen Reaktif", "#fff3e0")
+                ));
+
+                // --- SAĞ SÜTUN (Grafikler ve Canvas) ---
+                var rightColumn = new StackPanel();
+
+                // Grafikler Grid (2x2)
+                var chartsGrid = new Grid();
+                chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(200) });
+                chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(200) });
+                chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                // Grafikleri oluştur ve referanslara kaydet
+                refs.PowerChart = CreateChart($"PowerChart{stationId}", "Aktif Güç", "Güç (kW)", Brushes.Green, 0, 3000);
+                refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "Çıkış Gerilimi", "Gerilim (V)", Brushes.Blue, 20, 40);
+                refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "Akım", "Akım (A)", Brushes.Red, 500, 2500);
+                refs.TempChart = CreateChart($"TempChart{stationId}", "Sıcaklık", "Sıcaklık (°C)", Brushes.Orange, -10, 100);
+
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("Aktif Güç", refs.PowerChart), 0, 0);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("Gerilim", refs.VoltageChart), 0, 1);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("Akım", refs.CurrentChart), 1, 0);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("Sıcaklık", refs.TempChart), 1, 1);
+
+                rightColumn.Children.Add(chartsGrid);
+
+                // KONTROL BÖLGESİ CANVAS
+                var controlGroup = CreateGroupBox("Kontrol Bölgesi");
+
+                // ÖNEMLİ: ClipToBounds = true ile taşmayı engelliyoruz
+                var canvasContainer = new Grid { Height = 250, ClipToBounds = true, Background = Brushes.WhiteSmoke, Margin = new Thickness(5) };
+                refs.ControlCanvas = new Canvas { Width = double.NaN, Height = double.NaN };
+                canvasContainer.Children.Add(refs.ControlCanvas);
+                controlGroup.Content = canvasContainer;
+
+                rightColumn.Children.Add(controlGroup);
+
+                // Sütunları ana gride ekle
+                Grid.SetColumn(leftColumn, 0);
+                Grid.SetColumn(rightColumn, 1);
+                refs.MainContentGrid.Children.Add(leftColumn);
+                refs.MainContentGrid.Children.Add(rightColumn);
+
+                stackPanel.Children.Add(refs.MainContentGrid);
+
+                // ALT KISIM (Tablo ve Alarmlar)
+                var tableGroup = CreateGroupBox("Son 10 Ölçüm");
+                refs.DataGrid = new DataGrid { AutoGenerateColumns = false, Height = 150 };
+                // Kolon tanımları...
+                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Zaman", Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" }, Width = 80 });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Gerilim", Binding = new System.Windows.Data.Binding("VoltageOut") { StringFormat = "N1" }, Width = 60 });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Akım", Binding = new System.Windows.Data.Binding("Current") { StringFormat = "N0" }, Width = 60 });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Güç", Binding = new System.Windows.Data.Binding("ActivePower") { StringFormat = "N0" }, Width = 60 });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Sıcaklık", Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" }, Width = 70 });
+
+                tableGroup.Content = refs.DataGrid;
+                stackPanel.Children.Add(tableGroup);
+
+                refs.AlarmGroup = CreateGroupBox("⚠️ Aktif Alarmlar");
+                refs.AlarmPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+                refs.AlarmGroup.Content = refs.AlarmPanel;
+                refs.AlarmGroup.Visibility = Visibility.Collapsed;
+                stackPanel.Children.Add(refs.AlarmGroup);
+
+                // Referansları StackPanel'in Tag özelliğine kaydet
+                stackPanel.Tag = refs;
+            }
+
+            // ---------------------------------------------------------
+            // 2. AŞAMA: Veri Güncelleme (Her timer tick'te çalışır)
+            // ---------------------------------------------------------
+            var uiRefs = stackPanel.Tag as DevicePanelRefs;
+
+            if (latestData == null)
+            {
+                uiRefs.MainContentGrid.Visibility = Visibility.Collapsed;
+                uiRefs.NoDataText.Visibility = Visibility.Visible;
                 return;
             }
 
-            // Cihaz Bilgileri
-            var deviceInfoGroup = CreateGroupBox("Cihaz Bilgileri");
-            var deviceInfoPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+            uiRefs.MainContentGrid.Visibility = Visibility.Visible;
+            uiRefs.NoDataText.Visibility = Visibility.Collapsed;
 
-            deviceInfoPanel.Children.Add(CreateInfoBorder("🔧 Cihaz ID", latestData.DeviceId, "#e3f2fd"));
-            deviceInfoPanel.Children.Add(CreateInfoBorder("📍 Lokasyon", latestData.Location, "#e3f2fd"));
-            deviceInfoPanel.Children.Add(CreateInfoBorder("📏 Kontrol Bölgesi",
-                $"{latestData.StartPosition:N0}m - {latestData.EndPosition:N0}m", "#fff3e0"));
-            deviceInfoPanel.Children.Add(CreateInfoBorder("🚆 Bölgedeki Tren",
-                latestData.TrainsInSection.ToString(), "#e8f5e8"));
-            deviceInfoPanel.Children.Add(CreateInfoBorder("⚡ Durum", latestData.Status,
-                latestData.Status == "NORMAL" ? "#e8f5e8" : "#ffebee"));
-            deviceInfoPanel.Children.Add(CreateInfoBorder("📶 İletişim",
-                latestData.IsCommunicationActive ? "AKTİF" : "KESİNTİ",
-                latestData.IsCommunicationActive ? "#e8f5e8" : "#ffebee"));
+            // Metin Değerlerini Güncelle (Text özelliğini değiştiriyoruz, yeniden oluşturmuyoruz)
+            UpdateRefText(uiRefs, "DevID", latestData.DeviceId);
+            UpdateRefText(uiRefs, "Loc", latestData.Location);
+            UpdateRefText(uiRefs, "Region", $"{latestData.StartPosition:N0}m - {latestData.EndPosition:N0}m");
+            UpdateRefText(uiRefs, "Trains", latestData.TrainsInSection.ToString());
+            UpdateRefText(uiRefs, "Status", latestData.Status);
+            UpdateRefText(uiRefs, "Comm", latestData.IsCommunicationActive ? "AKTİF" : "KESİNTİ");
 
-            deviceInfoGroup.Content = deviceInfoPanel;
-            stackPanel.Children.Add(deviceInfoGroup);
+            UpdateRefText(uiRefs, "VIn", $"{latestData.VoltageIn:N1} V");
+            UpdateRefText(uiRefs, "VOut", $"{latestData.VoltageOut:N1} V");
+            UpdateRefText(uiRefs, "Curr", $"{latestData.Current:N0} A");
+            UpdateRefText(uiRefs, "Pow", $"{latestData.ActivePower:N0} kW");
+            UpdateRefText(uiRefs, "React", $"{latestData.ReactivePower:N0} VAr");
+            UpdateRefText(uiRefs, "PF", $"{latestData.PowerFactor:N2}");
 
-            // Anlık Güç Değerleri
-            var powerGroup = CreateGroupBox("Anlık Güç Değerleri");
-            var powerPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+            UpdateRefText(uiRefs, "L1V", $"{latestData.VoltageL1:N1} V");
+            UpdateRefText(uiRefs, "L2V", $"{latestData.VoltageL2:N1} V");
+            UpdateRefText(uiRefs, "L3V", $"{latestData.VoltageL3:N1} V");
+            UpdateRefText(uiRefs, "L1A", $"{latestData.CurrentL1:N0} A");
+            UpdateRefText(uiRefs, "L2A", $"{latestData.CurrentL2:N0} A");
+            UpdateRefText(uiRefs, "L3A", $"{latestData.CurrentL3:N0} A");
 
-            powerPanel.Children.Add(CreateInfoBorder("🔌 Giriş Gerilimi", $"{latestData.VoltageIn:N1} kV", "#e8f5e8"));
-            powerPanel.Children.Add(CreateInfoBorder("⚡ Çıkış Gerilimi", $"{latestData.VoltageOut:N1} kV", "#e8f5e8"));
-            powerPanel.Children.Add(CreateInfoBorder("🔋 Akım", $"{latestData.Current:N0} A", "#e3f2fd"));
-            powerPanel.Children.Add(CreateInfoBorder("📊 Aktif Güç", $"{latestData.ActivePower:N0} kW", "#fff3e0"));
-            powerPanel.Children.Add(CreateInfoBorder("📈 Reaktif Güç", $"{latestData.ReactivePower:N0} kVAr", "#fff3e0"));
-            powerPanel.Children.Add(CreateInfoBorder("🎯 Güç Faktörü", $"{latestData.PowerFactor:N2}", "#e3f2fd"));
+            UpdateRefText(uiRefs, "Temp", $"{latestData.Temperature:N1} °C");
+            UpdateRefText(uiRefs, "Freq", $"{latestData.Frequency:N2} Hz");
+            UpdateRefText(uiRefs, "Gnd", $"{latestData.GroundCurrent:N1} A");
+            UpdateRefText(uiRefs, "THDV", $"{latestData.THDVoltage:N1} %");
+            UpdateRefText(uiRefs, "THDC", $"{latestData.THDCurrent:N1} %");
 
-            powerGroup.Content = powerPanel;
-            stackPanel.Children.Add(powerGroup);
+            UpdateRefText(uiRefs, "Imp", $"{latestData.ActiveEnergyImport:N2} kWh");
+            UpdateRefText(uiRefs, "Exp", $"{latestData.ReactiveEnergyImport:N2} VArh");
 
-            // Faz Değerleri
-            var phaseGroup = CreateGroupBox("Faz Değerleri");
-            var phasePanel = new WrapPanel { Orientation = Orientation.Horizontal };
+            // Grafikleri Güncelle
+            uiRefs.PowerChart.AddValue(latestData.ActivePower);
+            uiRefs.VoltageChart.AddValue(latestData.VoltageOut);
+            uiRefs.CurrentChart.AddValue(latestData.Current);
+            uiRefs.TempChart.AddValue(latestData.Temperature);
 
-            phasePanel.Children.Add(CreateInfoBorder("L1 Gerilim", $"{latestData.VoltageL1:N1} kV", "#f3e5f5"));
-            phasePanel.Children.Add(CreateInfoBorder("L2 Gerilim", $"{latestData.VoltageL2:N1} kV", "#f3e5f5"));
-            phasePanel.Children.Add(CreateInfoBorder("L3 Gerilim", $"{latestData.VoltageL3:N1} kV", "#f3e5f5"));
-            phasePanel.Children.Add(CreateInfoBorder("L1 Akım", $"{latestData.CurrentL1:N0} A", "#e8f5e8"));
-            phasePanel.Children.Add(CreateInfoBorder("L2 Akım", $"{latestData.CurrentL2:N0} A", "#e8f5e8"));
-            phasePanel.Children.Add(CreateInfoBorder("L3 Akım", $"{latestData.CurrentL3:N0} A", "#e8f5e8"));
+            // Canvas Yeniden Çiz (Sadece Canvas içeriğini temizle, arayüzü değil)
+            uiRefs.ControlCanvas.Children.Clear();
+            DrawTestControlArea(uiRefs.ControlCanvas, stationId);
+            DrawStationControlArea(uiRefs.ControlCanvas, stationId);
 
-            phaseGroup.Content = phasePanel;
-            stackPanel.Children.Add(phaseGroup);
+            // Tabloyu Güncelle
+            uiRefs.DataGrid.ItemsSource = null; // Refresh trick
+            uiRefs.DataGrid.ItemsSource = _deviceDataCollections[stationId].Take(10);
 
-            // Sistem Parametreleri
-            var systemGroup = CreateGroupBox("Sistem Parametreleri");
-            var systemPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-
-            systemPanel.Children.Add(CreateInfoBorder("🌡️ Sıcaklık", $"{latestData.Temperature:N1} °C", "#ffebee"));
-            systemPanel.Children.Add(CreateInfoBorder("📏 Frekans", $"{latestData.Frequency:N2} Hz", "#e3f2fd"));
-            systemPanel.Children.Add(CreateInfoBorder("⚡ Toprak Akımı", $"{latestData.GroundCurrent:N1} A", "#fff3e0"));
-            systemPanel.Children.Add(CreateInfoBorder("📉 Gerilim THD", $"{latestData.THDVoltage:N1} %", "#f3e5f5"));
-            systemPanel.Children.Add(CreateInfoBorder("📉 Akım THD", $"{latestData.THDCurrent:N1} %", "#f3e5f5"));
-
-            systemGroup.Content = systemPanel;
-            stackPanel.Children.Add(systemGroup);
-
-            // Enerji Ölçümleri
-            var energyGroup = CreateGroupBox("Enerji Ölçümleri");
-            var energyPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-
-            energyPanel.Children.Add(CreateInfoBorder("🔋 Tüketilen Enerji", $"{latestData.ActiveEnergyImport:N2} kWh", "#e8f5e8"));
-            energyPanel.Children.Add(CreateInfoBorder("📊 Tüketilen Reaktif", $"{latestData.ReactiveEnergyImport:N2} kVArh", "#fff3e0"));
-
-            energyGroup.Content = energyPanel;
-            stackPanel.Children.Add(energyGroup);
-
-            // Alarmlar
+            // Alarmları Güncelle
             if (latestData.ActiveAlarms.Any())
             {
-                var alarmGroup = CreateGroupBox("⚠️ Aktif Alarmlar");
-                var alarmPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-
+                uiRefs.AlarmGroup.Visibility = Visibility.Visible;
+                uiRefs.AlarmPanel.Children.Clear();
                 foreach (var alarm in latestData.ActiveAlarms)
                 {
-                    var alarmBorder = new Border
+                    var border = new Border
                     {
-                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffebee")),
+                        Background = Brushes.MistyRose,
                         BorderBrush = Brushes.Red,
                         BorderThickness = new Thickness(1),
-                        CornerRadius = new CornerRadius(5),
-                        //Padding = new Thickness(8, 4),
-                        Margin = new Thickness(3)
+                        CornerRadius = new CornerRadius(3),
+                        Margin = new Thickness(2),
+                        Padding = new Thickness(5, 2, 5, 2)
                     };
-
-                    alarmBorder.Child = new TextBlock
-                    {
-                        Text = alarm,
-                        Foreground = Brushes.Red,
-                        FontWeight = FontWeights.Bold
-                    };
-
-                    alarmPanel.Children.Add(alarmBorder);
-                }
-
-                alarmGroup.Content = alarmPanel;
-                stackPanel.Children.Add(alarmGroup);
-            }
-
-            // 4 Grafik (2x2) - TAMAMEN YENİ
-            var chartsGrid = new Grid { Margin = new Thickness(0, 10, 0, 10) };
-            chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(250) });
-            chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(250) });
-            chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            // 1. GRAFİK: GÜÇ Grafiği (ESKİ: Gerilim Grafiği)
-            var powerChartGroup = CreateGroupBox("Zaman - Güç Grafiği");
-            var powerChart = new ChartsProperties
-            {
-                Name = $"PowerChart{stationId}",
-                Title = "Aktif Güç",
-                YAxisTitle = "Güç (kW)",
-                XAxisTitle = "Zaman",
-                MinY = 0,
-                MaxY = 3000,
-                AutoScaleY = true,
-                LineColor = Brushes.Green,
-                BackgroundColor = Brushes.White
-            };
-            powerChartGroup.Content = powerChart;
-            Grid.SetRow(powerChartGroup, 0);
-            Grid.SetColumn(powerChartGroup, 0);
-            chartsGrid.Children.Add(powerChartGroup);
-
-            // 2. GRAFİK: GERİLİM Grafiği (ESKİ: Akım Grafiği)
-            var voltageChartGroup = CreateGroupBox("Zaman - Gerilim Grafiği");
-            var voltageChart = new ChartsProperties
-            {
-                Name = $"VoltageChart{stationId}",
-                Title = "Çıkış Gerilimi",
-                YAxisTitle = "Gerilim (kV)",
-                XAxisTitle = "Zaman",
-                MinY = 20,
-                MaxY = 40,
-                AutoScaleY = true,
-                LineColor = Brushes.Blue,
-                BackgroundColor = Brushes.White
-            };
-            voltageChartGroup.Content = voltageChart;
-            Grid.SetRow(voltageChartGroup, 0);
-            Grid.SetColumn(voltageChartGroup, 1);
-            chartsGrid.Children.Add(voltageChartGroup);
-
-            // 3. GRAFİK: AKIM Grafiği (ESKİ: Sıcaklık Grafiği)
-            var currentChartGroup = CreateGroupBox("Zaman - Akım Grafiği");
-            var currentChart = new ChartsProperties
-            {
-                Name = $"CurrentChart{stationId}",
-                Title = "Akım",
-                YAxisTitle = "Akım (A)",
-                XAxisTitle = "Zaman",
-                MinY = 500,
-                MaxY = 2500,
-                AutoScaleY = true,
-                LineColor = Brushes.Red,
-                BackgroundColor = Brushes.White
-            };
-            currentChartGroup.Content = currentChart;
-            Grid.SetRow(currentChartGroup, 1);
-            Grid.SetColumn(currentChartGroup, 0);
-            chartsGrid.Children.Add(currentChartGroup);
-
-            // 4. GRAFİK: SICAKLIK Grafiği (ESKİ: THD Grafiği)
-            var tempChartGroup = CreateGroupBox("Zaman - Sıcaklık Grafiği");
-            var tempChart = new ChartsProperties
-            {
-                Name = $"TempChart{stationId}",
-                Title = "Sıcaklık",
-                YAxisTitle = "Sıcaklık (°C)",
-                XAxisTitle = "Zaman",
-                MinY = -20,
-                MaxY = 100,
-                AutoScaleY = true,
-                LineColor = Brushes.Orange,
-                BackgroundColor = Brushes.White
-            };
-            tempChartGroup.Content = tempChart;
-            Grid.SetRow(tempChartGroup, 1);
-            Grid.SetColumn(tempChartGroup, 1);
-            chartsGrid.Children.Add(tempChartGroup);
-
-            stackPanel.Children.Add(chartsGrid);
-
-            // Grafiklere veri ekle
-            if (_deviceDataCollections[stationId].Count > 0)
-            {
-                foreach (var data in _deviceDataCollections[stationId].Take(50).Reverse())
-                {
-                    powerChart.AddValue(data.ActivePower);     // Güç grafiği
-                    voltageChart.AddValue(data.VoltageOut);    // Gerilim grafiği
-                    currentChart.AddValue(data.Current);       // Akım grafiği
-                    tempChart.AddValue(data.Temperature);      // Sıcaklık grafiği
+                    border.Child = new TextBlock { Text = alarm, Foreground = Brushes.Red, FontWeight = FontWeights.Bold };
+                    uiRefs.AlarmPanel.Children.Add(border);
                 }
             }
-
-            // Son 10 Veri Tablosu
-            var dataTableGroup = CreateGroupBox("Son 10 Ölçüm");
-            var dataGrid = new DataGrid
+            else
             {
-                AutoGenerateColumns = false,
-                Height = 250,
-                ItemsSource = _deviceDataCollections[stationId].Take(10)
-            };
-
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Zaman", Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" }, Width = 80 });
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Gerilim (kV)", Binding = new System.Windows.Data.Binding("VoltageOut") { StringFormat = "N1" }, Width = 80 });
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Akım (A)", Binding = new System.Windows.Data.Binding("Current") { StringFormat = "N0" }, Width = 80 });
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Güç (kW)", Binding = new System.Windows.Data.Binding("ActivePower") { StringFormat = "N0" }, Width = 80 });
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Sıcaklık (°C)", Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" }, Width = 90 });
-            dataGrid.Columns.Add(new DataGridTextColumn { Header = "Durum", Binding = new System.Windows.Data.Binding("Status"), Width = 80 });
-
-            dataTableGroup.Content = dataGrid;
-            stackPanel.Children.Add(dataTableGroup);
+                uiRefs.AlarmGroup.Visibility = Visibility.Collapsed;
+            }
         }
+
+        // YARDIMCI METODLAR (UpdateDevicePanel içinde kullanılan)
+
+        private GroupBox CreateRefGroupBox(string header, DevicePanelRefs refs, params (string key, string label, string color)[] items)
+        {
+            var group = CreateGroupBox(header);
+            var panel = new WrapPanel { Orientation = Orientation.Horizontal };
+
+            foreach (var item in items)
+            {
+                var border = new Border
+                {
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(item.color)),
+                    BorderBrush = Brushes.LightGray,
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(5),
+                    Margin = new Thickness(3),
+                    Width = 140
+                };
+
+                var sp = new StackPanel { Margin = new Thickness(5) };
+                sp.Children.Add(new TextBlock { Text = item.label, FontSize = 10, Foreground = Brushes.Gray });
+
+                var txtValue = new TextBlock { Text = "-", FontSize = 14, FontWeight = FontWeights.Bold };
+                sp.Children.Add(txtValue);
+
+                border.Child = sp;
+                panel.Children.Add(border);
+
+                // Referansa kaydet
+                refs.ValueTexts[item.key] = txtValue;
+            }
+
+            group.Content = panel;
+            return group;
+        }
+
+        private void UpdateRefText(DevicePanelRefs refs, string key, string value)
+        {
+            if (refs.ValueTexts.ContainsKey(key))
+            {
+                refs.ValueTexts[key].Text = value;
+            }
+        }
+
+        private ChartsProperties CreateChart(string name, string title, string yAxis, Brush color, double min, double max)
+        {
+            return new ChartsProperties
+            {
+                Name = name,
+                Title = title,
+                YAxisTitle = yAxis,
+                XAxisTitle = "Zaman",
+                MinY = min,
+                MaxY = max,
+                AutoScaleY = true,
+                LineColor = color,
+                BackgroundColor = Brushes.White,
+                Height = 150
+            };
+        }
+
+        private GroupBox CreateGroupBoxForChart(string header, UIElement content)
+        {
+            var gb = CreateGroupBox(header);
+            gb.Content = content;
+            gb.Margin = new Thickness(2);
+            return gb;
+        }
+
+        private void AddToGrid(Grid grid, UIElement element, int row, int col)
+        {
+            Grid.SetRow(element, row);
+            Grid.SetColumn(element, col);
+            grid.Children.Add(element);
+        }
+
         private void DrawTestControlArea(Canvas canvas, int stationId)
         {
             var testText = new TextBlock
@@ -1014,16 +1028,16 @@ namespace VldDataVisualizer.Views
             }
 
             // Canvas ayarları
-            double canvasWidth = 750;
+            double canvasWidth = 500;
             double canvasHeight = 200;
-            double upTrackY = canvasHeight / 2 + 70;
-            double downTrackY = canvasHeight / 2 + 130;
+            double upTrackY = canvasHeight / 2 - 25;
+            double downTrackY = canvasHeight / 2 + 30;
 
             // Ölçeklendirme
             double minPos = controlledStationData.Min(s => s.Item2.position);
             double maxPos = controlledStationData.Max(s => s.Item2.position);
             double sectionLength = maxPos - minPos;
-            double scaleFactor = (canvasWidth - 100) / (sectionLength + 400);
+            double scaleFactor = (canvasWidth - 100) / (sectionLength - 400);
 
             // Hat çizgileri
             DrawTrackLines(canvas, sectionLength, scaleFactor, upTrackY, downTrackY);
@@ -1038,7 +1052,7 @@ namespace VldDataVisualizer.Views
             DrawTrainsInSection(canvas, minPos, maxPos, scaleFactor, upTrackY, downTrackY);
 
             // Başlık ve etiketler
-            DrawLabels(canvas, stationId, controlledStationData, trainsInSection, sectionLength, upTrackY, downTrackY);
+            DrawLabels(canvas, upTrackY, downTrackY);
 
             // Cihaz konumu
             DrawDeviceLocation(canvas, stationId, stationPositions[stationId].position, minPos, scaleFactor, upTrackY);
@@ -1065,9 +1079,9 @@ namespace VldDataVisualizer.Views
             // Üst hat (Mavi - Darıca Yönü)
             var upTrack = new Line
             {
-                X1 = 50,
+                X1 = 50 + 200, // +300 eklendi
                 Y1 = upTrackY,
-                X2 = 50 + (sectionLength * scaleFactor),
+                X2 = 50 + (sectionLength * scaleFactor) + 200, // +300 eklendi
                 Y2 = upTrackY,
                 Stroke = Brushes.Blue,
                 StrokeThickness = 4,
@@ -1078,9 +1092,9 @@ namespace VldDataVisualizer.Views
             // Alt hat (Kırmızı - Depo Yönü)
             var downTrack = new Line
             {
-                X1 = 50,
+                X1 = 50 + 200, // +300 eklendi
                 Y1 = downTrackY,
-                X2 = 50 + (sectionLength * scaleFactor),
+                X2 = 50 + (sectionLength * scaleFactor) + 200, // +300 eklendi
                 Y2 = downTrackY,
                 Stroke = Brushes.Red,
                 StrokeThickness = 4,
@@ -1107,7 +1121,7 @@ namespace VldDataVisualizer.Views
                     StrokeThickness = 2,
                     ToolTip = $"{name} ({position / 1000:0.00}km)"
                 };
-                Canvas.SetLeft(stationMarker, xPos - 10);
+                Canvas.SetLeft(stationMarker, xPos + 200);
                 Canvas.SetTop(stationMarker, upTrackY - 10);
                 canvas.Children.Add(stationMarker);
 
@@ -1126,7 +1140,7 @@ namespace VldDataVisualizer.Views
                 };
 
                 // TextBlock'u tam ortalamak için
-                Canvas.SetLeft(stationNumber, xPos - 7);  // -7 yerine -8 veya -9 deneyebilirsiniz
+                Canvas.SetLeft(stationNumber, xPos + 201);  // -7 yerine -8 veya -9 deneyebilirsiniz
                 Canvas.SetTop(stationNumber, upTrackY - 8);
                 canvas.Children.Add(stationNumber);
 
@@ -1143,7 +1157,7 @@ namespace VldDataVisualizer.Views
                     Background = Brushes.WhiteSmoke,
                     Padding = new Thickness(5, 2, 5, 2)
                 };
-                Canvas.SetLeft(stationName, xPos - 60);
+                Canvas.SetLeft(stationName, xPos + 175);
                 Canvas.SetTop(stationName, upTrackY - 50);
                 canvas.Children.Add(stationName);
 
@@ -1157,14 +1171,14 @@ namespace VldDataVisualizer.Views
                     Padding = new Thickness(4, 1, 4, 1),
                     FontWeight = FontWeights.SemiBold
                 };
-                Canvas.SetLeft(kmText, xPos - 25);
+                Canvas.SetLeft(kmText, xPos + 220);
                 Canvas.SetTop(kmText, upTrackY + 20);
                 canvas.Children.Add(kmText);
             }
         }
 
         private void DrawDistanceLines(Canvas canvas, List<(int id, (string name, double position) station)> stationData,
-                                       double minPos, double scaleFactor, double upTrackY)
+                               double minPos, double scaleFactor, double upTrackY)
         {
             for (int i = 0; i < stationData.Count - 1; i++)
             {
@@ -1178,9 +1192,9 @@ namespace VldDataVisualizer.Views
                 // Mesafe çizgisi
                 var distanceLine = new Line
                 {
-                    X1 = currentX,
+                    X1 = currentX + 200, // +300 eklendi
                     Y1 = upTrackY - 25,
-                    X2 = nextX,
+                    X2 = nextX + 200,    // +300 eklendi
                     Y2 = upTrackY - 25,
                     Stroke = Brushes.DarkGray,
                     StrokeThickness = 1,
@@ -1198,18 +1212,16 @@ namespace VldDataVisualizer.Views
                     Padding = new Thickness(3, 1, 3, 1),
                     FontWeight = FontWeights.Bold
                 };
-                Canvas.SetLeft(distanceText, (currentX + nextX) / 2 - 15);
+                Canvas.SetLeft(distanceText, ((currentX + nextX) / 2 - 15) + 200); // +300 eklendi
                 Canvas.SetTop(distanceText, upTrackY - 40);
                 canvas.Children.Add(distanceText);
             }
         }
 
-        private List<TrainInfo> trainsInSection; // Sınıf seviyesinde tanımlanmalı veya döndürülmeli
-
         private void DrawTrainsInSection(Canvas canvas, double minPos, double maxPos,
-                                         double scaleFactor, double upTrackY, double downTrackY)
+                                 double scaleFactor, double upTrackY, double downTrackY)
         {
-            trainsInSection = _activeTrains.Where(train =>
+            var trainsInSection = _activeTrains.Where(train =>
             {
                 if (train == null) return false;
                 double pos = train.CurrentPosition;
@@ -1233,21 +1245,9 @@ namespace VldDataVisualizer.Views
                     RadiusY = 5,
                     ToolTip = $"Tren {train.TrainId}\nHız: {train.Speed:0}km/h\nKonum: {train.CurrentPosition:0}m"
                 };
-                Canvas.SetLeft(trainRect, xPos - 20);
+                Canvas.SetLeft(trainRect, xPos + 280); // -20 yerine +280 (300-20)
                 Canvas.SetTop(trainRect, yPos - 10);
                 canvas.Children.Add(trainRect);
-
-                // Tren yön oku
-                var directionArrow = new TextBlock
-                {
-                    Text = train.TrackType == "UP" ? "◀" : "▶",
-                    Foreground = Brushes.White,
-                    FontSize = 11,
-                    FontWeight = FontWeights.Bold
-                };
-                Canvas.SetLeft(directionArrow, xPos - 6);
-                Canvas.SetTop(directionArrow, yPos - 8);
-                canvas.Children.Add(directionArrow);
 
                 // Tren hızı
                 var speedText = new TextBlock
@@ -1259,46 +1259,14 @@ namespace VldDataVisualizer.Views
                     Padding = new Thickness(3, 1, 3, 1),
                     FontWeight = FontWeights.Bold
                 };
-                Canvas.SetLeft(speedText, xPos - 10);
+                Canvas.SetLeft(speedText, xPos + 290); // -10 yerine +290 (300-10)
                 Canvas.SetTop(speedText, train.TrackType == "UP" ? yPos - 35 : yPos + 12);
                 canvas.Children.Add(speedText);
             }
         }
 
-        private void DrawLabels(Canvas canvas, int stationId, List<(int id, (string name, double position) station)> stationData,
-                               List<TrainInfo> trains, double sectionLength, double upTrackY, double downTrackY)
+        private void DrawLabels(Canvas canvas, double upTrackY, double downTrackY)
         {
-            // BÖLGE BAŞLIĞI
-            var sectionHeader = new TextBlock
-            {
-                Text = $"VLD-TFPR-{stationId:D3} KONTROL BÖLGESİ",
-                FontSize = 14,
-                Foreground = Brushes.DarkBlue,
-                FontWeight = FontWeights.Bold,
-                Background = Brushes.LightCyan,
-                Padding = new Thickness(15, 8, 15, 8)
-            };
-            Canvas.SetLeft(sectionHeader, 250);
-            Canvas.SetTop(sectionHeader, 10);
-            canvas.Children.Add(sectionHeader);
-
-            // BÖLGE BİLGİLERİ
-            string stationList = string.Join(" → ", stationData.Select(s => s.station.name));
-            var sectionInfo = new TextBlock
-            {
-                Text = $"📍 Kontrol Edilen İstasyonlar: {stationList}\n" +
-                       $"🚆 Aktif Tren Sayısı: {trains.Count}\n" +
-                       $"📏 Bölge Uzunluğu: {sectionLength:0}m",
-                FontSize = 10,
-                Foreground = Brushes.DarkGreen,
-                FontWeight = FontWeights.Bold,
-                Background = Brushes.Honeydew,
-                Padding = new Thickness(10, 6, 10, 6)
-            };
-            Canvas.SetLeft(sectionInfo, 200);
-            Canvas.SetTop(sectionInfo, 45);
-            canvas.Children.Add(sectionInfo);
-
             // YÖN ETİKETLERİ
             var upLabel = new TextBlock
             {
@@ -1309,7 +1277,7 @@ namespace VldDataVisualizer.Views
                 Background = Brushes.AliceBlue,
                 Padding = new Thickness(10, 4, 10, 4)
             };
-            Canvas.SetLeft(upLabel, -75);
+            Canvas.SetLeft(upLabel, 100);
             Canvas.SetTop(upLabel, upTrackY - 15);
             canvas.Children.Add(upLabel);
 
@@ -1322,13 +1290,13 @@ namespace VldDataVisualizer.Views
                 Background = Brushes.MistyRose,
                 Padding = new Thickness(10, 4, 10, 4)
             };
-            Canvas.SetLeft(downLabel, -145);
+            Canvas.SetLeft(downLabel, 30);
             Canvas.SetTop(downLabel, downTrackY - 15);
             canvas.Children.Add(downLabel);
         }
 
         private void DrawDeviceLocation(Canvas canvas, int stationId, double devicePosition,
-                                       double minPos, double scaleFactor, double upTrackY)
+                               double minPos, double scaleFactor, double upTrackY)
         {
             double deviceXPos = 50 + ((devicePosition - minPos) * scaleFactor);
             var deviceMarker = new TextBlock
@@ -1339,7 +1307,7 @@ namespace VldDataVisualizer.Views
                 FontWeight = FontWeights.Bold,
                 ToolTip = $"VLD-TFPR-{stationId:D3} Konumu"
             };
-            Canvas.SetLeft(deviceMarker, deviceXPos - 10);
+            Canvas.SetLeft(deviceMarker, deviceXPos + 200); // -10 yerine +290 (300-10)
             Canvas.SetTop(deviceMarker, upTrackY - 75);
             canvas.Children.Add(deviceMarker);
         }
@@ -1368,7 +1336,7 @@ namespace VldDataVisualizer.Views
         }
         #endregion
 
-        #region DETAIL PANEL (Artık kullanılmıyor - DevicePanel'e taşındı)
+        #region DETAIL PANEL
 
         private GroupBox CreateGroupBox(string header)
         {
@@ -1857,6 +1825,215 @@ namespace VldDataVisualizer.Views
 
         #endregion
 
+        #region VldErrorLog
+        private Dictionary<string, DateTime> _voltageStartTimes = new();
+        private Dictionary<string, int> _errorRepeatCounts = new();
+        private ObservableCollection<VldErrorLog> _errorLogs = new();
+        private const string LOG_FILE = "VLD_TFPR_ErrorLog.txt";
+
+        private bool _isLogPanelOpen = false;
+
+        private void ToggleLogPanel(bool open)
+        {
+            _isLogPanelOpen = open;
+
+            if (open)
+            {
+                // Panel açılıyor
+                RightLogPanel.Visibility = Visibility.Visible;
+
+                // GridSplitter'ı göster
+                var splitter = FindVisualChild<GridSplitter>(this);
+                if (splitter != null)
+                {
+                    splitter.Visibility = Visibility.Visible;
+                }
+
+                // Sütun genişliğini ayarla (750 piksel veya * kullan)
+                RightPanelColumn.Width = new GridLength(750, GridUnitType.Pixel);
+
+                // DataGrid'i güncelle
+                ErrorLogGrid.ItemsSource = _errorLogs;
+                ErrorLogGrid.Items.Refresh();
+                ErrorLogGrid.Items.SortDescriptions.Clear();
+                ErrorLogGrid.Items.SortDescriptions.Add(
+                    new SortDescription("Timestamp", ListSortDirection.Descending));
+
+                // Animasyon (isteğe bağlı)
+                var animation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 750,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    AccelerationRatio = 0.2,
+                    DecelerationRatio = 0.8
+                };
+
+                // Sütun genişliğini animasyonla değiştir
+                RightPanelColumn.BeginAnimation(WidthProperty, animation);
+            }
+            else
+            {
+                // Panel kapanıyor
+                var animation = new DoubleAnimation
+                {
+                    From = RightPanelColumn.ActualWidth,
+                    To = 0,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    AccelerationRatio = 0.2,
+                    DecelerationRatio = 0.8
+                };
+
+                animation.Completed += (s, e) =>
+                {
+                    RightLogPanel.Visibility = Visibility.Collapsed;
+                    RightPanelColumn.Width = new GridLength(0, GridUnitType.Pixel);
+
+                    // GridSplitter'ı gizle
+                    var splitter = FindVisualChild<GridSplitter>(this);
+                    if (splitter != null)
+                    {
+                        splitter.Visibility = Visibility.Collapsed;
+                    }
+                };
+
+                RightPanelColumn.BeginAnimation(WidthProperty, animation);
+            }
+        }
+
+        // GridSplitter'ı bulmak için yardımcı metod
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T result)
+                    return result;
+
+                var childResult = FindVisualChild<T>(child);
+                if (childResult != null)
+                    return childResult;
+            }
+
+            return null;
+        }
+
+        private string GetVoltageCategory(double voltage)
+        {
+            if (voltage < 1400 || voltage > 1600) return "YEŞİL";
+            if (voltage < 1300 || voltage > 1700) return "SARI";
+            if (voltage < 1200 || voltage > 1800) return "KIRMIZI";
+            return "NORMAL";
+        }
+
+        private double GetAllowedDuration(double voltage)
+        {
+            if (voltage >= 1800 || voltage <= 1200) return 0.7;
+            if (voltage >= 1700 || voltage <= 1300) return 0.8;
+            if (voltage >= 1600 || voltage <= 1400) return 1.0;
+            return double.MaxValue;
+        }
+
+        private void CheckAndLogVoltageError(VldData data)
+        {
+            string key = $"{data.DeviceId}_{data.StartPosition}";
+            double allowedTime = GetAllowedDuration(data.VoltageOut);
+
+            if (allowedTime == double.MaxValue)
+            {
+                _voltageStartTimes.Remove(key);
+                return;
+            }
+
+            if (!_voltageStartTimes.ContainsKey(key))
+                _voltageStartTimes[key] = DateTime.Now;
+
+            var elapsed = (DateTime.Now - _voltageStartTimes[key]).TotalSeconds;
+
+            if (elapsed >= allowedTime)
+            {
+                if (!_errorRepeatCounts.ContainsKey(key))
+                    _errorRepeatCounts[key] = 0;
+
+                _errorRepeatCounts[key]++;
+
+                var trains = _activeTrains.Where(t =>
+                    t.CurrentPosition >= data.StartPosition &&
+                    t.CurrentPosition <= data.EndPosition).ToList();
+
+                var log = new VldErrorLog
+                {
+                    Timestamp = DateTime.Now,
+                    Category = GetVoltageCategory(data.VoltageOut),
+                    DeviceId = data.DeviceId,
+                    Voltage = data.VoltageOut,
+                    Kilometer = data.StartPosition / 1000.0,
+                    RepeatCount = _errorRepeatCounts[key],
+                    TrainCount = trains.Count,
+                    AvgTrainSpeed = trains.Any() ? trains.Average(t => t.Speed) : 0
+                };
+
+                _errorLogs.Add(log);
+                WriteLogToFile(log);
+
+                _voltageStartTimes.Remove(key);
+            }
+        }
+
+        private void WriteLogToFile(VldErrorLog log)
+        {
+            string line =
+                $"{log.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
+                $"{log.Category} | {log.DeviceId} | " +
+                $"V={log.Voltage:N0} | " +
+                $"KM={log.Kilometer:N3} | " +
+                $"Tekrar={log.RepeatCount} | " +
+                $"Tren={log.TrainCount} | " +
+                $"Hız={log.AvgTrainSpeed:N1}";
+
+            File.AppendAllLines(LOG_FILE, new[] { line });
+        }
+
+        // Aç/Kapa butonu
+        private void OpenErrorLogWindow_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleLogPanel(!_isLogPanelOpen);
+        }
+
+        // Kapat butonu
+        private void CloseLogPanel_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleLogPanel(false);
+        }
+
+        private void OpenLogFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(LOG_FILE))
+                System.Diagnostics.Process.Start("notepad.exe", LOG_FILE);
+        }
+
+        private void ClearLogsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Tüm logları temizlemek istiyor musunuz?",
+                                        "Onay",
+                                        MessageBoxButton.YesNo,
+                                        MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _errorLogs.Clear();
+                _voltageStartTimes.Clear();
+                _errorRepeatCounts.Clear();
+
+                // DataGrid'i yenile
+                ErrorLogGrid.ItemsSource = null;
+                ErrorLogGrid.ItemsSource = _errorLogs;
+            }
+        }
+        #endregion
         protected override void OnClosed(EventArgs e)
         {
             _vldSimulator?.StopSimulation();

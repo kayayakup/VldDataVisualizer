@@ -1,4 +1,7 @@
-﻿namespace VldDataVisualizer.Models
+﻿using System.Windows.Controls;
+using VldDataVisualizer.ViewModels;
+
+namespace VldDataVisualizer.Models
 {
     public class VldData
     {
@@ -29,6 +32,12 @@
         public double CurrentL2 { get; set; }
         public double CurrentL3 { get; set; }
 
+        // Yeni DC sistem özellikleri
+        public double DcVoltage { get; set; }        // kV - 1500 V DC
+        public double DcCurrent { get; set; }        // A - DC akım
+        public double AuxDcVoltage { get; set; }     // kV - 110 V DC
+        public double AuxAcVoltage { get; set; }     // kV - 400 V AC
+
         // Koruma parametreleri (dokümanda koruma röleleri mevcut)
         public double Temperature { get; set; }         // Sıcaklık (°C)
         public double Frequency { get; set; }           // Frekans (Hz)
@@ -51,5 +60,31 @@
 
         // Bölge içindeki tren sayısı
         public int TrainsInSection { get; set; } = 0;
+    }
+
+    // UI elemanlarına tekrar tekrar ulaşmak için referans tutucu
+    public class DevicePanelRefs
+    {
+        public TextBlock TitleText { get; set; }
+        public TextBlock NoDataText { get; set; }
+        public Grid MainContentGrid { get; set; }
+
+        // Değer TextBlock'ları (Güncellenecek olanlar)
+        public Dictionary<string, TextBlock> ValueTexts { get; set; } = new Dictionary<string, TextBlock>();
+
+        // Grafikler
+        public ChartsProperties PowerChart { get; set; }
+        public ChartsProperties VoltageChart { get; set; }
+        public ChartsProperties CurrentChart { get; set; }
+        public ChartsProperties TempChart { get; set; }
+
+        // Kontrol Alanı
+        public Canvas ControlCanvas { get; set; }
+        public TextBlock ControlAreaHeader { get; set; } // Başlığı güncellemek gerekirse
+
+        // Tablo ve Alarmlar
+        public DataGrid DataGrid { get; set; }
+        public WrapPanel AlarmPanel { get; set; }
+        public GroupBox AlarmGroup { get; set; }
     }
 }
