@@ -23,6 +23,7 @@ namespace VldDataVisualizer.Models
         public double ReactivePower { get; set; }       // Reaktif güç (kVAr)
         public double ApparentPower { get; set; }       // Görünür güç (kVA)
         public double PowerFactor { get; set; }         // Güç faktörü
+        public double TouchVoltage { get; set; } // Kontrol bitiş pozisyonu (metre)
 
         // Faz bilgileri (dokümanda 3 fazlı sistem)
         public double VoltageL1 { get; set; }

@@ -34,6 +34,7 @@ namespace VldDataVisualizer.Views
         private DispatcherTimer _chartUpdateTimer;
         private DispatcherTimer _railwayUpdateTimer;
         private DispatcherTimer _detailUpdateTimer;
+        private DispatcherTimer _logCheckTimer;
 
         // Railway drawing constants
         private const double CANVAS_HEIGHT = 400;
@@ -229,6 +230,10 @@ namespace VldDataVisualizer.Views
             _detailUpdateTimer = new DispatcherTimer();
             _detailUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
             _detailUpdateTimer.Tick += DetailUpdateTimer_Tick;
+
+            _logCheckTimer = new DispatcherTimer();
+            _logCheckTimer.Interval = TimeSpan.FromMilliseconds(100);
+            _logCheckTimer.Tick += LogCheckTimer_Tick;
         }
 
         private void InitializeTrackSystem()
@@ -336,13 +341,13 @@ namespace VldDataVisualizer.Views
 
         private void AddInitialTrains()
         {
-            AddTrainToTrack("UP", 15000);
-            AddTrainToTrack("UP", 12000);
-            AddTrainToTrack("UP", 9000);
-            AddTrainToTrack("DOWN", 500);
-            AddTrainToTrack("DOWN", 1500);
-            AddTrainToTrack("DOWN", 3000);
-            AddTrainToTrack("DOWN", 7000);
+            AddTrainToTrack("HAT - 1", 15000);
+            AddTrainToTrack("HAT - 1", 12000);
+            AddTrainToTrack("HAT - 1", 9000);
+            AddTrainToTrack("HAT - 2", 500);
+            AddTrainToTrack("HAT - 2", 1500);
+            AddTrainToTrack("HAT - 2", 3000);
+            AddTrainToTrack("HAT - 2", 7000);
         }
 
         #region Signalization Info
@@ -360,6 +365,7 @@ namespace VldDataVisualizer.Views
                 _railwayUpdateTimer.Start();
                 _chartUpdateTimer.Start();
                 _detailUpdateTimer.Start();
+                _logCheckTimer.Start(); // YENİ: Log kontrol timer'ını başlat
 
                 UpdateButtonStates(true);
                 UpdateHeaderStatus("🟡 12 Cihaz Çalışıyor", Colors.Orange);
@@ -380,6 +386,7 @@ namespace VldDataVisualizer.Views
                 _railwayUpdateTimer.Stop();
                 _chartUpdateTimer.Stop();
                 _detailUpdateTimer.Stop();
+                _logCheckTimer.Stop(); // YENİ: Log kontrol timer'ını durdur
 
                 UpdateButtonStates(false);
                 UpdateHeaderStatus("🟢 12 Cihaz Hazır", Colors.Green);
@@ -464,23 +471,28 @@ namespace VldDataVisualizer.Views
 
                     // Toplam değerleri hesapla
                     totalPower += data.ActivePower;
-                    totalCurrent += data.Current;
+                    totalCurrent += data.DcCurrent;
                     if (data.IsCommunicationActive) activeDevices++;
 
                     // İlgili chart'ı güncelle (index 0-11)
                     if (i < _allCharts.Count)
                     {
-                        _allCharts[i].AddValue(data.VoltageOut); // Gerilim grafiği
+                        _allCharts[i].AddValue(data.DcVoltage); // Gerilim grafiği
 
                         // Header'ı güncelle
-                        UpdateStationHeader(stationId, data.Status, data.VoltageOut);
+                        UpdateStationHeader(stationId, data.Status, data.DcVoltage);
                     }
 
-                    CheckAndLogVoltageError(data);
                 }
 
                 DataCountText.Content = $"TFPR Veri: {_deviceDataCollections.Sum(d => d.Value.Count)}";
                 LastUpdateText.Content = $"Son Güncelleme: {DateTime.Now:HH:mm:ss}";
+
+                if (allDevicesData != null && allDevicesData.Any())
+                {
+                    // IEC 50122 standardına göre anomali kontrolü
+                    CheckAndLogVoltageError(allDevicesData);
+                }
             });
         }
 
@@ -556,11 +568,11 @@ namespace VldDataVisualizer.Views
                 var isOccupied = activeTrains.Any(train =>
                 {
                     bool isUpTrackMatch = block.BlockId <= 31 &&
-                                          train.TrackType == "UP" &&
+                                          train.TrackType == "HAT - 1" &&
                                           train.CurrentBlockId == block.BlockId;
 
                     bool isDownTrackMatch = block.BlockId >= 101 &&
-                                            train.TrackType == "DOWN" &&
+                                            train.TrackType == "HAT - 2" &&
                                             train.CurrentBlockId == (block.BlockId - 100);
 
                     return isUpTrackMatch || isDownTrackMatch;
@@ -577,8 +589,8 @@ namespace VldDataVisualizer.Views
             foreach (var route in _routes)
             {
                 route.ActiveTrainCount = activeTrains.Count(t =>
-                    (route.BlockSequence.Contains(t.CurrentBlockId) && t.TrackType == "UP") ||
-                    (route.BlockSequence.Contains(t.CurrentBlockId + 100) && t.TrackType == "DOWN"));
+                    (route.BlockSequence.Contains(t.CurrentBlockId) && t.TrackType == "HAT - 1") ||
+                    (route.BlockSequence.Contains(t.CurrentBlockId + 100) && t.TrackType == "HAT - 2"));
             }
         }
 
@@ -682,52 +694,71 @@ namespace VldDataVisualizer.Views
                     ("Comm", "📶 İletişim", "#e8f5e8")
                 ));
 
-                leftColumn.Children.Add(CreateRefGroupBox("Anlık Güç Değerleri", refs,
-                    ("VIn", "🔌 Giriş Gerilimi", "#e8f5e8"),
-                    ("VOut", "⚡ Çıkış Gerilimi", "#e8f5e8"),
-                    ("Curr", "🔋 Akım", "#e3f2fd"),
-                    ("Pow", "📊 Aktif Güç", "#fff3e0"),
-                    ("React", "📈 Reaktif Güç", "#fff3e0"),
-                    ("PF", "🎯 Güç Faktörü", "#e3f2fd")
+                // DC SİSTEM DEĞERLERİ (GÜNCELLENDİ)
+                leftColumn.Children.Add(CreateRefGroupBox("DC Trafo Değerleri", refs,
+                    ("ACin", "⚡ AC Giriş (kV)", "#e8f5e8"),
+                    ("DCout", "🔋 DC Çıkış (V)", "#e8f5e8"),
+                    ("DCCurr", "🔌 DC Akım (A)", "#e3f2fd"),
+                    ("DCPow", "📊 DC Güç (kW)", "#fff3e0"),
+                    ("GndCurr", "⚡ Toprak Akımı", "#ffebee"),
+                    ("TouchV", "⚠️ Dokunma Gerilimi", "#ffebee")
                 ));
 
-                leftColumn.Children.Add(CreateRefGroupBox("Faz Değerleri", refs,
-                    ("L1V", "L1 Gerilim", "#f3e5f5"), ("L2V", "L2 Gerilim", "#f3e5f5"), ("L3V", "L3 Gerilim", "#f3e5f5"),
-                    ("L1A", "L1 Akım", "#e8f5e8"), ("L2A", "L2 Akım", "#e8f5e8"), ("L3A", "L3 Akım", "#e8f5e8")
+                // AC SİSTEM DEĞERLERİ
+                leftColumn.Children.Add(CreateRefGroupBox("AC Trafo Değerleri (34.5kV)", refs,
+                    ("ACV", "AC Gerilim (kV)", "#f3e5f5"),
+                    ("ACCurr", "AC Akım (A)", "#e8f5e8"),
+                    ("ACPow", "AC Aktif Güç (kW)", "#fff3e0"),
+                    ("ReactP", "AC Reaktif Güç (kVAr)", "#fff3e0"),
+                    ("PF", "🎯 Güç Faktörü", "#e3f2fd"),
+                    ("Freq", "📏 Frekans (Hz)", "#e3f2fd")
                 ));
 
+                // FAZ DEĞERLERİ
+                leftColumn.Children.Add(CreateRefGroupBox("Faz Değerleri (AC)", refs,
+                    ("L1V", "L1 Gerilim (kV)", "#f3e5f5"),
+                    ("L2V", "L2 Gerilim (kV)", "#f3e5f5"),
+                    ("L3V", "L3 Gerilim (kV)", "#f3e5f5"),
+                    ("L1A", "L1 Akım (A)", "#e8f5e8"),
+                    ("L2A", "L2 Akım (A)", "#e8f5e8"),
+                    ("L3A", "L3 Akım (A)", "#e8f5e8")
+                ));
+
+                // SİSTEM PARAMETRELERİ
                 leftColumn.Children.Add(CreateRefGroupBox("Sistem Parametreleri", refs,
-                    ("Temp", "🌡️ Sıcaklık", "#ffebee"),
-                    ("Freq", "📏 Frekans", "#e3f2fd"),
-                    ("Gnd", "⚡ Toprak Akımı", "#fff3e0"),
-                    ("THDV", "📉 Gerilim THD", "#f3e5f5"),
-                    ("THDC", "📉 Akım THD", "#f3e5f5")
+                    ("Temp", "🌡️ Sıcaklık (°C)", "#ffebee"),
+                    ("THDV", "📉 Gerilim THD (%)", "#f3e5f5"),
+                    ("THDC", "📉 Akım THD (%)", "#f3e5f5"),
+                    ("AuxDC", "🔋 Aux DC (V)", "#e3f2fd"),
+                    ("AuxAC", "⚡ Aux AC (V)", "#e3f2fd")
                 ));
 
+                // ENERJİ ÖLÇÜMLERİ
                 leftColumn.Children.Add(CreateRefGroupBox("Enerji Ölçümleri", refs,
-                    ("Imp", "🔋 Tüketilen Enerji", "#e8f5e8"),
-                    ("Exp", "📊 Tüketilen Reaktif", "#fff3e0")
+                    ("Imp", "🔋 Tüketilen Enerji (kWh)", "#e8f5e8"),
+                    ("ReactImp", "📊 Tüketilen Reaktif (kVArh)", "#fff3e0"),
+                    ("DCEner", "🔌 DC Enerji (kWh)", "#e3f2fd")
                 ));
 
                 // --- SAĞ SÜTUN (Grafikler ve Canvas) ---
                 var rightColumn = new StackPanel();
 
-                // Grafikler Grid (2x2)
+                // Grafikler Grid (2x2) - DC SİSTEM İÇİN GÜNCELLENDİ
                 var chartsGrid = new Grid();
                 chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(200) });
                 chartsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(200) });
                 chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-                // Grafikleri oluştur ve referanslara kaydet
-                refs.PowerChart = CreateChart($"PowerChart{stationId}", "Aktif Güç", "Güç (kW)", Brushes.Green, 0, 3000);
-                refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "Çıkış Gerilimi", "Gerilim (V)", Brushes.Blue, 20, 40);
-                refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "Akım", "Akım (A)", Brushes.Red, 500, 2500);
+                // Grafikleri oluştur ve referanslara kaydet - DC DEĞERLER İÇİN
+                refs.PowerChart = CreateChart($"PowerChart{stationId}", "DC Aktif Güç", "Güç (kW)", Brushes.Green, 0, 2000);
+                refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "DC Çıkış Gerilimi", "Gerilim (V)", Brushes.Blue, 1200, 1800);
+                refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "DC Akım", "Akım (A)", Brushes.Red, 0, 1500);
                 refs.TempChart = CreateChart($"TempChart{stationId}", "Sıcaklık", "Sıcaklık (°C)", Brushes.Orange, -10, 100);
 
-                AddToGrid(chartsGrid, CreateGroupBoxForChart("Aktif Güç", refs.PowerChart), 0, 0);
-                AddToGrid(chartsGrid, CreateGroupBoxForChart("Gerilim", refs.VoltageChart), 0, 1);
-                AddToGrid(chartsGrid, CreateGroupBoxForChart("Akım", refs.CurrentChart), 1, 0);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Güç", refs.PowerChart), 0, 0);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Gerilim", refs.VoltageChart), 0, 1);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Akım", refs.CurrentChart), 1, 0);
                 AddToGrid(chartsGrid, CreateGroupBoxForChart("Sıcaklık", refs.TempChart), 1, 1);
 
                 rightColumn.Children.Add(chartsGrid);
@@ -752,14 +783,46 @@ namespace VldDataVisualizer.Views
                 stackPanel.Children.Add(refs.MainContentGrid);
 
                 // ALT KISIM (Tablo ve Alarmlar)
-                var tableGroup = CreateGroupBox("Son 10 Ölçüm");
+                var tableGroup = CreateGroupBox("Son 10 Ölçüm - DC Sistem");
                 refs.DataGrid = new DataGrid { AutoGenerateColumns = false, Height = 150 };
-                // Kolon tanımları...
-                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Zaman", Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" }, Width = 80 });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Gerilim", Binding = new System.Windows.Data.Binding("VoltageOut") { StringFormat = "N1" }, Width = 60 });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Akım", Binding = new System.Windows.Data.Binding("Current") { StringFormat = "N0" }, Width = 60 });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Güç", Binding = new System.Windows.Data.Binding("ActivePower") { StringFormat = "N0" }, Width = 60 });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn { Header = "Sıcaklık", Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" }, Width = 70 });
+
+                // KOLON TANIMLARI - DC SİSTEM İÇİN
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "Zaman",
+                    Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" },
+                    Width = 80
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "DC Gerilim",
+                    Binding = new System.Windows.Data.Binding("DcVoltage") { StringFormat = "N1" },
+                    Width = 80
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "DC Akım",
+                    Binding = new System.Windows.Data.Binding("DcCurrent") { StringFormat = "N0" },
+                    Width = 70
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "DC Güç",
+                    Binding = new System.Windows.Data.Binding("DcPower") { StringFormat = "N0" },
+                    Width = 70
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "Toprak Akım",
+                    Binding = new System.Windows.Data.Binding("GroundCurrent") { StringFormat = "N1" },
+                    Width = 80
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "Sıcaklık",
+                    Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" },
+                    Width = 70
+                });
 
                 tableGroup.Content = refs.DataGrid;
                 stackPanel.Children.Add(tableGroup);
@@ -789,7 +852,13 @@ namespace VldDataVisualizer.Views
             uiRefs.MainContentGrid.Visibility = Visibility.Visible;
             uiRefs.NoDataText.Visibility = Visibility.Collapsed;
 
-            // Metin Değerlerini Güncelle (Text özelliğini değiştiriyoruz, yeniden oluşturmuyoruz)
+            // DC GÜÇ HESAPLAMA
+            double dcPower = latestData.DcVoltage * latestData.DcCurrent; // kW * A = kW (zaten kV cinsinden)
+
+            // DC gerilimi V cinsine çevir (görüntüleme için)
+            double dcVoltageV = latestData.DcVoltage * 1000;
+
+            // Metin Değerlerini Güncelle - DC SİSTEM İÇİN
             UpdateRefText(uiRefs, "DevID", latestData.DeviceId);
             UpdateRefText(uiRefs, "Loc", latestData.Location);
             UpdateRefText(uiRefs, "Region", $"{latestData.StartPosition:N0}m - {latestData.EndPosition:N0}m");
@@ -797,43 +866,64 @@ namespace VldDataVisualizer.Views
             UpdateRefText(uiRefs, "Status", latestData.Status);
             UpdateRefText(uiRefs, "Comm", latestData.IsCommunicationActive ? "AKTİF" : "KESİNTİ");
 
-            UpdateRefText(uiRefs, "VIn", $"{latestData.VoltageIn:N1} V");
-            UpdateRefText(uiRefs, "VOut", $"{latestData.VoltageOut:N1} V");
-            UpdateRefText(uiRefs, "Curr", $"{latestData.Current:N0} A");
-            UpdateRefText(uiRefs, "Pow", $"{latestData.ActivePower:N0} kW");
-            UpdateRefText(uiRefs, "React", $"{latestData.ReactivePower:N0} VAr");
-            UpdateRefText(uiRefs, "PF", $"{latestData.PowerFactor:N2}");
+            // DC SİSTEM DEĞERLERİ
+            UpdateRefText(uiRefs, "ACin", $"{latestData.VoltageIn:N1} kV");
+            UpdateRefText(uiRefs, "DCout", $"{dcVoltageV:N0} V");
+            UpdateRefText(uiRefs, "DCCurr", $"{latestData.DcCurrent:N0} A");
+            UpdateRefText(uiRefs, "DCPow", $"{dcPower:N0} kW");
+            UpdateRefText(uiRefs, "GndCurr", $"{latestData.GroundCurrent:N1} A");
+            UpdateRefText(uiRefs, "TouchV", $"{latestData.TouchVoltage:N0} V");
 
-            UpdateRefText(uiRefs, "L1V", $"{latestData.VoltageL1:N1} V");
-            UpdateRefText(uiRefs, "L2V", $"{latestData.VoltageL2:N1} V");
-            UpdateRefText(uiRefs, "L3V", $"{latestData.VoltageL3:N1} V");
+            // AC SİSTEM DEĞERLERİ
+            UpdateRefText(uiRefs, "ACV", $"{latestData.VoltageOut:N1} kV");
+            UpdateRefText(uiRefs, "ACCurr", $"{latestData.Current:N0} A");
+            UpdateRefText(uiRefs, "ACPow", $"{latestData.ActivePower:N0} kW");
+            UpdateRefText(uiRefs, "ReactP", $"{latestData.ReactivePower:N0} kVAr");
+            UpdateRefText(uiRefs, "PF", $"{latestData.PowerFactor:N2}");
+            UpdateRefText(uiRefs, "Freq", $"{latestData.Frequency:N2} Hz");
+
+            // FAZ DEĞERLERİ
+            UpdateRefText(uiRefs, "L1V", $"{latestData.VoltageL1:N1} kV");
+            UpdateRefText(uiRefs, "L2V", $"{latestData.VoltageL2:N1} kV");
+            UpdateRefText(uiRefs, "L3V", $"{latestData.VoltageL3:N1} kV");
             UpdateRefText(uiRefs, "L1A", $"{latestData.CurrentL1:N0} A");
             UpdateRefText(uiRefs, "L2A", $"{latestData.CurrentL2:N0} A");
             UpdateRefText(uiRefs, "L3A", $"{latestData.CurrentL3:N0} A");
 
+            // SİSTEM PARAMETRELERİ
             UpdateRefText(uiRefs, "Temp", $"{latestData.Temperature:N1} °C");
-            UpdateRefText(uiRefs, "Freq", $"{latestData.Frequency:N2} Hz");
-            UpdateRefText(uiRefs, "Gnd", $"{latestData.GroundCurrent:N1} A");
             UpdateRefText(uiRefs, "THDV", $"{latestData.THDVoltage:N1} %");
             UpdateRefText(uiRefs, "THDC", $"{latestData.THDCurrent:N1} %");
+            UpdateRefText(uiRefs, "AuxDC", $"{(latestData.AuxDcVoltage * 1000):N0} V"); // kV -> V
+            UpdateRefText(uiRefs, "AuxAC", $"{(latestData.AuxAcVoltage * 1000):N0} V"); // kV -> V
 
-            UpdateRefText(uiRefs, "Imp", $"{latestData.ActiveEnergyImport:N2} kWh");
-            UpdateRefText(uiRefs, "Exp", $"{latestData.ReactiveEnergyImport:N2} VArh");
+            // ENERJİ ÖLÇÜMLERİ
+            UpdateRefText(uiRefs, "Imp", $"{latestData.ActiveEnergyImport:N0} kWh");
+            UpdateRefText(uiRefs, "ReactImp", $"{latestData.ReactiveEnergyImport:N0} kVArh");
+            UpdateRefText(uiRefs, "DCEner", $"{CalculateDcEnergy(latestData):N0} kWh");
 
-            // Grafikleri Güncelle
-            uiRefs.PowerChart.AddValue(latestData.ActivePower);
-            uiRefs.VoltageChart.AddValue(latestData.VoltageOut);
-            uiRefs.CurrentChart.AddValue(latestData.Current);
+            // Grafikleri Güncelle - DC DEĞERLER İLE
+            uiRefs.PowerChart.AddValue(dcPower); // DC güç
+            uiRefs.VoltageChart.AddValue(dcVoltageV); // DC gerilim (V)
+            uiRefs.CurrentChart.AddValue(latestData.DcCurrent); // DC akım
             uiRefs.TempChart.AddValue(latestData.Temperature);
 
-            // Canvas Yeniden Çiz (Sadece Canvas içeriğini temizle, arayüzü değil)
+            // Canvas Yeniden Çiz
             uiRefs.ControlCanvas.Children.Clear();
-            DrawTestControlArea(uiRefs.ControlCanvas, stationId);
             DrawStationControlArea(uiRefs.ControlCanvas, stationId);
 
-            // Tabloyu Güncelle
-            uiRefs.DataGrid.ItemsSource = null; // Refresh trick
-            uiRefs.DataGrid.ItemsSource = _deviceDataCollections[stationId].Take(10);
+            // Tabloyu Güncelle - DC VERİLER İLE
+            uiRefs.DataGrid.ItemsSource = null;
+            uiRefs.DataGrid.ItemsSource = _deviceDataCollections[stationId]
+                .Select(d => new {
+                    d.Timestamp,
+                    DcVoltage = d.DcVoltage * 1000, // V cinsinden
+                    d.DcCurrent,
+                    DcPower = d.DcVoltage * d.DcCurrent,
+                    d.GroundCurrent,
+                    d.Temperature
+                })
+                .Take(10);
 
             // Alarmları Güncelle
             if (latestData.ActiveAlarms.Any())
@@ -842,16 +932,43 @@ namespace VldDataVisualizer.Views
                 uiRefs.AlarmPanel.Children.Clear();
                 foreach (var alarm in latestData.ActiveAlarms)
                 {
+                    // Alarm rengini içeriğe göre belirle
+                    Brush bgColor = Brushes.MistyRose;
+                    Brush fgColor = Brushes.Red;
+
+                    if (alarm.Contains("DOKUNMA_GERILIMI"))
+                    {
+                        bgColor = Brushes.DarkRed;
+                        fgColor = Brushes.White;
+                    }
+                    else if (alarm.Contains("TOPRAK_ARIZASI"))
+                    {
+                        bgColor = Brushes.OrangeRed;
+                        fgColor = Brushes.White;
+                    }
+                    else if (alarm.Contains("ASIRI"))
+                    {
+                        bgColor = Brushes.Orange;
+                        fgColor = Brushes.Black;
+                    }
+
                     var border = new Border
                     {
-                        Background = Brushes.MistyRose,
-                        BorderBrush = Brushes.Red,
+                        Background = bgColor,
+                        BorderBrush = Brushes.DarkGray,
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(3),
                         Margin = new Thickness(2),
                         Padding = new Thickness(5, 2, 5, 2)
                     };
-                    border.Child = new TextBlock { Text = alarm, Foreground = Brushes.Red, FontWeight = FontWeights.Bold };
+                    border.Child = new TextBlock
+                    {
+                        Text = alarm,
+                        Foreground = fgColor,
+                        FontWeight = FontWeights.Bold,
+                        TextWrapping = TextWrapping.Wrap,
+                        MaxWidth = 200
+                    };
                     uiRefs.AlarmPanel.Children.Add(border);
                 }
             }
@@ -859,6 +976,15 @@ namespace VldDataVisualizer.Views
             {
                 uiRefs.AlarmGroup.Visibility = Visibility.Collapsed;
             }
+        }
+
+        // YARDIMCI FONKSİYON: DC Enerji hesaplama
+        private double CalculateDcEnergy(VldData data)
+        {
+            // Basit DC enerji hesaplama: P * t (kW * saat)
+            // Bu sadece örnek, gerçekte zaman bazlı entegrasyon yapılmalı
+            double dcPower = data.DcVoltage * data.DcCurrent; // kW
+            return dcPower * 0.001; // kWh (1 saniye için yaklaşık)
         }
 
         // YARDIMCI METODLAR (UpdateDevicePanel içinde kullanılan)
@@ -1231,14 +1357,14 @@ namespace VldDataVisualizer.Views
             foreach (var train in trainsInSection)
             {
                 double xPos = 50 + ((train.CurrentPosition - minPos) * scaleFactor);
-                double yPos = train.TrackType == "UP" ? upTrackY : downTrackY;
+                double yPos = train.TrackType == "HAT - 1" ? upTrackY : downTrackY;
 
                 // Tren simgesi
                 var trainRect = new Rectangle
                 {
                     Width = 40,
                     Height = 18,
-                    Fill = train.TrackType == "UP" ? Brushes.Blue : Brushes.Red,
+                    Fill = train.TrackType == "HAT - 1" ? Brushes.Blue : Brushes.Red,
                     Stroke = Brushes.White,
                     StrokeThickness = 2,
                     RadiusX = 5,
@@ -1260,7 +1386,7 @@ namespace VldDataVisualizer.Views
                     FontWeight = FontWeights.Bold
                 };
                 Canvas.SetLeft(speedText, xPos + 290); // -10 yerine +290 (300-10)
-                Canvas.SetTop(speedText, train.TrackType == "UP" ? yPos - 35 : yPos + 12);
+                Canvas.SetTop(speedText, train.TrackType == "HAT - 1" ? yPos - 35 : yPos + 12);
                 canvas.Children.Add(speedText);
             }
         }
@@ -1394,9 +1520,9 @@ namespace VldDataVisualizer.Views
 
         private void AddTrainToTrack(string trackType, double startPosition)
         {
-            string direction = trackType == "UP" ? "NORTHBOUND" : "SOUTHBOUND";
-            int startBlockId = trackType == "UP" ? 1 : 101;
-            int gridY = trackType == "UP" ? (int)UP_TRACK_Y : (int)DOWN_TRACK_Y;
+            string direction = trackType == "HAT - 1" ? "Darıca Sahil Yönü" : "Depo Yönü";
+            int startBlockId = trackType == "HAT - 1" ? 1 : 101;
+            int gridY = trackType == "HAT - 1" ? (int)UP_TRACK_Y : (int)DOWN_TRACK_Y;
 
             var newTrain = new TrainInfo
             {
@@ -1414,7 +1540,7 @@ namespace VldDataVisualizer.Views
                 GridX = (int)(startPosition / 8),
                 GridY = gridY,
                 Direction = direction,
-                Heading = trackType == "UP" ? 180 : 0,
+                Heading = trackType == "HAT - 1" ? 180 : 0,
                 TrainLength = TRAIN_LENGTH,
                 TrackType = trackType
             };
@@ -1498,7 +1624,7 @@ namespace VldDataVisualizer.Views
                         double currentSpeed = (train.Status == "WAITING") ? 0 : train.Speed;
                         double movement = (currentSpeed / 3.6) * 0.5;
 
-                        if (train.TrackType == "UP")
+                        if (train.TrackType == "HAT - 1")
                         {
                             train.CurrentPosition -= movement;
                             if (train.CurrentPosition <= -100) trainsToRemove.Add(train);
@@ -1512,7 +1638,7 @@ namespace VldDataVisualizer.Views
                         train.GridX = (int)(train.CurrentPosition / 8);
                         UpdateTrainCurrentBlock(train);
 
-                        var block = _blocks.FirstOrDefault(b => b.BlockId == train.CurrentBlockId + (train.TrackType == "DOWN" ? 100 : 0));
+                        var block = _blocks.FirstOrDefault(b => b.BlockId == train.CurrentBlockId + (train.TrackType == "HAT - 2" ? 100 : 0));
                         if (block != null)
                             train.PositionInBlock = Math.Abs(train.CurrentPosition - block.StartPosition);
                     }
@@ -1528,7 +1654,7 @@ namespace VldDataVisualizer.Views
                 {
                     _activeTrains.Remove(train);
                     _trainStates.Remove(train.TrainId);
-                    AddTrainToTrack(train.TrackType, train.TrackType == "UP" ? 15391 : 0);
+                    AddTrainToTrack(train.TrackType, train.TrackType == "HAT - 1" ? 15391 : 0);
                 }
             }
             catch (Exception ex)
@@ -1546,7 +1672,7 @@ namespace VldDataVisualizer.Views
             if (!sameTrackTrains.Any()) return false;
             double safeDistance = 1000;
 
-            if (currentTrain.TrackType == "UP")
+            if (currentTrain.TrackType == "HAT - 1")
             {
                 var aheadTrain = sameTrackTrains
                     .Where(t => t.CurrentPosition < currentTrain.CurrentPosition)
@@ -1699,7 +1825,7 @@ namespace VldDataVisualizer.Views
             double xPos = 50 + (train.CurrentPosition * scaleFactor);
             if (xPos < -50 || xPos > CANVAS_WIDTH + 50) return;
 
-            bool isUp = train.TrackType == "UP";
+            bool isUp = train.TrackType == "HAT - 1";
             double yPos = isUp ? UP_TRACK_Y : DOWN_TRACK_Y;
 
             var rect = new Rectangle
@@ -1923,78 +2049,276 @@ namespace VldDataVisualizer.Views
 
         private string GetVoltageCategory(double voltage)
         {
-            if (voltage < 1400 || voltage > 1600) return "YEŞİL";
-            if (voltage < 1300 || voltage > 1700) return "SARI";
-            if (voltage < 1200 || voltage > 1800) return "KIRMIZI";
+            // Müsaade edilebilir limitleri al
+            double longLimit = GetLongTermLimit(voltage);
+            double shortLimit = GetShortTermLimit(voltage);
+
+            // KIRMIZI — kısa süreli limit aşıldı
+            if (voltage > shortLimit)
+                return "KIRMIZI";
+
+            // SARI — uzun süreli limit aşıldı ama kısa süreli aşılmadı
+            if (voltage > longLimit)
+                return "SARI";
+
+            // NORMAL — hiçbir limiti aşmıyor
             return "NORMAL";
         }
 
         private double GetAllowedDuration(double voltage)
         {
-            if (voltage >= 1800 || voltage <= 1200) return 0.7;
-            if (voltage >= 1700 || voltage <= 1300) return 0.8;
-            if (voltage >= 1600 || voltage <= 1400) return 1.0;
+            // Uzun ve kısa süreli limitleri al
+            double longLimit = GetLongTermLimit(voltage);
+            double shortLimit = GetShortTermLimit(voltage);
+
+            // Eğer kısa süreli limiti aşmış → hiç bekleme yok → anında alarm
+            if (voltage > shortLimit)
+                return 0.0;
+
+            // Eğer uzun süreli limiti aşmış → cuma süresine bak
+            if (voltage > longLimit)
+            {
+                // Tabloya göre uzun süreli bölge → zaman = 0.7 s
+                return 0.7;
+            }
+
+            // Hiçbir limit aşılmamış → anomali yok
             return double.MaxValue;
         }
 
-        private void CheckAndLogVoltageError(VldData data)
+        private double GetLongTermLimit(double voltage)
         {
-            string key = $"{data.DeviceId}_{data.StartPosition}";
-            double allowedTime = GetAllowedDuration(data.VoltageOut);
+            // Uzun süreli limit 300V / 120V gibi sabittir
+            if (voltage > 300) return 120;
+            return 150;
+        }
 
-            if (allowedTime == double.MaxValue)
+        private double GetShortTermLimit(double voltage)
+        {
+            // Kısa süreli limit aşağıdaki tabloya göre
+
+            // (t, Ute_kısa)
+            var table = new (double t, double u)[]
             {
-                _voltageStartTimes.Remove(key);
-                return;
+        (0.7, 350),
+        (0.6, 360),
+        (0.5, 385),
+        (0.4, 420),
+        (0.3, 460),
+        (0.2, 520),
+        (0.1, 625),
+        (0.05, 735),
+        (0.02, 870)
+            };
+
+            // En düşük limit seçilir (yani gereksinim daha katı)
+            double minShort = table.Min(row => row.u);
+            return minShort;
+        }
+
+        private void CheckAndLogVoltageError(List<VldData> allDevicesData)
+        {
+            // Anomali olan cihazları bul
+            var anomalyDevices = new List<AnomalyDevice>();
+            string currentCategory = "NORMAL";
+
+            foreach (var data in allDevicesData)
+            {
+                double voltage = data.VoltageOut;
+                string category = GetVoltageCategory(voltage);
+
+                if (category != "NORMAL")
+                {
+                    // En kritik kategoriyi seç
+                    if ((category == "KIRMIZI" && currentCategory != "KIRMIZI") ||
+                        (category == "SARI" && currentCategory == "YEŞİL"))
+                    {
+                        currentCategory = category;
+                    }
+
+                    anomalyDevices.Add(new AnomalyDevice
+                    {
+                        DeviceId = data.DeviceId,
+                        Voltage = voltage,
+                        Kilometer = data.StartPosition / 1000.0,
+                        StartPosition = data.StartPosition,
+                        EndPosition = data.EndPosition
+                    });
+                }
             }
 
-            if (!_voltageStartTimes.ContainsKey(key))
-                _voltageStartTimes[key] = DateTime.Now;
-
-            var elapsed = (DateTime.Now - _voltageStartTimes[key]).TotalSeconds;
-
-            if (elapsed >= allowedTime)
+            // Anomali varsa log oluştur
+            if (anomalyDevices.Any())
             {
-                if (!_errorRepeatCounts.ContainsKey(key))
-                    _errorRepeatCounts[key] = 0;
+                string key = $"Anomaly_{DateTime.Now:yyyyMMddHHmm}";
 
-                _errorRepeatCounts[key]++;
+                // Tekrar sayısını hesapla (konuma göre)
+                int repeatCount = CalculateRepeatCount(anomalyDevices);
 
-                var trains = _activeTrains.Where(t =>
-                    t.CurrentPosition >= data.StartPosition &&
-                    t.CurrentPosition <= data.EndPosition).ToList();
+                // Bütün trenleri topla
+                var allTrains = _activeTrains.Select(train => new TrainInfoLog
+                {
+                    TrainId = train.TrainId,
+                    TrainName = train.TrainName,
+                    Position = train.CurrentPosition,
+                    Speed = train.Speed,
+                    TrackType = train.TrackType,
+                    Status = train.Status
+                }).ToList();
 
+                // Yeni log oluştur
                 var log = new VldErrorLog
                 {
                     Timestamp = DateTime.Now,
-                    Category = GetVoltageCategory(data.VoltageOut),
-                    DeviceId = data.DeviceId,
-                    Voltage = data.VoltageOut,
-                    Kilometer = data.StartPosition / 1000.0,
-                    RepeatCount = _errorRepeatCounts[key],
-                    TrainCount = trains.Count,
-                    AvgTrainSpeed = trains.Any() ? trains.Average(t => t.Speed) : 0
+                    Category = currentCategory,
+                    RepeatCount = repeatCount,
+                    AffectedDevices = anomalyDevices,
+                    AllTrains = allTrains
                 };
 
-                _errorLogs.Add(log);
+                // En başa ekle (en yeni en üstte)
+                _errorLogs.Insert(0, log);
+
+                // Dosyaya yaz
                 WriteLogToFile(log);
 
-                _voltageStartTimes.Remove(key);
+                // Eğer panel açıksa güncelle
+                if (_isLogPanelOpen)
+                {
+                    ErrorLogGrid.Items.Refresh();
+
+                    // Yeni satıra kaydır
+                    if (ErrorLogGrid.Items.Count > 0)
+                    {
+                        ErrorLogGrid.ScrollIntoView(ErrorLogGrid.Items[0]);
+                    }
+                }
+
+                // Çok fazla log varsa temizle
+                if (_errorLogs.Count > 100)
+                {
+                    _errorLogs.RemoveAt(_errorLogs.Count - 1);
+                }
             }
+        }
+
+        private int CalculateRepeatCount(List<AnomalyDevice> anomalyDevices)
+        {
+            // Tren konumlarına göre tekrar sayısını hesapla
+            int totalRepeatCount = 0;
+
+            // Tüm aktif trenleri al
+            var activeTrains = _activeTrains.ToList();
+
+            // Her anomali cihazı için
+            foreach (var device in anomalyDevices)
+            {
+                // Bu cihazın kontrol bölgesindeki trenleri bul
+                var trainsInSection = activeTrains
+                    .Where(train =>
+                        train.CurrentPosition >= Math.Min(device.StartPosition, device.EndPosition) &&
+                        train.CurrentPosition <= Math.Max(device.StartPosition, device.EndPosition))
+                    .ToList();
+
+                // Her trenin konumuna göre tekrar sayısını hesapla
+                foreach (var train in trainsInSection)
+                {
+                    // Konumu metre cinsinden yuvarla (örn: 12554.3)
+                    double roundedPosition = Math.Round(train.CurrentPosition, 1);
+
+                    // Anahtar: Tren konumu + Hata kategorisi
+                    string category = GetVoltageCategory(device.Voltage);
+                    string positionKey = $"{roundedPosition:N1}_{category}";
+
+                    // Eski Dictionary'yi kullanmaya devam et
+                    if (!_errorRepeatCounts.ContainsKey(positionKey))
+                    {
+                        _errorRepeatCounts[positionKey] = 0;
+                    }
+
+                    // Tekrar sayısını artır
+                    _errorRepeatCounts[positionKey]++;
+
+                    // En yüksek tekrar sayısını sakla
+                    totalRepeatCount = Math.Max(totalRepeatCount, _errorRepeatCounts[positionKey]);
+                }
+            }
+
+            // Eğer hiç tren yoksa veya hata yoksa, mevcut mantığa dön
+            if (totalRepeatCount == 0 && anomalyDevices.Any())
+            {
+                // Eski mantık (konum bazlı)
+                string positionKey = string.Join("|",
+                    anomalyDevices.Select(d => $"{d.StartPosition:N0}-{d.EndPosition:N0}"));
+
+                if (!_errorRepeatCounts.ContainsKey(positionKey))
+                {
+                    _errorRepeatCounts[positionKey] = 0;
+                }
+
+                _errorRepeatCounts[positionKey]++;
+                return _errorRepeatCounts[positionKey];
+            }
+
+            return totalRepeatCount;
         }
 
         private void WriteLogToFile(VldErrorLog log)
         {
-            string line =
-                $"{log.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
-                $"{log.Category} | {log.DeviceId} | " +
-                $"V={log.Voltage:N0} | " +
-                $"KM={log.Kilometer:N3} | " +
-                $"Tekrar={log.RepeatCount} | " +
-                $"Tren={log.TrainCount} | " +
-                $"Hız={log.AvgTrainSpeed:N1}";
+            try
+            {
+                string line = $"{log.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
+                             $"{log.Category} | " +
+                             $"Tekrar: {log.RepeatCount} | " +
+                             $"Cihazlar: {log.DevicesDisplay} | " +
+                             $"Trenler: {log.AllTrains.Count} adet";
 
-            File.AppendAllLines(LOG_FILE, new[] { line });
+                // Detaylı bilgiler
+                string details = "\n  Cihaz Detayları:";
+                foreach (var device in log.AffectedDevices)
+                {
+                    details += $"\n    - {device.DeviceId}: {device.Voltage:N0}V @ {device.Kilometer:N2}km";
+                }
+
+                details += "\n  Tren Detayları:";
+                foreach (var train in log.AllTrains)
+                {
+                    details += $"\n    - {train.TrainName}: {train.Position:N0}m, {train.Speed:N0}km/h, {train.TrackType}, {train.Status}";
+                }
+
+                File.AppendAllText(LOG_FILE, line + details + "\n" + new string('=', 80) + "\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Log yazma hatası: {ex.Message}");
+            }
+        }
+
+        private void LogCheckTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                // Tüm cihazların son verilerini topla
+                var allLatestData = new List<VldData>();
+                for (int i = 1; i <= 12; i++)
+                {
+                    var latestData = _deviceDataCollections[i].FirstOrDefault();
+                    if (latestData != null)
+                    {
+                        allLatestData.Add(latestData);
+                    }
+                }
+
+                // Anomali kontrolü yap
+                if (allLatestData.Any())
+                {
+                    CheckAndLogVoltageError(allLatestData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Log kontrol hatası: {ex.Message}");
+            }
         }
 
         // Aç/Kapa butonu
@@ -2034,6 +2358,7 @@ namespace VldDataVisualizer.Views
             }
         }
         #endregion
+        
         protected override void OnClosed(EventArgs e)
         {
             _vldSimulator?.StopSimulation();

@@ -4,11 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VldDataVisualizer.ViewModels"
+        xmlns:converters="clr-namespace:VldDataVisualizer.Converters"
         mc:Ignorable="d"
         Title="VLD-TFPR - 12 İstasyon İzleme - Gebze Darıca Metro"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
+        <converters:StringToBrushConverter x:Key="StringToBrushConverter"/>
+        <converters:TrackTypeToColorConverter x:Key="TrackTypeToColorConverter"/>
+        <converters:SpeedToColorConverter x:Key="SpeedToColorConverter"/>
         <Style x:Key="StatusIndicator" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="10,5"/>
@@ -204,7 +208,7 @@
                                             <TextBlock x:Name="Station1Header" Text="🚉 Depo" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart1" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman" AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman" AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 2 - OSB -->
@@ -214,7 +218,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart2" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 3 - Mutlukent -->
@@ -224,7 +228,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart3" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 4 - Adliye -->
@@ -234,7 +238,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart4" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 5 - Akse Sapağı -->
@@ -244,7 +248,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart5" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 6 - Gebze Stadyum -->
@@ -254,7 +258,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart6" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 7 - Gebze Kent Meydanı -->
@@ -264,7 +268,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart7" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 8 - Fatih D. Hastanesi -->
@@ -274,7 +278,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart8" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 9 - TCDD Gar -->
@@ -284,7 +288,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart9" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 10 - Farabi D. Hastanesi -->
@@ -294,7 +298,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart10" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 11 - Darıca Cumhuriyet -->
@@ -304,7 +308,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart11" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 12 - Darıca Sahil -->
@@ -314,7 +318,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart12" 
                     Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White"/>
+                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                 </StackPanel>
@@ -403,20 +407,203 @@
 
                 <!-- Log Listesi -->
                 <DataGrid x:Name="ErrorLogGrid"
-                      AutoGenerateColumns="True"
-                      IsReadOnly="True"
-                      Background="White"
-                      
-                      DockPanel.Dock="Top">
+          AutoGenerateColumns="False"
+          IsReadOnly="True"
+          Background="White"
+          RowHeight="80" 
+          DockPanel.Dock="Top"
+          GridLinesVisibility="None"
+          AlternatingRowBackground="#F5F5F5"
+          SelectionUnit="FullRow">
 
-                    <!-- Kolonlar için stil (isteğe bağlı) -->
                     <DataGrid.Resources>
+                        <!-- Varsayılan highlight'ı gizle: sadece bu DataGrid içinde geçerli -->
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="White"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Red"/>
+
+                        <!-- Hücre stili: padding, hizalama ve seçili iken appearance -->
                         <Style TargetType="DataGridCell">
                             <Setter Property="Padding" Value="5"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                            <Setter Property="BorderBrush" Value="LightGray"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Foreground" Value="Red"/>
+                                </Trigger>
+                                <!-- Eğer hücre focus olduğunda çerçeve istersen buraya ekle -->
+                            </Style.Triggers>
+                        </Style>
+
+                        <!-- Satır stili: yükseklik ve seçili appearance -->
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Height" Value="80"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <!-- Ön plandaki yazı ve arka plan -->
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Foreground" Value="Red"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <!-- İstersen hover rengi ekle; kaldırabilirsin -->
+                                    <Setter Property="Background" Value="#F7F7F7"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
+
+                    <!-- Kolonlar -->
+                    <DataGrid.Columns>
+                        <!-- Zaman -->
+                        <DataGridTextColumn Header="Zaman" 
+                            Width="80"
+                            Binding="{Binding Timestamp, StringFormat='HH:mm:ss'}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Kategori (Renkli) -->
+                        <DataGridTemplateColumn Header="Kategori" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="3" 
+                            Background="{Binding CategoryColor, Converter={StaticResource StringToBrushConverter}}"
+                            Padding="5,2"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Category}" 
+                                   Foreground="White"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Tekrar Sayısı -->
+                        <DataGridTextColumn Header="Tekrar" 
+                            Width="60"
+                            Binding="{Binding RepeatCount}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="{Binding CategoryColor, Converter={StaticResource StringToBrushConverter}}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- TFPR Cihazları (Birden fazla) -->
+                        <DataGridTemplateColumn Header="TFPR Cihazları" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MaxHeight="70">
+                                        <ItemsControl ItemsSource="{Binding AffectedDevices}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#E0E0E0" 
+                                            BorderThickness="0,0,0,1" 
+                                            Padding="0,2,0,2"
+                                            Margin="0,0,0,2">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding DeviceId}" 
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#1976D2"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Voltage, StringFormat='{}{0:N0}V'}" 
+                                                           Margin="0,0,10,0"/>
+                                                                <TextBlock Text="{Binding Kilometer, StringFormat='{}{0:N2}km'}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Bütün Tren Konumları -->
+                        <DataGridTemplateColumn Header="Tren Konumları" Width="250">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MaxHeight="70">
+                                        <ItemsControl ItemsSource="{Binding AllTrains}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#E0E0E0" 
+                                            BorderThickness="0,0,0,1" 
+                                            Padding="0,2,0,2"
+                                            Margin="0,0,0,2">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding TrainName}" 
+                                                       Width="60"
+                                                       FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding Position, StringFormat='{}{0:N0}m'}" 
+                                                       Width="70"/>
+                                                            <TextBlock Text="{Binding TrackType}" 
+                                                       Width="40"
+                                                       Foreground="{Binding TrackType, Converter={StaticResource TrackTypeToColorConverter}}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Bütün Tren Hızları -->
+                        <DataGridTemplateColumn Header="Tren Hızları" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MaxHeight="70">
+                                        <ItemsControl ItemsSource="{Binding AllTrains}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#E0E0E0" 
+                                            BorderThickness="0,0,0,1" 
+                                            Padding="0,2,0,2"
+                                            Margin="0,0,0,2">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding TrainName}" 
+                                                       Width="60"
+                                                       FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding Speed, StringFormat='{}{0:N0}km/h'}" 
+                                                       Width="80"
+                                                       Foreground="{Binding Speed, Converter={StaticResource SpeedToColorConverter}}"/>
+                                                            <TextBlock Text="{Binding Status}" 
+                                                       Width="50"
+                                                       FontSize="10"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
         </Border>
