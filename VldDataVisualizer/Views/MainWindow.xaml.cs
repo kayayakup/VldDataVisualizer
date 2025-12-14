@@ -751,7 +751,7 @@ namespace VldDataVisualizer.Views
                 chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
                 // Grafikleri oluştur ve referanslara kaydet - DC DEĞERLER İÇİN
-                refs.PowerChart = CreateChart($"PowerChart{stationId}", "DC Aktif Güç", "Güç (kW)", Brushes.Green, 0, 2000);
+                refs.PowerChart = CreateChart($"PowerChart{stationId}", "DC Aktif Güç", "Güç (kW)", Brushes.Green, 350000, 750000);
                 refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "DC Çıkış Gerilimi", "Gerilim (V)", Brushes.Blue, 1200, 1800);
                 refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "DC Akım", "Akım (A)", Brushes.Red, 0, 1500);
                 refs.TempChart = CreateChart($"TempChart{stationId}", "Sıcaklık", "Sıcaklık (°C)", Brushes.Orange, -10, 100);
@@ -855,8 +855,8 @@ namespace VldDataVisualizer.Views
             // DC GÜÇ HESAPLAMA
             double dcPower = latestData.DcVoltage * latestData.DcCurrent; // kW * A = kW (zaten kV cinsinden)
 
-            // DC gerilimi V cinsine çevir (görüntüleme için)
-            double dcVoltageV = latestData.DcVoltage * 1000;
+            //// DC gerilimi V cinsine çevir (görüntüleme için)
+            //double dcVoltageV = latestData.DcVoltage * 1000;
 
             // Metin Değerlerini Güncelle - DC SİSTEM İÇİN
             UpdateRefText(uiRefs, "DevID", latestData.DeviceId);
@@ -868,7 +868,7 @@ namespace VldDataVisualizer.Views
 
             // DC SİSTEM DEĞERLERİ
             UpdateRefText(uiRefs, "ACin", $"{latestData.VoltageIn:N1} kV");
-            UpdateRefText(uiRefs, "DCout", $"{dcVoltageV:N0} V");
+            UpdateRefText(uiRefs, "DCout", $"{latestData.DcVoltage:N0} V");
             UpdateRefText(uiRefs, "DCCurr", $"{latestData.DcCurrent:N0} A");
             UpdateRefText(uiRefs, "DCPow", $"{dcPower:N0} kW");
             UpdateRefText(uiRefs, "GndCurr", $"{latestData.GroundCurrent:N1} A");
@@ -904,7 +904,7 @@ namespace VldDataVisualizer.Views
 
             // Grafikleri Güncelle - DC DEĞERLER İLE
             uiRefs.PowerChart.AddValue(dcPower); // DC güç
-            uiRefs.VoltageChart.AddValue(dcVoltageV); // DC gerilim (V)
+            uiRefs.VoltageChart.AddValue(latestData.DcVoltage); // DC gerilim (V)
             uiRefs.CurrentChart.AddValue(latestData.DcCurrent); // DC akım
             uiRefs.TempChart.AddValue(latestData.Temperature);
 

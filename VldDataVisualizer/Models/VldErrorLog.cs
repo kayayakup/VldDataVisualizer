@@ -7,6 +7,8 @@ namespace VldDataVisualizer.Models
     {
         public DateTime Timestamp { get; set; }
         public string Category { get; set; } // YEŞİL / SARI / KIRMIZI
+        public string AnomalyType { get; set; }
+        public bool HasAnomaly { get; set; }
         public int RepeatCount { get; set; }
         public List<AnomalyDevice> AffectedDevices { get; set; } = new List<AnomalyDevice>();
         public List<TrainInfoLog> AllTrains { get; set; } = new List<TrainInfoLog>();
@@ -37,6 +39,11 @@ namespace VldDataVisualizer.Models
         public double Kilometer { get; set; }
         public double StartPosition { get; set; }
         public double EndPosition { get; set; }
+        public double DcVoltage { get; set; }
+        public double DcCurrent { get; set; }
+        public double GroundCurrent { get; set; }
+        public double TouchVoltage { get; set; }
+        public string Category { get; set; }
     }
 
     public class TrainInfoLog
@@ -47,5 +54,6 @@ namespace VldDataVisualizer.Models
         public double Speed { get; set; } // km/h
         public string TrackType { get; set; }
         public string Status { get; set; }
+        public string SectionDeviceId { get; set; }
     }
 }

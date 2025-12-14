@@ -188,19 +188,19 @@ namespace VldDataVisualizer.ViewModels
             double minY = _minY;
             double maxY = _maxY;
 
-            if (_autoScaleY)
-            {
-                var autoRange = CalculateAutoYRange();
-                minY = autoRange.min;
-                maxY = autoRange.max;
+            //if (_autoScaleY)
+            //{
+            //    var autoRange = CalculateAutoYRange();
+            //    minY = autoRange.min;
+            //    maxY = autoRange.max;
 
-                // Minimum range kontrolü (çok küçük değerler için)
-                if (maxY - minY < 1.0)
-                {
-                    minY -= 0.5;
-                    maxY += 0.5;
-                }
-            }
+            //    // Minimum range kontrolü (çok küçük değerler için)
+            //    if (maxY - minY < 1.0)
+            //    {
+            //        minY -= 0.5;
+            //        maxY += 0.5;
+            //    }
+            //}
 
             // Draw background
             var background = new Rectangle

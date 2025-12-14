@@ -208,7 +208,7 @@
                                             <TextBlock x:Name="Station1Header" Text="🚉 Depo" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart1" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman" AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman" AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 2 - OSB -->
@@ -217,8 +217,8 @@
                                             <TextBlock x:Name="Station2Header" Text="🚉 OSB" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart2" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
+                        Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
+                        AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 3 - Mutlukent -->
@@ -227,7 +227,7 @@
                                             <TextBlock x:Name="Station3Header" Text="🚉 Mutlukent" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart3" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -237,7 +237,7 @@
                                             <TextBlock x:Name="Station4Header" Text="🚉 Adliye" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart4" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -247,7 +247,7 @@
                                             <TextBlock x:Name="Station5Header" Text="🚉 Akse Sapağı" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart5" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -257,7 +257,7 @@
                                             <TextBlock x:Name="Station6Header" Text="🚉 Gebze Stadyum" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart6" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -267,7 +267,7 @@
                                             <TextBlock x:Name="Station7Header" Text="🚉 Gebze Kent Meydanı" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart7" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -277,7 +277,7 @@
                                             <TextBlock x:Name="Station8Header" Text="🚉 Fatih D. Hastanesi" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart8" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -287,7 +287,7 @@
                                             <TextBlock x:Name="Station9Header" Text="🚉 TCDD Gar" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart9" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -297,7 +297,7 @@
                                             <TextBlock x:Name="Station10Header" Text="🚉 Farabi D. Hastanesi" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart10" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -307,7 +307,7 @@
                                             <TextBlock x:Name="Station11Header" Text="🚉 Darıca Cumhuriyet" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart11" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
@@ -317,7 +317,7 @@
                                             <TextBlock x:Name="Station12Header" Text="🚉 Darıca Sahil" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart12" 
-                    Title="Gerilim (kV)" YAxisTitle="kV" XAxisTitle="Zaman"
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
                     AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2000"/>
                                     </GroupBox>
 
