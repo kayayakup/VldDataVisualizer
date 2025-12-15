@@ -12,6 +12,7 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Windows.Media.Animation;
 using System.ComponentModel;
+using System.Windows.Data;
 
 namespace VldDataVisualizer.Views
 {
@@ -428,7 +429,7 @@ namespace VldDataVisualizer.Views
 
         #endregion
 
-        #region EVENT HANDLERS
+        #region EVENT HANDLERS - GÜNCELLENMİŞ VERSİYON
 
         private void OnVLDDataGenerated(object sender, List<VldData> allDevicesData)
         {
@@ -461,6 +462,9 @@ namespace VldDataVisualizer.Views
                         });
                     }
 
+                    // EN 50122 uyumluluk kontrolü - YENİ EKLENDİ
+                    CheckEN50122Compliance(data);
+
                     // Veri koleksiyonuna ekle
                     _deviceDataCollections[stationId].Insert(0, data);
                     if (_deviceDataCollections[stationId].Count > 100)
@@ -479,10 +483,9 @@ namespace VldDataVisualizer.Views
                     {
                         _allCharts[i].AddValue(data.DcVoltage); // Gerilim grafiği
 
-                        // Header'ı güncelle
-                        UpdateStationHeader(stationId, data.Status, data.DcVoltage);
+                        // Header'ı güncelle - EN 50122 uyumlu
+                        UpdateStationHeader(stationId, data.Status, data.DcVoltage, data.TouchVoltage);
                     }
-
                 }
 
                 DataCountText.Content = $"TFPR Veri: {_deviceDataCollections.Sum(d => d.Value.Count)}";
@@ -490,13 +493,14 @@ namespace VldDataVisualizer.Views
 
                 if (allDevicesData != null && allDevicesData.Any())
                 {
-                    // IEC 50122 standardına göre anomali kontrolü
-                    CheckAndLogVoltageError(allDevicesData);
+                    // EN 50122 standardına göre anomali kontrolü - GÜNCELLENDİ
+                    CheckAndLogEN50122Error(allDevicesData);
                 }
             });
         }
 
-        private void UpdateStationHeader(int stationId, string status, double voltage)
+        // Güncellenmiş UpdateStationHeader metodu
+        private void UpdateStationHeader(int stationId, string status, double dcVoltage, double touchVoltage = 0)
         {
             TextBlock header = null;
 
@@ -521,17 +525,30 @@ namespace VldDataVisualizer.Views
                 var station = _stations.FirstOrDefault(s => s.StationId == stationId);
                 string stationName = station?.StationName ?? $"İstasyon {stationId}";
 
-                header.Text = $"🚉 {stationName}\n{voltage:N1} V";
+                // DC voltaj kategorisine göre sembol
+                string dcCategory = EN50122Analyzer.GetDcVoltageCategory(dcVoltage);
+                string symbol = EN50122Analyzer.GetStatusSymbol(dcCategory);
+
+                // Eğer dokunma gerilimi varsa göster
+                double faultDuration = _faultDurations.ContainsKey(stationId) ? _faultDurations[stationId] : 0;
+                string touchVoltageInfo = touchVoltage > 10 ? $"\n⚠️ Ute: {touchVoltage:N0}V" : "";
+
+                header.Text = $"{symbol} {stationName}\n{dcVoltage:N0} V{touchVoltageInfo}";
 
                 // Durum rengine göre başlık rengi
-                header.Foreground = status switch
-                {
-                    "NORMAL" => new SolidColorBrush(Colors.Green),
-                    "WARNING" => new SolidColorBrush(Colors.Orange),
-                    "ALARM" => new SolidColorBrush(Colors.Red),
-                    _ => new SolidColorBrush(Colors.Gray)
-                };
+                header.Foreground = EN50122Analyzer.GetStatusColor(status);
             }
+        }
+
+        private string GetStatusSymbol(string status)
+        {
+            return status switch
+            {
+                "NORMAL" => "✅",
+                "WARNING" => "⚠️",
+                "ALARM" => "🚨",
+                _ => "⚡"
+            };
         }
 
         private void OnSignalizationDataGenerated(object sender, SignalizationData data)
@@ -545,6 +562,15 @@ namespace VldDataVisualizer.Views
                 UpdateRoutesTrainCounts(_routes.ToList(), _activeTrains.ToList());
 
                 CanvasInfoText.Text = $"İstasyonlar: {_stations.Count} | Bloklar: {_blocks.Count} | Trenler: {_activeTrains.Count}";
+            });
+        }
+
+        private void OnVLDStatusChanged(object sender, string status)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                HeaderStatusText.Text = $"🔵 {status}";
+                ShowStatusMessage(status, StatusType.Info);
             });
         }
 
@@ -593,17 +619,512 @@ namespace VldDataVisualizer.Views
                     (route.BlockSequence.Contains(t.CurrentBlockId + 100) && t.TrackType == "HAT - 2"));
             }
         }
+        #endregion
+        #region EN 50122 ERROR LOG FUNCTIONS
 
-        private void OnVLDStatusChanged(object sender, string status)
+        private void CheckAndLogEN50122Error(List<VldData> allDevicesData)
         {
-            Dispatcher.Invoke(() =>
+            var anomalyDevices = new List<EN50122AnomalyDevice>();
+            string overallCategory = "NORMAL";
+
+            foreach (var data in allDevicesData)
             {
-                HeaderStatusText.Text = $"🔵 {status}";
-                ShowStatusMessage(status, StatusType.Info);
+                // Hata süresini al
+                double faultDuration = _faultDurations.ContainsKey(data.StationId) ?
+                    _faultDurations[data.StationId] : 0;
+
+                // EN 50122 kategorilerini hesapla
+                string touchVoltageCategory = EN50122Analyzer.GetTouchVoltageCategory(
+                    data.TouchVoltage, faultDuration);
+                string dcVoltageCategory = EN50122Analyzer.GetDcVoltageCategory(data.DcVoltage);
+                string groundCurrentCategory = EN50122Analyzer.GetGroundCurrentCategory(data.GroundCurrent);
+
+                // Genel kategoriyi belirle
+                string deviceOverallCategory = GetMaxCategory(
+                    touchVoltageCategory,
+                    dcVoltageCategory,
+                    groundCurrentCategory);
+
+                // Sadece NORMAL olmayan cihazları log'a ekle
+                if (deviceOverallCategory != "NORMAL")
+                {
+                    // En kritik kategoriyi güncelle
+                    if ((deviceOverallCategory == "KIRMIZI" && overallCategory != "KIRMIZI") ||
+                        (deviceOverallCategory == "SARI" && overallCategory == "NORMAL"))
+                    {
+                        overallCategory = deviceOverallCategory;
+                    }
+
+                    anomalyDevices.Add(new EN50122AnomalyDevice
+                    {
+                        DeviceId = data.DeviceId,
+                        StationName = data.StationName,
+                        StationId = data.StationId,
+                        DcVoltage = data.DcVoltage,
+                        DcVoltageCategory = dcVoltageCategory,
+                        DcPower = data.DcPower,
+                        TouchVoltage = data.TouchVoltage,
+                        Duration = faultDuration,
+                        TouchVoltageCategory = touchVoltageCategory,
+                        GroundCurrent = data.GroundCurrent,
+                        GroundCurrentCategory = groundCurrentCategory,
+                        VoltageOut = data.VoltageOut,
+                        Current = data.Current,
+                        Kilometer = data.StartPosition / 1000.0,
+                        StartPosition = data.StartPosition,
+                        EndPosition = data.EndPosition,
+                        OverallCategory = deviceOverallCategory,
+                        Status = data.Status,
+                        Timestamp = data.Timestamp
+                    });
+                }
+            }
+
+            // Anomali varsa log oluştur (minimum 1 saniye süren hatalar için)
+            if (anomalyDevices.Any(d => d.Duration >= 1.0 || d.DcVoltageCategory == "KIRMIZI"))
+            {
+                // Kritik hataları filtrele
+                var criticalDevices = anomalyDevices.Where(d =>
+                    d.OverallCategory == "KIRMIZI" || d.Duration >= 0.5).ToList();
+
+                if (!criticalDevices.Any())
+                    return; // Kritik hata yoksa log oluşturma
+
+                string key = $"EN50122_{overallCategory}_{DateTime.Now:yyyyMMddHHmmss}";
+
+                // Tekrar sayısını hesapla
+                int repeatCount = CalculateEN50122RepeatCount(criticalDevices);
+
+                // Bölgedeki trenleri topla
+                var trainsInAffectedArea = GetTrainsInAffectedArea(criticalDevices);
+
+                var log = new VldErrorLog
+                {
+                    Timestamp = DateTime.Now,
+                    Category = overallCategory,
+                    RepeatCount = repeatCount,
+                    AffectedDevices = criticalDevices.Select(d => new AnomalyDevice
+                    {
+                        // Temel özellikler
+                        DeviceId = d.DeviceId,
+                        Voltage = d.VoltageOut,
+                        Kilometer = d.Kilometer,
+                        StartPosition = d.StartPosition,
+                        EndPosition = d.EndPosition,
+                        DcVoltage = d.DcVoltage,
+                        GroundCurrent = d.GroundCurrent,
+                        TouchVoltage = d.TouchVoltage,
+                        Category = d.OverallCategory,
+                        Duration = d.Duration,
+
+                        // YENİ: EN 50122 özellikleri
+                        StationName = d.StationName,
+                        StationId = d.StationId,
+                        DcVoltageCategory = d.DcVoltageCategory,
+                        TouchVoltageCategory = d.TouchVoltageCategory,
+                        GroundCurrentCategory = d.GroundCurrentCategory,
+                        OverallEN50122Category = d.OverallCategory,
+                        DcPower = d.DcPower,
+                        Timestamp = d.Timestamp,
+                        Status = d.Status
+                    }).ToList(),
+                    AllTrains = trainsInAffectedArea,
+                    Standard = "EN 50122-1",
+
+                    // YENİ: EN 50122 özel özellikleri
+                    OverallEN50122Category = overallCategory,
+                    MaxTouchVoltage = criticalDevices.Max(d => d.TouchVoltage),
+                    MaxTouchVoltageDuration = criticalDevices.Max(d => d.Duration),
+                    MaxDcVoltageDeviation = criticalDevices.Max(d => Math.Abs(d.DcVoltage - 1500)),
+                    MaxGroundCurrent = criticalDevices.Max(d => d.GroundCurrent),
+                    CriticalViolationCount = criticalDevices.Count(d => d.OverallCategory == "KIRMIZI"),
+                    WarningViolationCount = criticalDevices.Count(d => d.OverallCategory == "SARI"),
+
+                    // YENİ: EN 50122 ihlalleri
+                    EN50122Violations = GetEN50122Violations(criticalDevices)
+                };
+
+                // En başa ekle (en yeni en üstte)
+                _errorLogs.Insert(0, log);
+
+                // Dosyaya yaz
+                WriteEN50122LogToFile(log);
+
+                // Eğer panel açıksa güncelle
+                if (_isLogPanelOpen)
+                {
+                    ErrorLogGrid.Items.Refresh();
+
+                    // Yeni satıra kaydır
+                    if (ErrorLogGrid.Items.Count > 0)
+                    {
+                        ErrorLogGrid.ScrollIntoView(ErrorLogGrid.Items[0]);
+                    }
+                }
+
+                // Çok fazla log varsa temizle
+                if (_errorLogs.Count > 100)
+                {
+                    _errorLogs.RemoveAt(_errorLogs.Count - 1);
+                }
+
+                // Debug bilgisi
+                Console.WriteLine($"EN50122 Log: {criticalDevices.Count} cihaz, {overallCategory}, " +
+                                 $"{trainsInAffectedArea.Count} tren");
+            }
+        }
+
+        private List<EN50122Violation> GetEN50122Violations(List<EN50122AnomalyDevice> devices)
+        {
+            var violations = new List<EN50122Violation>();
+
+            foreach (var device in devices)
+            {
+                // DC Voltaj ihlali
+                if (device.DcVoltageCategory != "NORMAL")
+                {
+                    violations.Add(new EN50122Violation
+                    {
+                        Type = "DC_VOLTAGE",
+                        Category = device.DcVoltageCategory,
+                        DeviceId = device.DeviceId,
+                        StationName = device.StationName,
+                        Value = device.DcVoltage,
+                        Duration = 0,
+                        Limit = device.DcVoltageCategory == "KIRMIZI" ? 1950 : 1800,
+                        DeviationPercent = Math.Abs((device.DcVoltage - 1500) / 1500 * 100),
+                        Timestamp = device.Timestamp,
+                        Description = $"DC Gerilim {device.DcVoltageCategory}: {device.DcVoltage:N0}V"
+                    });
+                }
+
+                // Dokunma Gerilimi ihlali
+                if (device.TouchVoltageCategory != "NORMAL" && device.Duration > 0)
+                {
+                    violations.Add(new EN50122Violation
+                    {
+                        Type = "TOUCH_VOLTAGE",
+                        Category = device.TouchVoltageCategory,
+                        DeviceId = device.DeviceId,
+                        StationName = device.StationName,
+                        Value = device.TouchVoltage,
+                        Duration = device.Duration,
+                        Limit = device.TouchVoltageCategory == "KIRMIZI" ?
+                            GetShortTermLimit(device.Duration) :
+                            GetLongTermLimit(device.Duration),
+                        DeviationPercent = 0,
+                        Timestamp = device.Timestamp,
+                        Description = $"Dokunma Gerilimi {device.TouchVoltageCategory}: " +
+                                    $"{device.TouchVoltage:N0}V/{device.Duration:F1}s"
+                    });
+                }
+
+                // Toprak Akımı ihlali
+                if (device.GroundCurrentCategory != "NORMAL")
+                {
+                    violations.Add(new EN50122Violation
+                    {
+                        Type = "GROUND_CURRENT",
+                        Category = device.GroundCurrentCategory,
+                        DeviceId = device.DeviceId,
+                        StationName = device.StationName,
+                        Value = device.GroundCurrent,
+                        Duration = 0,
+                        Limit = device.GroundCurrentCategory == "KIRMIZI" ? 10 : 6,
+                        DeviationPercent = 0,
+                        Timestamp = device.Timestamp,
+                        Description = $"Toprak Akımı {device.GroundCurrentCategory}: {device.GroundCurrent:N1}A"
+                    });
+                }
+            }
+
+            return violations;
+        }
+
+        private string GetMaxCategory(params string[] categories)
+        {
+            if (categories.Contains("KIRMIZI")) return "KIRMIZI";
+            if (categories.Contains("SARI")) return "SARI";
+            return "NORMAL";
+        }
+
+        private int CalculateEN50122RepeatCount(List<EN50122AnomalyDevice> anomalyDevices)
+        {
+            int totalRepeatCount = 0;
+            var activeTrains = _activeTrains.ToList();
+
+            foreach (var device in anomalyDevices)
+            {
+                var trainsInSection = activeTrains
+                    .Where(train =>
+                        train.CurrentPosition >= Math.Min(device.StartPosition, device.EndPosition) &&
+                        train.CurrentPosition <= Math.Max(device.StartPosition, device.EndPosition))
+                    .ToList();
+
+                foreach (var train in trainsInSection)
+                {
+                    double roundedPosition = Math.Round(train.CurrentPosition, 1);
+
+                    // Anahtar: İstasyon + Hata türü + Kategori
+                    string positionKey = $"{device.StationId}_{device.OverallCategory}_{roundedPosition:N1}";
+
+                    if (!_errorRepeatCounts.ContainsKey(positionKey))
+                        _errorRepeatCounts[positionKey] = 0;
+
+                    _errorRepeatCounts[positionKey]++;
+                    totalRepeatCount = Math.Max(totalRepeatCount, _errorRepeatCounts[positionKey]);
+                }
+            }
+
+            if (totalRepeatCount == 0 && anomalyDevices.Any())
+            {
+                string positionKey = string.Join("|",
+                    anomalyDevices.Select(d => $"{d.StationId}-{d.OverallCategory}"));
+
+                if (!_errorRepeatCounts.ContainsKey(positionKey))
+                    _errorRepeatCounts[positionKey] = 0;
+
+                _errorRepeatCounts[positionKey]++;
+                return _errorRepeatCounts[positionKey];
+            }
+
+            return totalRepeatCount;
+        }
+
+        private List<TrainInfoLog> GetTrainsInAffectedArea(List<EN50122AnomalyDevice> anomalyDevices)
+        {
+            var trainsInArea = new List<TrainInfoLog>();
+            var activeTrains = _activeTrains.ToList();
+
+            // Tüm hatalı bölgeleri birleştir
+            var affectedRanges = anomalyDevices
+                .Select(d => new {
+                    Min = Math.Min(d.StartPosition, d.EndPosition),
+                    Max = Math.Max(d.StartPosition, d.EndPosition)
+                })
+                .ToList();
+
+            foreach (var train in activeTrains)
+            {
+                // Tren herhangi bir hatalı bölgede mi?
+                bool isInAffectedArea = affectedRanges.Any(range =>
+                    train.CurrentPosition >= range.Min - 500 &&
+                    train.CurrentPosition <= range.Max + 500);
+
+                if (isInAffectedArea)
+                {
+                    trainsInArea.Add(new TrainInfoLog
+                    {
+                        TrainId = train.TrainId,
+                        TrainName = train.TrainName,
+                        Position = train.CurrentPosition,
+                        Speed = train.Speed,
+                        TrackType = train.TrackType,
+                        Status = train.Status
+                    });
+                }
+            }
+
+            return trainsInArea;
+        }
+
+        private void WriteEN50122LogToFile(VldErrorLog log)
+        {
+            try
+            {
+                string timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                string line = $"{timestamp} | EN 50122-1 | {log.Category} | " +
+                             $"Tekrar: {log.RepeatCount} | {log.Summary}";
+
+                // Detaylı EN 50122 bilgileri
+                string details = $"\n\nEN 50122-1 İhlal Detayları:";
+                details += $"\n{'=',80}";
+
+                // Kritik (KIRMIZI) ihlaller
+                var criticalDevices = log.AffectedDevices.Where(d => d.OverallCategory == "KIRMIZI").ToList();
+                if (criticalDevices.Any())
+                {
+                    details += $"\n\nKRİTİK İHLALLER ({criticalDevices.Count} cihaz):";
+                    details += $"\n{'─',80}";
+                    foreach (var device in criticalDevices)
+                    {
+                        details += $"\n  • {device.StationName} ({device.DeviceId}):";
+                        details += $"\n      {device.GetDetails()}";
+                    }
+                }
+
+                // Uyarı (SARI) ihlaller
+                var warningDevices = log.AffectedDevices.Where(d => d.OverallCategory == "SARI").ToList();
+                if (warningDevices.Any())
+                {
+                    details += $"\n\nUYARI İHLALLER ({warningDevices?.Count} cihaz):";
+                    details += $"\n{'─',80}";
+                    foreach (var device in warningDevices)
+                    {
+                        details += $"\n  • {device.StationName}: {device.GetDetails()}";
+                    }
+                }
+
+                // Limit bilgileri
+                details += $"\n\nEN 50122-1 Limit Tablosu:";
+                details += $"\n{'─',80}";
+                details += $"\nDC Gerilim (1500V Nominal):";
+                details += $"\n  • Normal: 1350-1650V (±%10)";
+                details += $"\n  • Uyarı: 1200-1800V (±%20)";
+                details += $"\n  • Kritik: 1050-1950V (±%30)";
+                details += $"\n\nToprak Akımı:";
+                details += $"\n  • Normal: < 3A";
+                details += $"\n  • Uyarı: 3-6A";
+                details += $"\n  • Kritik: > 10A";
+                details += $"\n\nDokunma Gerilimi (Ute):";
+                details += $"\n  • >300s: 120V (uzun süreli)";
+                details += $"\n  • 0.7s: 175V (uzun süreli)";
+                details += $"\n  • <0.7s: 350-870V (kısa süreli)";
+
+                // Tren bilgileri
+                if (log.AllTrains.Any())
+                {
+                    details += $"\n\nEtkilenen Bölgedeki Trenler ({log.AllTrains.Count} adet):";
+                    details += $"\n{'─',80}";
+                    foreach (var train in log.AllTrains.OrderBy(t => t.Position))
+                    {
+                        details += $"\n  • {train.TrainName}: {train.Position:N0}m ({train.Kilometer:N2}km), " +
+                                  $"{train.Speed:N0}km/h, {train.TrackType}, {train.Status}";
+                    }
+                }
+
+                // Log'u dosyaya yaz
+                File.AppendAllText(LOG_FILE, line + details + "\n" + new string('=', 80) + "\n\n");
+
+                // Debug için konsola da yaz
+                Console.WriteLine(line);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EN 50122 Log yazma hatası: {ex.Message}");
+            }
+        }
+
+        private void LogCheckTimer_Tick(object sender, EventArgs e)
+        {
+            DateTime _lastLogCheck = DateTime.Now;
+            try
+            {
+                // Sadece simülasyon çalışıyorsa kontrol et
+                if (!_vldSimulator.IsRunning)
+                    return;
+
+                // Minimum 2 saniyede bir kontrol et (çok sık log oluşturma)
+                if (DateTime.Now.Subtract(_lastLogCheck).TotalSeconds < 2.0)
+                    return;
+
+
+                // Tüm cihazların son verilerini topla
+                var allLatestData = new List<VldData>();
+                for (int i = 1; i <= 12; i++)
+                {
+                    var latestData = _deviceDataCollections[i].FirstOrDefault();
+                    if (latestData != null)
+                    {
+                        allLatestData.Add(latestData);
+                    }
+                }
+
+                // EN 50122 anomali kontrolü yap
+                if (allLatestData.Any())
+                {
+                    CheckAndLogEN50122Error(allLatestData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EN 50122 Log kontrol hatası: {ex.Message}");
+            }
+        }
+
+        // XAML DataGrid için kolon güncellemesi (isteğe bağlı)
+        private void InitializeErrorLogGrid()
+        {
+            ErrorLogGrid.AutoGenerateColumns = false;
+            ErrorLogGrid.Columns.Clear();
+
+            // Kolon tanımlamaları
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Zaman",
+                Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" },
+                Width = 80
+            });
+
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Kategori",
+                Binding = new System.Windows.Data.Binding("Category"),
+                Width = 70,
+                CellStyle = new Style(typeof(DataGridCell))
+                {
+                    Setters = {
+                new Setter(Control.ForegroundProperty, new Binding("Category") {
+                    Converter = new CategoryToColorConverter()
+                })
+            }
+                }
+            });
+
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Standart",
+                Binding = new System.Windows.Data.Binding("Standard"),
+                Width = 90
+            });
+
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Özet",
+                Binding = new System.Windows.Data.Binding("Summary"),
+                Width = 200
+            });
+
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Cihaz Sayısı",
+                Binding = new System.Windows.Data.Binding("AffectedDevices.Count"),
+                Width = 90
+            });
+
+            ErrorLogGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Tren Sayısı",
+                Binding = new System.Windows.Data.Binding("AllTrains.Count"),
+                Width = 90
             });
         }
-        #endregion
 
+        // Kategoriye göre renk converter (XAML için)
+        public class CategoryToColorConverter : System.Windows.Data.IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                if (value is string category)
+                {
+                    return category switch
+                    {
+                        "KIRMIZI" => Brushes.Red,
+                        "SARI" => Brushes.Orange,
+                        "NORMAL" => Brushes.Green,
+                        _ => Brushes.Gray
+                    };
+                }
+                return Brushes.Gray;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
         #region TIMER EVENTS
 
         private void RailwayUpdateTimer_Tick(object sender, EventArgs e)
@@ -915,7 +1436,8 @@ namespace VldDataVisualizer.Views
             // Tabloyu Güncelle - DC VERİLER İLE
             uiRefs.DataGrid.ItemsSource = null;
             uiRefs.DataGrid.ItemsSource = _deviceDataCollections[stationId]
-                .Select(d => new {
+                .Select(d => new
+                {
                     d.Timestamp,
                     DcVoltage = d.DcVoltage * 1000, // V cinsinden
                     d.DcCurrent,
@@ -1976,7 +2498,7 @@ namespace VldDataVisualizer.Views
                 }
 
                 // Sütun genişliğini ayarla (750 piksel veya * kullan)
-                RightPanelColumn.Width = new GridLength(750, GridUnitType.Pixel);
+                RightPanelColumn.Width = new GridLength(785, GridUnitType.Pixel);
 
                 // DataGrid'i güncelle
                 ErrorLogGrid.ItemsSource = _errorLogs;
@@ -1989,7 +2511,7 @@ namespace VldDataVisualizer.Views
                 var animation = new DoubleAnimation
                 {
                     From = 0,
-                    To = 750,
+                    To = 785,
                     Duration = TimeSpan.FromMilliseconds(300),
                     AccelerationRatio = 0.2,
                     DecelerationRatio = 0.8
@@ -2047,18 +2569,18 @@ namespace VldDataVisualizer.Views
             return null;
         }
 
-        private string GetVoltageCategory(double voltage)
+        private string GetVoltageCategory(double dcVoltage)
         {
             // Müsaade edilebilir limitleri al
-            double longLimit = GetLongTermLimit(voltage);
-            double shortLimit = GetShortTermLimit(voltage);
+            double longLimit = GetLongTermLimit(dcVoltage);
+            double shortLimit = GetShortTermLimit(dcVoltage);
 
             // KIRMIZI — kısa süreli limit aşıldı
-            if (voltage > shortLimit)
+            if (dcVoltage > shortLimit)
                 return "KIRMIZI";
 
             // SARI — uzun süreli limit aşıldı ama kısa süreli aşılmadı
-            if (voltage > longLimit)
+            if (dcVoltage > longLimit)
                 return "SARI";
 
             // NORMAL — hiçbir limiti aşmıyor
@@ -2125,7 +2647,8 @@ namespace VldDataVisualizer.Views
             foreach (var data in allDevicesData)
             {
                 double voltage = data.VoltageOut;
-                string category = GetVoltageCategory(voltage);
+                double dcVoltage = data.DcVoltage;
+                string category = GetVoltageCategory(dcVoltage);
 
                 if (category != "NORMAL")
                 {
@@ -2140,6 +2663,7 @@ namespace VldDataVisualizer.Views
                     {
                         DeviceId = data.DeviceId,
                         Voltage = voltage,
+                        DcVoltage = dcVoltage,
                         Kilometer = data.StartPosition / 1000.0,
                         StartPosition = data.StartPosition,
                         EndPosition = data.EndPosition
@@ -2227,7 +2751,7 @@ namespace VldDataVisualizer.Views
                     double roundedPosition = Math.Round(train.CurrentPosition, 1);
 
                     // Anahtar: Tren konumu + Hata kategorisi
-                    string category = GetVoltageCategory(device.Voltage);
+                    string category = GetVoltageCategory(device.DcVoltage);
                     string positionKey = $"{roundedPosition:N1}_{category}";
 
                     // Eski Dictionary'yi kullanmaya devam et
@@ -2294,33 +2818,6 @@ namespace VldDataVisualizer.Views
             }
         }
 
-        private void LogCheckTimer_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                // Tüm cihazların son verilerini topla
-                var allLatestData = new List<VldData>();
-                for (int i = 1; i <= 12; i++)
-                {
-                    var latestData = _deviceDataCollections[i].FirstOrDefault();
-                    if (latestData != null)
-                    {
-                        allLatestData.Add(latestData);
-                    }
-                }
-
-                // Anomali kontrolü yap
-                if (allLatestData.Any())
-                {
-                    CheckAndLogVoltageError(allLatestData);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Log kontrol hatası: {ex.Message}");
-            }
-        }
-
         // Aç/Kapa butonu
         private void OpenErrorLogWindow_Click(object sender, RoutedEventArgs e)
         {
@@ -2358,7 +2855,160 @@ namespace VldDataVisualizer.Views
             }
         }
         #endregion
-        
+
+        #region EN 50122 VOLTAGE ANALYSIS FUNCTIONS
+
+        private Dictionary<int, DateTime> _faultStartTimes = new Dictionary<int, DateTime>();
+        private Dictionary<int, double> _faultDurations = new Dictionary<int, double>();
+
+        // EN 50122-1 Çizelge 6: Dokunma gerilimi limitleri
+        private static readonly List<(double timeS, double longTermV, double shortTermV)> _touchVoltageLimits = new()
+        {
+            // Zaman (s) | Uzun Süreli (V) | Kısa Süreli (V)
+            (double.MaxValue, 120, 0),      // > 300 s
+            (300, 150, 0),                  // 300 s
+            (1, 160, 0),                    // 1 s
+            (0.9, 165, 0),                  // 0.9 s
+            (0.8, 170, 0),                  // 0.8 s
+            (0.7, 175, 0),                  // 0.7 s
+            (0.6, 0, 360),                  // 0.6 s (kısa süreli)
+            (0.5, 0, 385),                  // 0.5 s
+            (0.4, 0, 420),                  // 0.4 s
+            (0.3, 0, 460),                  // 0.3 s
+            (0.2, 0, 520),                  // 0.2 s
+            (0.1, 0, 625),                  // 0.1 s
+            (0.05, 0, 735),                 // 0.05 s
+            (0.02, 0, 870),                 // 0.02 s
+        };
+
+        private string GetTouchVoltageCategory(double touchVoltage, double duration)
+        {
+            var limits = GetTouchVoltageLimits(duration);
+
+            if (touchVoltage > limits.shortTermLimit && limits.shortTermLimit > 0)
+                return "KIRMIZI";
+
+            if (touchVoltage > limits.longTermLimit && limits.longTermLimit > 0)
+                return "SARI";
+
+            return "NORMAL";
+        }
+
+        private (double longTermLimit, double shortTermLimit) GetTouchVoltageLimits(double duration)
+        {
+            foreach (var limit in _touchVoltageLimits.OrderBy(l => l.timeS))
+            {
+                if (duration <= limit.timeS)
+                    return (limit.longTermV, limit.shortTermV);
+            }
+
+            return (120, 0);
+        }
+
+        private string GetDcVoltageCategory(double dcVoltage)
+        {
+            // EN 50122-1'e göre DC cer sistemleri için gerilim limitleri
+            const double NOMINAL_DC_VOLTAGE = 1500.0; // V
+            const double NORMAL_TOLERANCE_PERCENT = 20.0; // %20
+            const double WARNING_TOLERANCE_PERCENT = 30.0; // %30
+
+            double normalMin = NOMINAL_DC_VOLTAGE * (1 - NORMAL_TOLERANCE_PERCENT / 100);
+            double normalMax = NOMINAL_DC_VOLTAGE * (1 + NORMAL_TOLERANCE_PERCENT / 100);
+            double warningMin = NOMINAL_DC_VOLTAGE * (1 - WARNING_TOLERANCE_PERCENT / 100);
+            double warningMax = NOMINAL_DC_VOLTAGE * (1 + WARNING_TOLERANCE_PERCENT / 100);
+
+            // ALARM (KIRMIZI) - %30'dan fazla sapma
+            if (dcVoltage < warningMin || dcVoltage > warningMax)
+                return "KIRMIZI";
+
+            // WARNING (SARI) - %20-%30 arası sapma
+            if (dcVoltage < normalMin || dcVoltage > normalMax)
+                return "SARI";
+
+            // NORMAL - %20 içinde
+            return "NORMAL";
+        }
+
+        private string GetGroundCurrentCategory(double groundCurrent)
+        {
+            const double NORMAL_LIMIT = 5.0;     // A
+            const double WARNING_LIMIT = 10.0;   // A
+
+            if (groundCurrent > WARNING_LIMIT)
+                return "KIRMIZI";
+
+            if (groundCurrent > NORMAL_LIMIT)
+                return "SARI";
+
+            return "NORMAL";
+        }
+
+        private void CheckEN50122Compliance(VldData data)
+        {
+            // Hata süresini hesapla - sadece gerçek bir hata varsa
+            double faultDuration = 0.0;
+
+            // Gerçek bir toprak arızası kontrolü
+            bool isRealFault = data.GroundCurrent >= 3.0 && data.TouchVoltage >= 50;
+
+            if (isRealFault)
+            {
+                if (!_faultStartTimes.ContainsKey(data.StationId))
+                    _faultStartTimes[data.StationId] = DateTime.Now;
+
+                faultDuration = (DateTime.Now - _faultStartTimes[data.StationId]).TotalSeconds;
+                _faultDurations[data.StationId] = faultDuration;
+            }
+            else
+            {
+                _faultStartTimes.Remove(data.StationId);
+                _faultDurations.Remove(data.StationId);
+            }
+
+            // EN 50122 analizleri - YENİ FONKSİYONLAR
+            string touchVoltageCategory = EN50122Analyzer.GetTouchVoltageCategory(data.TouchVoltage, faultDuration);
+            string dcVoltageCategory = EN50122Analyzer.GetDcVoltageCategory(data.DcVoltage);
+            string groundCurrentCategory = EN50122Analyzer.GetGroundCurrentCategory(data.GroundCurrent);
+
+            // Genel durum
+            string overallStatus = EN50122Analyzer.GetOverallStatus(
+                data.TouchVoltage,
+                faultDuration,
+                data.DcVoltage,
+                data.GroundCurrent);
+
+            // Data'nın status'unu güncelle
+            data.Status = overallStatus;
+
+            // Sadece gerçek hatalar için alarm ekle
+            if (overallStatus == "KIRMIZI")
+            {
+                // Önceki alarmları temizle (aynı tip alarmları)
+                data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122"));
+
+                // Yeni alarm ekle
+                data.ActiveAlarms.Add($"[EN50122-KRİTİK] {data.StationName} - " +
+                                   $"UDC: {data.DcVoltage:N0}V ({dcVoltageCategory}), " +
+                                   $"Ute: {data.TouchVoltage:N0}V/{faultDuration:F1}s ({touchVoltageCategory}), " +
+                                   $"IG: {data.GroundCurrent:N1}A ({groundCurrentCategory})");
+            }
+            else if (overallStatus == "SARI" && faultDuration > 1.0) // 1 saniyeden uzun süren uyarılar
+            {
+                data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122-UYARI"));
+
+                data.ActiveAlarms.Add($"[EN50122-UYARI] {data.StationName} - " +
+                                   $"UDC: {data.DcVoltage:N0}V, " +
+                                   $"Ute: {data.TouchVoltage:N0}V/{faultDuration:F1}s");
+            }
+            else if (overallStatus == "NORMAL")
+            {
+                // Normal durumda EN50122 alarmlarını temizle
+                data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122"));
+            }
+        }
+
+        #endregion
+
         protected override void OnClosed(EventArgs e)
         {
             _vldSimulator?.StopSimulation();
@@ -2366,6 +3016,7 @@ namespace VldDataVisualizer.Views
             _chartUpdateTimer?.Stop();
             _railwayUpdateTimer?.Stop();
             _detailUpdateTimer?.Stop();
+            _logCheckTimer?.Stop();
             base.OnClosed(e);
         }
     }

@@ -148,11 +148,41 @@ namespace VldDataVisualizer.ViewModels
                 newData.THDVoltage = GenerateTHD(stationId);
                 newData.THDCurrent = GenerateTHD(stationId);
 
-                // ENERJİ SAYAÇLARI
-                _energyCounters[stationId] += newData.ActivePower / 3600.0;
-                _reactiveEnergyCounters[stationId] += newData.ReactivePower / 3600.0;
-                newData.ActiveEnergyImport = Math.Round(_energyCounters[stationId], 2);
-                newData.ReactiveEnergyImport = Math.Round(_reactiveEnergyCounters[stationId], 2);
+                // EN 50122 dokunma gerilimi hesabı
+                newData.TouchVoltage = CalculateTouchVoltage(newData.GroundCurrent);
+
+                // Hata süresini hesapla
+                double faultDuration = 0.0;
+                if (newData.GroundCurrent >= _leakThresholdA)
+                {
+                    if (!_leakStartTimes.ContainsKey(stationId))
+                        _leakStartTimes[stationId] = DateTime.Now;
+
+                    faultDuration = (DateTime.Now - _leakStartTimes[stationId].Value).TotalSeconds;
+                }
+                else
+                {
+                    _leakStartTimes.Remove(stationId);
+                }
+
+                // EN 50122-1'e göre limit kontrolü
+                string touchVoltageStatus = EN50122Analyzer.GetTouchVoltageCategory(
+                    newData.TouchVoltage,
+                    faultDuration);
+
+                // Limit aşımı kontrolü
+                if (touchVoltageStatus == "KIRMIZI")
+                {
+                    newData.ActiveAlarms.Add($"[EN50122-KRİTİK] {newData.StationName} - " +
+                                           $"Tehlikeli dokunma gerilimi: {newData.TouchVoltage}V, " +
+                                           $"Süre: {faultDuration:F1}s");
+                }
+                else if (touchVoltageStatus == "SARI")
+                {
+                    newData.ActiveAlarms.Add($"[EN50122-UYARI] {newData.StationName} - " +
+                                           $"Yüksek dokunma gerilimi: {newData.TouchVoltage}V, " +
+                                           $"Süre: {faultDuration:F1}s");
+                }
 
                 // DC SİSTEM DEĞERLERİ - V cinsinden (DEĞİŞTİRİLDİ)
                 newData.DcVoltage = GenerateDcVoltage(stationId); // V cinsinden
@@ -197,6 +227,11 @@ namespace VldDataVisualizer.ViewModels
             }
 
             DataGenerated?.Invoke(this, allDevicesData);
+        }
+
+        private double GetEN50122TouchVoltageLimit(double durationSeconds)
+        {
+            return EN50122Analyzer.GetAllowedDurationForTouchVoltage(durationSeconds);
         }
 
         #region DC GENERATOR FUNCTIONS - V cinsinden (DEĞİŞTİRİLDİ)
@@ -376,32 +411,32 @@ namespace VldDataVisualizer.ViewModels
             return Math.Round(groundCurrentA * _touchResistance, 1);
         }
 
-        private double GetEN50122TouchVoltageLimit(double tSeconds)
-        {
-            if (tSeconds <= 0) return double.PositiveInfinity;
+        //private double GetEN50122TouchVoltageLimit(double tSeconds)
+        //{
+        //    if (tSeconds <= 0) return double.PositiveInfinity;
 
-            if (tSeconds < 0.7)
-            {
-                if (tSeconds < 0.02) return 870;
-                if (tSeconds < 0.05) return 735;
-                if (tSeconds < 0.1) return 625;
-                if (tSeconds < 0.2) return 520;
-                if (tSeconds < 0.3) return 460;
-                if (tSeconds < 0.4) return 420;
-                if (tSeconds < 0.5) return 385;
-                if (tSeconds < 0.6) return 360;
-                return 350;
-            }
+        //    if (tSeconds < 0.7)
+        //    {
+        //        if (tSeconds < 0.02) return 870;
+        //        if (tSeconds < 0.05) return 735;
+        //        if (tSeconds < 0.1) return 625;
+        //        if (tSeconds < 0.2) return 520;
+        //        if (tSeconds < 0.3) return 460;
+        //        if (tSeconds < 0.4) return 420;
+        //        if (tSeconds < 0.5) return 385;
+        //        if (tSeconds < 0.6) return 360;
+        //        return 350;
+        //    }
 
-            if (tSeconds >= 300) return 120;
-            if (tSeconds >= 300) return 150;
-            if (tSeconds >= 1.0) return 160;
-            if (tSeconds >= 0.9) return 165;
-            if (tSeconds >= 0.8) return 170;
-            if (tSeconds >= 0.7) return 175;
+        //    if (tSeconds >= 300) return 120;
+        //    if (tSeconds >= 300) return 150;
+        //    if (tSeconds >= 1.0) return 160;
+        //    if (tSeconds >= 0.9) return 165;
+        //    if (tSeconds >= 0.8) return 170;
+        //    if (tSeconds >= 0.7) return 175;
 
-            return 175;
-        }
+        //    return 175;
+        //}
 
         private List<string> CheckForAlarms(VldData data)
         {
