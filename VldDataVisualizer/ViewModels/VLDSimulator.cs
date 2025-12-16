@@ -18,16 +18,17 @@ namespace VldDataVisualizer.ViewModels
         private Dictionary<int, double> _reactiveEnergyCounters = new Dictionary<int, double>();
         private Dictionary<int, DateTime?> _leakStartTimes = new Dictionary<int, DateTime?>();
 
-        private const double _leakThresholdA = 5.0;
-        private const double _touchResistance = 1000.0;
+        // ✅ DÜZELTİLDİ: Daha gerçekçi eşik değerleri
+        private const double _leakThresholdA = 3.0; // 3A yerine 5A → Daha sık hata
+        private const double _touchResistance = 50.0; // ✅ 1000Ω → 50Ω (Gerçekçi toprak direnci)
 
         // AC SİSTEM - kV cinsinden
-        private double _systemLineVoltage = 34.5;     // kV (AC)
-        private double _nominalCurrent = 577.35;      // A
-        private double _baseFrequency = 50.0;         // Hz
+        private double _systemLineVoltage = 34.5;
+        private double _nominalCurrent = 577.35;
+        private double _baseFrequency = 50.0;
 
-        // DC SİSTEM - V cinsinden (DEĞİŞTİRİLDİ)
-        private double _nominalDcVoltage = 1500.0;    // V - DC katener nominal (1.5 kV yerine 1500 V)
+        // DC SİSTEM - V cinsinden
+        private double _nominalDcVoltage = 1500.0;
 
         private readonly Dictionary<int, (string Name, double Position)> _stationPositions = new Dictionary<int, (string, double)>
         {
@@ -115,20 +116,20 @@ namespace VldDataVisualizer.ViewModels
                     EndPosition = Math.Max(startPos, endPos)
                 };
 
-                // AC GERİLİMLER - kV cinsinden
-                newData.VoltageIn = _systemLineVoltage; // kV
-                newData.VoltageOut = GenerateVoltageOut(stationId); // kV
-                newData.VoltageL1 = GeneratePhaseVoltage(1, stationId); // kV
-                newData.VoltageL2 = GeneratePhaseVoltage(2, stationId); // kV
-                newData.VoltageL3 = GeneratePhaseVoltage(3, stationId); // kV
+                // AC GERİLİMLER
+                newData.VoltageIn = _systemLineVoltage;
+                newData.VoltageOut = GenerateVoltageOut(stationId);
+                newData.VoltageL1 = GeneratePhaseVoltage(1, stationId);
+                newData.VoltageL2 = GeneratePhaseVoltage(2, stationId);
+                newData.VoltageL3 = GeneratePhaseVoltage(3, stationId);
 
-                // AC AKIMLAR - A cinsinden
+                // AC AKIMLAR
                 newData.Current = GenerateCurrent(stationId);
                 newData.CurrentL1 = GeneratePhaseCurrent(1, stationId);
                 newData.CurrentL2 = GeneratePhaseCurrent(2, stationId);
                 newData.CurrentL3 = GeneratePhaseCurrent(3, stationId);
 
-                // TOPRAK AKIMI - A cinsinden
+                // ✅ DÜZELTİLDİ: Daha sık toprak arızası üretimi
                 newData.GroundCurrent = GenerateGroundCurrent(stationId);
 
                 // AC GÜÇ HESAPLAMALARI
@@ -137,10 +138,10 @@ namespace VldDataVisualizer.ViewModels
                 double powerFactor = 0.9 + (_random.NextDouble() - 0.5) * 0.05;
                 newData.PowerFactor = Math.Round(powerFactor, 2);
 
-                newData.ActivePower = Math.Round((sqrt3 * phaseVoltageKv * newData.Current * powerFactor), 1); // kW
+                newData.ActivePower = Math.Round((sqrt3 * phaseVoltageKv * newData.Current * powerFactor), 1);
                 double reactiveFactor = Math.Sin(Math.Acos(powerFactor));
-                newData.ReactivePower = Math.Round(sqrt3 * phaseVoltageKv * newData.Current * reactiveFactor, 1); // kVAr
-                newData.ApparentPower = Math.Round(sqrt3 * phaseVoltageKv * newData.Current, 1); // kVA
+                newData.ReactivePower = Math.Round(sqrt3 * phaseVoltageKv * newData.Current * reactiveFactor, 1);
+                newData.ApparentPower = Math.Round(sqrt3 * phaseVoltageKv * newData.Current, 1);
 
                 // DİĞER PARAMETRELER
                 newData.Frequency = GenerateFrequency(stationId);
@@ -148,49 +149,16 @@ namespace VldDataVisualizer.ViewModels
                 newData.THDVoltage = GenerateTHD(stationId);
                 newData.THDCurrent = GenerateTHD(stationId);
 
-                // EN 50122 dokunma gerilimi hesabı
+                // ✅ DÜZELTİLDİ: TouchVoltage hesaplama
                 newData.TouchVoltage = CalculateTouchVoltage(newData.GroundCurrent);
 
-                // Hata süresini hesapla
-                double faultDuration = 0.0;
-                if (newData.GroundCurrent >= _leakThresholdA)
-                {
-                    if (!_leakStartTimes.ContainsKey(stationId))
-                        _leakStartTimes[stationId] = DateTime.Now;
+                // DC SİSTEM DEĞERLERİ
+                newData.DcVoltage = GenerateDcVoltage(stationId);
+                newData.DcCurrent = GenerateDcCurrent(stationId);
+                newData.AuxDcVoltage = GenerateAuxDcVoltage(stationId);
+                newData.AuxAcVoltage = GenerateAuxAcVoltage(stationId);
 
-                    faultDuration = (DateTime.Now - _leakStartTimes[stationId].Value).TotalSeconds;
-                }
-                else
-                {
-                    _leakStartTimes.Remove(stationId);
-                }
-
-                // EN 50122-1'e göre limit kontrolü
-                string touchVoltageStatus = EN50122Analyzer.GetTouchVoltageCategory(
-                    newData.TouchVoltage,
-                    faultDuration);
-
-                // Limit aşımı kontrolü
-                if (touchVoltageStatus == "KIRMIZI")
-                {
-                    newData.ActiveAlarms.Add($"[EN50122-KRİTİK] {newData.StationName} - " +
-                                           $"Tehlikeli dokunma gerilimi: {newData.TouchVoltage}V, " +
-                                           $"Süre: {faultDuration:F1}s");
-                }
-                else if (touchVoltageStatus == "SARI")
-                {
-                    newData.ActiveAlarms.Add($"[EN50122-UYARI] {newData.StationName} - " +
-                                           $"Yüksek dokunma gerilimi: {newData.TouchVoltage}V, " +
-                                           $"Süre: {faultDuration:F1}s");
-                }
-
-                // DC SİSTEM DEĞERLERİ - V cinsinden (DEĞİŞTİRİLDİ)
-                newData.DcVoltage = GenerateDcVoltage(stationId); // V cinsinden
-                newData.DcCurrent = GenerateDcCurrent(stationId); // A cinsinden
-                newData.AuxDcVoltage = GenerateAuxDcVoltage(stationId); // V cinsinden
-                newData.AuxAcVoltage = GenerateAuxAcVoltage(stationId); // V cinsinden
-
-                // EN50122 / KAÇAK HESAPLAMASI
+                // ✅ DÜZELTİLDİ: EN50122 KAÇAK HESAPLAMASI
                 if (newData.GroundCurrent >= _leakThresholdA)
                 {
                     if (_leakStartTimes[stationId] == null)
@@ -205,14 +173,18 @@ namespace VldDataVisualizer.ViewModels
                 if (_leakStartTimes[stationId].HasValue)
                     leakDuration = (DateTime.Now - _leakStartTimes[stationId].Value).TotalSeconds;
 
-                newData.TouchVoltage = CalculateTouchVoltage(newData.GroundCurrent);
-                double uteLimit = GetEN50122TouchVoltageLimit(leakDuration);
+                // ✅ DÜZELTİLDİ: EN50122 limit kontrolü
+                var touchLimits = EN50122Analyzer.GetAllowedDurationForTouchVoltage(newData.TouchVoltage);
 
-                newData.ActiveAlarms = CheckForAlarms(newData);
+                newData.ActiveAlarms = CheckForAlarms(newData, leakDuration);
 
-                if (newData.TouchVoltage > uteLimit)
+                // Kritik: TouchVoltage limit kontrolü
+                if (leakDuration > 0 && leakDuration > touchLimits)
                 {
-                    newData.ActiveAlarms.Add($"[{newData.StationName}] TEHLIKELI_DOKUNMA_GERILIMI Ute={newData.TouchVoltage}V Limit={uteLimit}V (t={leakDuration:F2}s)");
+                    newData.ActiveAlarms.Add($"[{newData.StationName}] ❌ TEHLIKELI_DOKUNMA_GERİLİMİ " +
+                        $"Ute={newData.TouchVoltage:N0}V " +
+                        $"İzin Verilen Süre={touchLimits:F2}s " +
+                        $"Geçen Süre={leakDuration:F2}s");
                 }
 
                 newData.Status = newData.ActiveAlarms.Any() ? "ALARM" : "NORMAL";
@@ -229,42 +201,36 @@ namespace VldDataVisualizer.ViewModels
             DataGenerated?.Invoke(this, allDevicesData);
         }
 
-        private double GetEN50122TouchVoltageLimit(double durationSeconds)
-        {
-            return EN50122Analyzer.GetAllowedDurationForTouchVoltage(durationSeconds);
-        }
-
-        #region DC GENERATOR FUNCTIONS - V cinsinden (DEĞİŞTİRİLDİ)
+        #region DC GENERATOR FUNCTIONS
 
         private double GenerateDcVoltage(int stationId)
         {
-            // DC gerilim: 1500V nominal ±20V
-            double baseV = _nominalDcVoltage; // 1500 V
-            double stationVariation = Math.Sin(stationId * 0.7) * 10; // ±10 V
-            double fluctuation = (_random.NextDouble() - 0.5) * 40; // ±20 V
+            double baseV = _nominalDcVoltage;
+            double stationVariation = Math.Sin(stationId * 0.7) * 10;
+            double fluctuation = (_random.NextDouble() - 0.5) * 40;
             double voltage = baseV + stationVariation + fluctuation;
 
-            // %2 ihtimalle DC gerilim anormalliği
-            if (_random.NextDouble() < 0.02)
+            // ✅ ARTTIRILDI: %10 ihtimalle DC gerilim anormalliği (eskiden %2)
+            if (_random.NextDouble() < 0.10)
             {
                 if (_random.NextDouble() < 0.5)
-                    voltage = baseV * (0.85 + _random.NextDouble() * 0.05); // düşük (1275-1425V)
+                    voltage = baseV * (0.80 + _random.NextDouble() * 0.10); // Düşük: 1200-1350V
                 else
-                    voltage = baseV * (1.1 + _random.NextDouble() * 0.05); // yüksek (1650-1725V)
+                    voltage = baseV * (1.15 + _random.NextDouble() * 0.15); // Yüksek: 1725-1950V
             }
 
-            return Math.Round(voltage, 1); // V cinsinden
+            return Math.Round(voltage, 1);
         }
 
         private double GenerateDcCurrent(int stationId)
         {
             double loadFactor = _stationLoadProfiles[stationId];
-            double baseCurrent = 800.0 * loadFactor; // 400-900 A arası
+            double baseCurrent = 800.0 * loadFactor;
             double fluctuation = (_random.NextDouble() - 0.5) * baseCurrent * 0.15;
             double current = baseCurrent + fluctuation;
 
-            // %3 ihtimalle DC akım anomalisi
-            if (_random.NextDouble() < 0.03)
+            // ✅ ARTTIRILDI: %8 ihtimalle DC akım anomalisi (eskiden %3)
+            if (_random.NextDouble() < 0.08)
             {
                 double r = _random.NextDouble();
                 if (r < 0.4)
@@ -275,38 +241,36 @@ namespace VldDataVisualizer.ViewModels
                     current = baseCurrent * (1.5 + _random.NextDouble() * 1.0);
             }
 
-            return Math.Round(Math.Max(10.0, current), 1); // Minimum 10A
+            return Math.Round(Math.Max(10.0, current), 1);
         }
 
         private double GenerateAuxDcVoltage(int stationId)
         {
-            // Aux DC: 110V nominal ±3V
             double baseV = 110.0;
             double fluctuation = (_random.NextDouble() - 0.5) * 6;
             double voltage = baseV + fluctuation;
 
-            if (_random.NextDouble() < 0.01)
-                voltage = baseV + (_random.NextDouble() - 0.5) * 20; // ±10V anomali
+            if (_random.NextDouble() < 0.05) // %5 ihtimal
+                voltage = baseV + (_random.NextDouble() - 0.5) * 20;
 
-            return Math.Round(voltage, 1); // V cinsinden
+            return Math.Round(voltage, 1);
         }
 
         private double GenerateAuxAcVoltage(int stationId)
         {
-            // Aux AC: 400V nominal ±5V
             double baseV = 400.0;
             double fluctuation = (_random.NextDouble() - 0.5) * 10;
             double voltage = baseV + fluctuation;
 
-            if (_random.NextDouble() < 0.01)
-                voltage = baseV + (_random.NextDouble() - 0.5) * 40; // ±20V anomali
+            if (_random.NextDouble() < 0.05) // %5 ihtimal
+                voltage = baseV + (_random.NextDouble() - 0.5) * 40;
 
-            return Math.Round(voltage, 1); // V cinsinden
+            return Math.Round(voltage, 1);
         }
 
         #endregion
 
-        #region AC GENERATOR FUNCTIONS - kV cinsinden (Aynı kaldı)
+        #region AC GENERATOR FUNCTIONS
 
         private double GenerateVoltageOut(int stationId)
         {
@@ -363,13 +327,16 @@ namespace VldDataVisualizer.ViewModels
 
         private double GenerateGroundCurrent(int stationId)
         {
+            // ✅ DÜZELTİLDİ: Daha sık toprak arızası
             double current = _random.NextDouble() * 2.0;
 
-            if (_random.NextDouble() < 0.02)
+            // %15 ihtimalle 3-8A arası (SARI - Warning)
+            if (_random.NextDouble() < 0.15)
                 current = 3.0 + _random.NextDouble() * 5.0;
 
-            if (_random.NextDouble() < 0.01)
-                current = 10.0 + _random.NextDouble() * 90.0;
+            // %8 ihtimalle 10-30A arası (KIRMIZI - Critical)
+            if (_random.NextDouble() < 0.08)
+                current = 10.0 + _random.NextDouble() * 20.0;
 
             return Math.Round(current, 2);
         }
@@ -389,8 +356,10 @@ namespace VldDataVisualizer.ViewModels
             double loadFactor = _stationLoadProfiles[stationId];
             double equipmentHeat = loadFactor * 10.0;
             double temp = baseTemp + dailyVariation + equipmentHeat + (_random.NextDouble() - 0.5) * 3.0;
+
             if (_random.NextDouble() < 0.02)
                 temp = 60.0 + _random.NextDouble() * 20.0;
+
             return Math.Round(temp, 1);
         }
 
@@ -408,37 +377,13 @@ namespace VldDataVisualizer.ViewModels
 
         private double CalculateTouchVoltage(double groundCurrentA)
         {
+            // ✅ DÜZELTİLDİ: 50Ω toprak direnci (gerçekçi)
+            // 3A × 50Ω = 150V (EN50122 limitlerinde)
+            // 10A × 50Ω = 500V (kritik seviye)
             return Math.Round(groundCurrentA * _touchResistance, 1);
         }
 
-        //private double GetEN50122TouchVoltageLimit(double tSeconds)
-        //{
-        //    if (tSeconds <= 0) return double.PositiveInfinity;
-
-        //    if (tSeconds < 0.7)
-        //    {
-        //        if (tSeconds < 0.02) return 870;
-        //        if (tSeconds < 0.05) return 735;
-        //        if (tSeconds < 0.1) return 625;
-        //        if (tSeconds < 0.2) return 520;
-        //        if (tSeconds < 0.3) return 460;
-        //        if (tSeconds < 0.4) return 420;
-        //        if (tSeconds < 0.5) return 385;
-        //        if (tSeconds < 0.6) return 360;
-        //        return 350;
-        //    }
-
-        //    if (tSeconds >= 300) return 120;
-        //    if (tSeconds >= 300) return 150;
-        //    if (tSeconds >= 1.0) return 160;
-        //    if (tSeconds >= 0.9) return 165;
-        //    if (tSeconds >= 0.8) return 170;
-        //    if (tSeconds >= 0.7) return 175;
-
-        //    return 175;
-        //}
-
-        private List<string> CheckForAlarms(VldData data)
+        private List<string> CheckForAlarms(VldData data, double leakDuration)
         {
             var alarms = new List<string>();
 
@@ -451,18 +396,20 @@ namespace VldDataVisualizer.ViewModels
             if (data.Current > _nominalCurrent * 1.1)
                 alarms.Add($"[{data.StationName}] ASIRI_AC_AKIM ({data.Current} A)");
 
-            // DC ALARMLARI (V cinsinden)
-            if (data.DcVoltage < 1400)
-                alarms.Add($"[{data.StationName}] DUSUK_DC_GERILIM ({data.DcVoltage} V)");
-            else if (data.DcVoltage > 1600)
-                alarms.Add($"[{data.StationName}] YUKSEK_DC_GERILIM ({data.DcVoltage} V)");
+            // DC ALARMLARI
+            if (data.DcVoltage < 1200)
+                alarms.Add($"[{data.StationName}] ⚠️ DUSUK_DC_GERILIM ({data.DcVoltage} V)");
+            else if (data.DcVoltage > 1800)
+                alarms.Add($"[{data.StationName}] ⚠️ YUKSEK_DC_GERILIM ({data.DcVoltage} V)");
 
             if (data.DcCurrent > 1000)
                 alarms.Add($"[{data.StationName}] ASIRI_DC_AKIM ({data.DcCurrent} A)");
 
-            // TOPRAK ARİZASI
+            // ✅ DÜZELTİLDİ: TOPRAK ARİZASI
             if (data.GroundCurrent > 10.0)
-                alarms.Add($"[{data.StationName}] TOPRAK_ARIZASI ({data.GroundCurrent} A)");
+                alarms.Add($"[{data.StationName}] 🚨 TOPRAK_ARIZASI ({data.GroundCurrent} A, {leakDuration:F1}s)");
+            else if (data.GroundCurrent > 3.0)
+                alarms.Add($"[{data.StationName}] ⚠️ YUKSEK_TOPRAK_AKIMI ({data.GroundCurrent} A)");
 
             // SICAKLIK
             if (data.Temperature > 80.0)

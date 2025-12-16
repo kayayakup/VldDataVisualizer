@@ -13,6 +13,7 @@ using System.IO;
 using System.Windows.Media.Animation;
 using System.ComponentModel;
 using System.Windows.Data;
+using System.Text;
 
 namespace VldDataVisualizer.Views
 {
@@ -898,7 +899,8 @@ namespace VldDataVisualizer.Views
 
             // Tüm hatalı bölgeleri birleştir
             var affectedRanges = anomalyDevices
-                .Select(d => new {
+                .Select(d => new
+                {
                     Min = Math.Min(d.StartPosition, d.EndPosition),
                     Max = Math.Max(d.StartPosition, d.EndPosition)
                 })
@@ -911,18 +913,16 @@ namespace VldDataVisualizer.Views
                     train.CurrentPosition >= range.Min - 500 &&
                     train.CurrentPosition <= range.Max + 500);
 
-                if (isInAffectedArea)
+                trainsInArea.Add(new TrainInfoLog
                 {
-                    trainsInArea.Add(new TrainInfoLog
-                    {
-                        TrainId = train.TrainId,
-                        TrainName = train.TrainName,
-                        Position = train.CurrentPosition,
-                        Speed = train.Speed,
-                        TrackType = train.TrackType,
-                        Status = train.Status
-                    });
-                }
+                    TrainId = train.TrainId,
+                    TrainName = train.TrainName,
+                    Position = train.CurrentPosition,
+                    Speed = train.Speed,
+                    TrackType = train.TrackType,
+                    Status = train.Status
+                });
+
             }
 
             return trainsInArea;
@@ -932,76 +932,64 @@ namespace VldDataVisualizer.Views
         {
             try
             {
-                string timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
-                string line = $"{timestamp} | EN 50122-1 | {log.Category} | " +
-                             $"Tekrar: {log.RepeatCount} | {log.Summary}";
+                string nl = Environment.NewLine;
 
-                // Detaylı EN 50122 bilgileri
-                string details = $"\n\nEN 50122-1 İhlal Detayları:";
-                details += $"\n{'=',80}";
+                // Zaman bilgisi
+                string line =
+                    $"{log.Timestamp:yyyy-MM-dd HH:mm:ss}{nl}" +
+                    $"{log.Category}{nl}" +
+                    $"Tekrar: {log.RepeatCount}{nl}{nl}";
 
-                // Kritik (KIRMIZI) ihlaller
-                var criticalDevices = log.AffectedDevices.Where(d => d.OverallCategory == "KIRMIZI").ToList();
-                if (criticalDevices.Any())
+                // 1. Anomali olan VLD-TFPR cihazları
+                if (log.AffectedDevices.Any())
                 {
-                    details += $"\n\nKRİTİK İHLALLER ({criticalDevices.Count} cihaz):";
-                    details += $"\n{'─',80}";
-                    foreach (var device in criticalDevices)
+                    line += $"Anomali Cihaz Sayısı: {log.AffectedDevices.Count}{nl}";
+
+                    foreach (var device in log.AffectedDevices)
                     {
-                        details += $"\n  • {device.StationName} ({device.DeviceId}):";
-                        details += $"\n      {device.GetDetails()}";
+                        line +=
+                            $" - {device.DeviceId} | " +
+                            $"DC: {device.DcVoltage:N0} V | " +
+                            $"Ig: {device.GroundCurrent:N1} A{nl}";
+                    }
+
+                    line += nl;
+                }
+
+                // 2. Tren konumları
+                if (_activeTrains.Any())
+                {
+                    line += $"Tren Konumları:{nl}";
+
+                    foreach (var train in _activeTrains.OrderBy(t => t.CurrentPosition))
+                    {
+                        line += $" - {train.TrainId}: {train.CurrentPosition:N0} m{nl}";
+                    }
+
+                    line += nl;
+                }
+
+                // 3. Tren hızları
+                if (_activeTrains.Any())
+                {
+                    line += $"Tren Hızları:{nl}";
+
+                    foreach (var train in _activeTrains)
+                    {
+                        line += $" - {train.TrainId}: {train.Speed:N0} km/h{nl}";
                     }
                 }
 
-                // Uyarı (SARI) ihlaller
-                var warningDevices = log.AffectedDevices.Where(d => d.OverallCategory == "SARI").ToList();
-                if (warningDevices.Any())
-                {
-                    details += $"\n\nUYARI İHLALLER ({warningDevices?.Count} cihaz):";
-                    details += $"\n{'─',80}";
-                    foreach (var device in warningDevices)
-                    {
-                        details += $"\n  • {device.StationName}: {device.GetDetails()}";
-                    }
-                }
+                // Dosyaya yaz
+                File.AppendAllText(LOG_FILE, line + nl + new string('=', 70) + nl);
 
-                // Limit bilgileri
-                details += $"\n\nEN 50122-1 Limit Tablosu:";
-                details += $"\n{'─',80}";
-                details += $"\nDC Gerilim (1500V Nominal):";
-                details += $"\n  • Normal: 1350-1650V (±%10)";
-                details += $"\n  • Uyarı: 1200-1800V (±%20)";
-                details += $"\n  • Kritik: 1050-1950V (±%30)";
-                details += $"\n\nToprak Akımı:";
-                details += $"\n  • Normal: < 3A";
-                details += $"\n  • Uyarı: 3-6A";
-                details += $"\n  • Kritik: > 10A";
-                details += $"\n\nDokunma Gerilimi (Ute):";
-                details += $"\n  • >300s: 120V (uzun süreli)";
-                details += $"\n  • 0.7s: 175V (uzun süreli)";
-                details += $"\n  • <0.7s: 350-870V (kısa süreli)";
-
-                // Tren bilgileri
-                if (log.AllTrains.Any())
-                {
-                    details += $"\n\nEtkilenen Bölgedeki Trenler ({log.AllTrains.Count} adet):";
-                    details += $"\n{'─',80}";
-                    foreach (var train in log.AllTrains.OrderBy(t => t.Position))
-                    {
-                        details += $"\n  • {train.TrainName}: {train.Position:N0}m ({train.Kilometer:N2}km), " +
-                                  $"{train.Speed:N0}km/h, {train.TrackType}, {train.Status}";
-                    }
-                }
-
-                // Log'u dosyaya yaz
-                File.AppendAllText(LOG_FILE, line + details + "\n" + new string('=', 80) + "\n\n");
-
-                // Debug için konsola da yaz
+                // Konsola yaz
+                Console.WriteLine(new string('=', 70));
                 Console.WriteLine(line);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"EN 50122 Log yazma hatası: {ex.Message}");
+                Console.WriteLine($"Log yazma hatası: {ex.Message}");
             }
         }
 
@@ -2638,94 +2626,6 @@ namespace VldDataVisualizer.Views
             return minShort;
         }
 
-        private void CheckAndLogVoltageError(List<VldData> allDevicesData)
-        {
-            // Anomali olan cihazları bul
-            var anomalyDevices = new List<AnomalyDevice>();
-            string currentCategory = "NORMAL";
-
-            foreach (var data in allDevicesData)
-            {
-                double voltage = data.VoltageOut;
-                double dcVoltage = data.DcVoltage;
-                string category = GetVoltageCategory(dcVoltage);
-
-                if (category != "NORMAL")
-                {
-                    // En kritik kategoriyi seç
-                    if ((category == "KIRMIZI" && currentCategory != "KIRMIZI") ||
-                        (category == "SARI" && currentCategory == "YEŞİL"))
-                    {
-                        currentCategory = category;
-                    }
-
-                    anomalyDevices.Add(new AnomalyDevice
-                    {
-                        DeviceId = data.DeviceId,
-                        Voltage = voltage,
-                        DcVoltage = dcVoltage,
-                        Kilometer = data.StartPosition / 1000.0,
-                        StartPosition = data.StartPosition,
-                        EndPosition = data.EndPosition
-                    });
-                }
-            }
-
-            // Anomali varsa log oluştur
-            if (anomalyDevices.Any())
-            {
-                string key = $"Anomaly_{DateTime.Now:yyyyMMddHHmm}";
-
-                // Tekrar sayısını hesapla (konuma göre)
-                int repeatCount = CalculateRepeatCount(anomalyDevices);
-
-                // Bütün trenleri topla
-                var allTrains = _activeTrains.Select(train => new TrainInfoLog
-                {
-                    TrainId = train.TrainId,
-                    TrainName = train.TrainName,
-                    Position = train.CurrentPosition,
-                    Speed = train.Speed,
-                    TrackType = train.TrackType,
-                    Status = train.Status
-                }).ToList();
-
-                // Yeni log oluştur
-                var log = new VldErrorLog
-                {
-                    Timestamp = DateTime.Now,
-                    Category = currentCategory,
-                    RepeatCount = repeatCount,
-                    AffectedDevices = anomalyDevices,
-                    AllTrains = allTrains
-                };
-
-                // En başa ekle (en yeni en üstte)
-                _errorLogs.Insert(0, log);
-
-                // Dosyaya yaz
-                WriteLogToFile(log);
-
-                // Eğer panel açıksa güncelle
-                if (_isLogPanelOpen)
-                {
-                    ErrorLogGrid.Items.Refresh();
-
-                    // Yeni satıra kaydır
-                    if (ErrorLogGrid.Items.Count > 0)
-                    {
-                        ErrorLogGrid.ScrollIntoView(ErrorLogGrid.Items[0]);
-                    }
-                }
-
-                // Çok fazla log varsa temizle
-                if (_errorLogs.Count > 100)
-                {
-                    _errorLogs.RemoveAt(_errorLogs.Count - 1);
-                }
-            }
-        }
-
         private int CalculateRepeatCount(List<AnomalyDevice> anomalyDevices)
         {
             // Tren konumlarına göre tekrar sayısını hesapla
@@ -2785,37 +2685,6 @@ namespace VldDataVisualizer.Views
             }
 
             return totalRepeatCount;
-        }
-
-        private void WriteLogToFile(VldErrorLog log)
-        {
-            try
-            {
-                string line = $"{log.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
-                             $"{log.Category} | " +
-                             $"Tekrar: {log.RepeatCount} | " +
-                             $"Cihazlar: {log.DevicesDisplay} | " +
-                             $"Trenler: {log.AllTrains.Count} adet";
-
-                // Detaylı bilgiler
-                string details = "\n  Cihaz Detayları:";
-                foreach (var device in log.AffectedDevices)
-                {
-                    details += $"\n    - {device.DeviceId}: {device.Voltage:N0}V @ {device.Kilometer:N2}km";
-                }
-
-                details += "\n  Tren Detayları:";
-                foreach (var train in log.AllTrains)
-                {
-                    details += $"\n    - {train.TrainName}: {train.Position:N0}m, {train.Speed:N0}km/h, {train.TrackType}, {train.Status}";
-                }
-
-                File.AppendAllText(LOG_FILE, line + details + "\n" + new string('=', 80) + "\n");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Log yazma hatası: {ex.Message}");
-            }
         }
 
         // Aç/Kapa butonu
