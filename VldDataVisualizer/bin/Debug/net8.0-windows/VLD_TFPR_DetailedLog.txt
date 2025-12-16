@@ -1,0 +1,3539 @@
+╔════════════════════════════════════════════════════════════════╗
+║           VLD-TFPR DETAYLI HATA LOG ARŞİVİ                   ║
+╚════════════════════════════════════════════════════════════════╝
+
+PROJE BİLGİLERİ:
+• Hat        : Gebze - Darıca Metro Hattı
+• Uzunluk    : 15,391.246 metre
+• İstasyon   : 12 adet
+• TFPR Cihaz : 12 adet (VLD-TFPR-001 ila VLD-TFPR-012)
+• Tren Kap.  : 7 aktif tren
+
+GERİLİM STANDARTLARI (IEC 50122):
+• Normal     : 1400 - 1600 V
+• Yeşil Anom.: 1300 - 1700 V (İzin verilebilir)
+• Sarı Anom. : 1200 - 1800 V (Uyarı)
+• Kırmızı An.: <1200 V veya >1800 V (Acil)
+
+LOG FORMATI:
+Her anomali tespitinde aşağıdaki bilgiler kaydedilir:
+1. Anomali zamanı ve türü
+2. Etkilenen TFPR cihazları ve gerilim değerleri
+3. Tüm trenlerin anlık konum ve hız bilgileri
+4. Sistem durumu ve özet bilgiler
+
+════════════════════════════════════════════════════════════════════════════════
+
+LOG KAYITLARI BAŞLIYOR:
+════════════════════════════════════════════════════════════════════════════════
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:40
+│ 🎯 ANOMALİ TÜRÜ : KIRMIZI
+│ 🔄 TEKRAR SAYISI: 1. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD-TFPR-001
+│     └─ Gerilim: 0,0 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD-TFPR-002
+│     └─ Gerilim: 0,0 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD-TFPR-003
+│     └─ Gerilim: 0,0 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD-TFPR-004
+│     └─ Gerilim: 0,0 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD-TFPR-005
+│     └─ Gerilim: 0,0 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD-TFPR-006
+│     └─ Gerilim: 0,0 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD-TFPR-007
+│     └─ Gerilim: 0,0 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD-TFPR-008
+│     └─ Gerilim: 0,0 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD-TFPR-009
+│     └─ Gerilim: 0,0 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD-TFPR-010
+│     └─ Gerilim: 0,0 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD-TFPR-011
+│     └─ Gerilim: 0,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD-TFPR-012
+│     └─ Gerilim: 0,0 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 15.000m (15,000km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 12.000m (12,000km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 9.000m (9,000km)
+│        Hız  : 76 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 500m (0,500km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-713 (T393)
+│     └─ Konum: 1.500m (1,500km)
+│        Hız  : 60 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.000m (3,000km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-421 (T844)
+│     └─ Konum: 7.000m (7,000km)
+│        Hız  : 68 km/h | Durum: MOVING
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 70,3 km/h
+│      • En hızlı: 76 km/h
+│      • En yavaş: 60 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:43
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 1. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.512,1 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.517,9 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.511,0 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.512,2 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.504,1 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.498,2 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.503,5 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.499,6 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.475,2 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.480,1 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.500,7 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.506,5 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.890m (14,890km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.908m (11,908km)
+│        Hız  : 50 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.902m (8,902km)
+│        Hız  : 54 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.573m (1,573km)
+│        Hız  : 38 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.110m (3,110km)
+│        Hız  : 70 km/h | Durum: MOVING
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 46 km/h | Durum: MOVING
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 47,1 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:45
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 2. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.495,8 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.503,8 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.505,5 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.514,2 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.499,0 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.508,0 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.501,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.491,1 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.490,1 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.479,3 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.493,4 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.485,5 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.800m (14,800km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.856m (11,856km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.844m (8,844km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.616m (1,616km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.185m (3,185km)
+│        Hız  : 52 km/h | Durum: MOVING
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 34,6 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:47
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 3. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.509,9 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.504,0 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.512,2 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.507,1 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.519,6 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.510,7 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.486,1 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.490,7 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.496,9 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.488,4 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.483,8 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.483,5 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.710m (14,710km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.806m (11,806km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.789m (8,789km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.659m (1,659km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.237m (3,237km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 32,0 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:49
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 4. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.493,7 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.524,4 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.510,7 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.529,1 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.495,8 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.514,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.494,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.500,2 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.472,6 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.474,7 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.483,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.485,7 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.590m (14,590km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.739m (11,739km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.716m (8,716km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.715m (1,715km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.276m (3,276km)
+│        Hız  : 20 km/h | Durum: MOVING
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 30,0 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:51
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 5. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.510,5 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.520,9 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.513,3 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.509,1 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.510,8 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.489,6 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.506,6 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.494,7 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.476,9 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.495,2 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.499,5 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.484,6 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.460m (14,460km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.667m (11,667km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.637m (8,637km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.777m (1,777km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 27,1 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:53
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 6. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.507,2 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.503,2 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.507,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.517,2 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.503,8 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.500,1 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.489,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.493,3 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.476,8 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.475,3 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.496,2 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.500,0 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.330m (14,330km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.594m (11,594km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.557m (8,557km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.838m (1,838km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 27,1 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:55
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 7. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.515,2 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.514,5 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.314,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.509,7 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.518,7 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.497,2 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.501,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.485,9 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.486,1 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.491,8 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.488,7 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.508,2 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.190m (14,190km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.517m (11,517km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.472m (8,472km)
+│        Hız  : 44 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.904m (1,904km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 27,1 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:26:57
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 8. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.497,8 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.498,3 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.512,3 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.508,3 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.515,9 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.496,3 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.506,8 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.498,7 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.472,4 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.492,0 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.481,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.499,5 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.090m (14,090km)
+│        Hız  : 72 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.461m (11,461km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.412m (8,412km)
+│        Hız  : 38 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.951m (1,951km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 26,3 km/h
+│      • En hızlı: 72 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:00
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 9. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.517,7 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.507,2 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.520,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.509,0 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.495,5 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.497,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.503,4 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.489,4 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.489,0 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.477,3 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.483,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.485,3 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 14.008m (14,008km)
+│        Hız  : 58 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.411m (11,411km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.377m (8,377km)
+│        Hız  : 20 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 1.994m (1,994km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 21,7 km/h
+│      • En hızlı: 58 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:02
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 10. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.498,9 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.516,6 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.526,0 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.509,4 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.498,7 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.504,8 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.483,7 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.501,8 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.492,0 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.482,9 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.503,5 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.507,2 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.942m (13,943km)
+│        Hız  : 38 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.356m (11,356km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.349m (8,349km)
+│        Hız  : 20 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.041m (2,041km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 18,9 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:04
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 11. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.497,4 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.523,4 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.501,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.503,1 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.509,1 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.511,6 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.498,7 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.482,1 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.479,1 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.486,0 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.500,3 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.485,7 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.905m (13,905km)
+│        Hız  : 20 km/h | Durum: MOVING
+│   • TR-836 (T242)
+│     └─ Konum: 11.300m (11,300km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.322m (8,322km)
+│        Hız  : 20 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.088m (2,088km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 16,3 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:06
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 12. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.500,5 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.511,5 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.520,8 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.511,6 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.496,0 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.503,6 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.500,0 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.499,9 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.495,5 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.486,6 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.492,8 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.503,0 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 11.244m (11,244km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.294m (8,294km)
+│        Hız  : 20 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.136m (2,136km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 13,4 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:08
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 13. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.508,3 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.520,2 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.528,0 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.502,8 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.508,0 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.500,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.482,5 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.474,9 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.481,9 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.488,8 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.481,3 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.498,3 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 11.194m (11,194km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.269m (8,269km)
+│        Hız  : 20 km/h | Durum: MOVING
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.178m (2,178km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 13,4 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:10
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 14. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.508,7 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.509,6 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.513,2 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.523,3 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.498,8 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.491,8 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.503,0 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.479,2 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.478,1 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.491,6 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.496,9 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.349,1 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 11.139m (11,139km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.225m (2,225km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 10,6 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:12
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 15. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.496,8 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.504,5 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.504,7 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.505,5 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.517,5 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.497,7 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.484,0 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.496,7 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.500,3 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.493,8 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.487,7 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.497,3 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 11.089m (11,089km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.268m (2,268km)
+│        Hız  : 34 km/h | Durum: MOVING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 10,6 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:14
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 16. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.510,2 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.517,0 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.517,2 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.523,7 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.503,5 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.497,3 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.485,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.484,0 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.497,2 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.475,6 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.497,7 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.489,8 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 11.039m (11,039km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:16
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 17. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.496,6 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.507,0 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.504,7 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.510,6 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.518,7 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.501,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.510,2 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.497,4 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.498,8 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.495,5 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.479,2 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.487,6 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.994m (10,994km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:19
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 18. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.508,1 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.514,1 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.502,2 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.502,5 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.500,2 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.502,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.490,8 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.489,6 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.488,8 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.491,5 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.504,8 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.505,5 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.939m (10,939km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:21
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 19. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.521,5 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.501,5 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.521,5 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.508,0 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.511,8 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.501,2 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.498,0 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.499,8 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.493,3 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.492,9 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.496,4 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.482,7 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.883m (10,883km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:23
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 20. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.511,7 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.508,3 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.505,8 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.517,2 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.515,6 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.508,9 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.487,9 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.478,6 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.497,6 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.488,1 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.655,2 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.510,0 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.833m (10,833km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:25
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 21. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.514,2 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.506,2 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.527,5 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.526,2 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.510,3 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.509,8 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.496,1 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.487,1 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.472,1 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.478,9 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.490,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.491,2 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.778m (10,778km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:27
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 22. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.493,4 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.518,4 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.530,4 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.502,4 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.500,5 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.502,4 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.503,8 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.503,3 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.491,6 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.479,8 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.501,4 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.508,6 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.722m (10,722km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:29
+│ 🎯 ANOMALİ TÜRÜ : YEŞİL
+│ 🔄 TEKRAR SAYISI: 23. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.510,0 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.513,8 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.526,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.514,0 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.520,1 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.515,6 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.489,9 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.485,1 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.489,5 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.488,1 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.490,0 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.484,4 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.667m (10,667km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:32
+│ 🎯 ANOMALİ TÜRÜ : SARI
+│ 🔄 TEKRAR SAYISI: 24. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.518,0 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.514,7 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.523,9 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.503,1 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.505,2 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.718,5 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.489,3 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.479,7 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.492,9 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.496,8 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.496,4 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.494,4 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.611m (10,611km)
+│        Hız  : 40 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 5,7 km/h
+│      • En hızlı: 40 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                     VLD-TFPR DETAYLI LOG                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│ 📅 LOG ZAMANI   : 11.12.2025 09:27:34
+│ 🎯 ANOMALİ TÜRÜ : NORMAL
+│ 🔄 TEKRAR SAYISI: 25. kez tespit edildi
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚡ ETKİLENEN TFPR CİHAZLARI (12 adet)
+├────────────────────────────────────────────────────────────────┤
+│   • VLD_TFPR_001
+│     └─ Gerilim: 1.498,4 V
+│        Konum  : İdari Bina ve Atölye
+│        KM     : 15,391 km
+│        Bölge  : 15.391m - 12.081m
+│
+│   • VLD_TFPR_002
+│     └─ Gerilim: 1.514,6 V
+│        Konum  : OSB
+│        KM     : 13,873 km
+│        Bölge  : 13.873m - 10.386m
+│
+│   • VLD_TFPR_003
+│     └─ Gerilim: 1.522,1 V
+│        Konum  : Mutlukent
+│        KM     : 12,081 km
+│        Bölge  : 12.081m - 9.070m
+│
+│   • VLD_TFPR_004
+│     └─ Gerilim: 1.520,8 V
+│        Konum  : Adliye
+│        KM     : 10,386 km
+│        Bölge  : 10.386m - 8.234m
+│
+│   • VLD_TFPR_005
+│     └─ Gerilim: 1.521,9 V
+│        Konum  : Akse Sapağı
+│        KM     : 9,070 km
+│        Bölge  : 9.070m - 7.102m
+│
+│   • VLD_TFPR_006
+│     └─ Gerilim: 1.511,7 V
+│        Konum  : Gebze Stadyum
+│        KM     : 8,234 km
+│        Bölge  : 8.234m - 5.781m
+│
+│   • VLD_TFPR_007
+│     └─ Gerilim: 1.494,8 V
+│        Konum  : Gebze Kent Meydanı
+│        KM     : 7,102 km
+│        Bölge  : 7.102m - 4.389m
+│
+│   • VLD_TFPR_008
+│     └─ Gerilim: 1.474,5 V
+│        Konum  : Fatih Devlet Hastanesi
+│        KM     : 5,781 km
+│        Bölge  : 5.781m - 3.299m
+│
+│   • VLD_TFPR_009
+│     └─ Gerilim: 1.481,3 V
+│        Konum  : TCDD Gar
+│        KM     : 4,389 km
+│        Bölge  : 4.389m - 1.379m
+│
+│   • VLD_TFPR_010
+│     └─ Gerilim: 1.488,2 V
+│        Konum  : Farabi Devlet Hastanesi
+│        KM     : 3,299 km
+│        Bölge  : 3.299m - 136m
+│
+│   • VLD_TFPR_011
+│     └─ Gerilim: 1.502,6 V
+│        Konum  : Darıca Cumhuriyet
+│        KM     : 1,379 km
+│        Bölge  : 1.379m - 136m
+│
+│   • VLD_TFPR_012
+│     └─ Gerilim: 1.505,6 V
+│        Konum  : Darıca Sahil
+│        KM     : 0,136 km
+│        Bölge  : 136m - 0m
+│
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ 🚆 TÜM TREN DURUMLARI (7 adet)
+├────────────────────────────────────────────────────────────────┤
+│ ▲ DARIACA YÖNÜ (3 tren)
+│   • TR-950 (T566)
+│     └─ Konum: 13.891m (13,891km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-836 (T242)
+│     └─ Konum: 10.560m (10,560km)
+│        Hız  : 30 km/h | Durum: MOVING
+│   • TR-187 (T112)
+│     └─ Konum: 8.252m (8,252km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ ▼ DEPO YÖNÜ (4 tren)
+│   • TR-576 (T883)
+│     └─ Konum: 510m (0,510km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-713 (T393)
+│     └─ Konum: 2.282m (2,282km)
+│        Hız  : 0 km/h | Durum: WAITING
+│   • TR-122 (T354)
+│     └─ Konum: 3.279m (3,279km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│   • TR-421 (T844)
+│     └─ Konum: 7.086m (7,086km)
+│        Hız  : 0 km/h | Durum: STOPPED
+│
+│ 📊 TREN ÖZETİ
+│   └─ Toplam: 7 tren
+│      • Ortalama Hız: 4,3 km/h
+│      • En hızlı: 30 km/h
+│      • En yavaş: 0 km/h
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ℹ️  SİSTEM BİLGİLERİ
+├────────────────────────────────────────────────────────────────┤
+│   • Anomali Standartı: IEC 50122
+│   • Normal Gerilim Aralığı: 1400-1600 V
+│   • Yeşil Anomali: 1300-1700 V
+│   • Sarı Anomali : 1200-1800 V
+│   • Kırmızı Anomali: <1200 V veya >1800 V
+└────────────────────────────────────────────────────────────────┘
+
+════════════════════════════ LOG SONU ════════════════════════════
+
+

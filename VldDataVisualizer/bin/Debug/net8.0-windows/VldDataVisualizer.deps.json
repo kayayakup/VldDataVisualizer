@@ -8,10 +8,38 @@
     ".NETCoreApp,Version=v8.0": {
       "VldDataVisualizer/1.0.0": {
         "dependencies": {
+          "ActiproSoftware.Controls.WPF.SyntaxEditor": "25.1.2",
           "CommunityToolkit.Mvvm": "8.4.0"
         },
         "runtime": {
           "VldDataVisualizer.dll": {}
+        }
+      },
+      "ActiproSoftware.Controls.WPF.Shared/25.1.2": {
+        "runtime": {
+          "lib/net8.0-windows/ActiproSoftware.Shared.Wpf.dll": {
+            "assemblyVersion": "25.1.2.0",
+            "fileVersion": "25.1.2.0"
+          }
+        }
+      },
+      "ActiproSoftware.Controls.WPF.SyntaxEditor/25.1.2": {
+        "dependencies": {
+          "ActiproSoftware.Controls.WPF.Shared": "25.1.2"
+        },
+        "runtime": {
+          "lib/net8.0-windows/ActiproSoftware.SyntaxEditor.Wpf.dll": {
+            "assemblyVersion": "25.1.2.0",
+            "fileVersion": "25.1.2.0"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.LLParser.Wpf.dll": {
+            "assemblyVersion": "25.1.2.0",
+            "fileVersion": "25.1.2.0"
+          },
+          "lib/net8.0-windows/ActiproSoftware.Text.Wpf.dll": {
+            "assemblyVersion": "25.1.2.0",
+            "fileVersion": "25.1.2.0"
+          }
         }
       },
       "CommunityToolkit.Mvvm/8.4.0": {
@@ -29,6 +57,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "ActiproSoftware.Controls.WPF.Shared/25.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cTAv5RVA4lBkihPgOzH8CTSqTK2SQtjyYee+VgqyCYHWa20tgL8F6HNgICuf4WfzYbMnn2l92A3dJd7E+D0Pjg==",
+      "path": "actiprosoftware.controls.wpf.shared/25.1.2",
+      "hashPath": "actiprosoftware.controls.wpf.shared.25.1.2.nupkg.sha512"
+    },
+    "ActiproSoftware.Controls.WPF.SyntaxEditor/25.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zCMA6RYjaeukyAFnWmsZJTys8zUBEvout4BwWxuiR/xEkinfHe5nHN8wirBmk0ZuanDHH68LJmWqazoNVT92XA==",
+      "path": "actiprosoftware.controls.wpf.syntaxeditor/25.1.2",
+      "hashPath": "actiprosoftware.controls.wpf.syntaxeditor.25.1.2.nupkg.sha512"
     },
     "CommunityToolkit.Mvvm/8.4.0": {
       "type": "package",

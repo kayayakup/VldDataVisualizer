@@ -3,28 +3,44 @@
   "WorkspaceRootPath": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|c:\\users\\yakup\\onedrive\\belgeler\\github\\vlddatavisualizer\\vlddatavisualizer\\viewmodels\\vldsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\vldsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|c:\\users\\yakup\\onedrive\\belgeler\\github\\vlddatavisualizer\\vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\simplechart.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\simplechart.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\models\\signalizationdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\models\\signalizationdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\models\\vlddata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\models\\vlddata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\vldsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\vldsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\vlddatavisualizer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\vlddatavisualizer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\statustocolorconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\statustocolorconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\signalizationsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\signalizationsimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\chartsproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\chartsproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\models\\vlderrorlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\models\\vlderrorlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\models\\en50122analyzer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\models\\en50122analyzer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,28 +58,64 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "SimpleChart.cs",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\SimpleChart.cs",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\SimpleChart.cs",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\SimpleChart.cs",
-              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\SimpleChart.cs",
-              "ViewState": "AQIAANgAAAAAAAAAAAAIwN8AAAAbAAAA",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\Views\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml.cs",
+              "RelativeToolTip": "VldDataVisualizer\\Views\\MainWindow.xaml.cs",
+              "ViewState": "AQIAAEUBAAAAAAAAAAAkwEwBAAAlAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-26T07:49:35.188Z"
+              "WhenOpened": "2025-12-15T10:54:23.798Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "VLDSimulator.cs",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
-              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
-              "ViewState": "AQIAAEkAAAAAAAAAAAD4v1gAAABhAAAA",
+              "DocumentIndex": 5,
+              "Title": "StatusToColorConverter.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\StatusToColorConverter.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\StatusToColorConverter.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\StatusToColorConverter.cs",
+              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\StatusToColorConverter.cs",
+              "ViewState": "AQIAAAIAAAAAAAAAAAAQwCEAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-25T08:13:25.039Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-15T10:54:02.734Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SignalizationSimulator.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\SignalizationSimulator.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\SignalizationSimulator.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\SignalizationSimulator.cs",
+              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\SignalizationSimulator.cs",
+              "ViewState": "AQIAABkBAAAAAAAAAAAowC0BAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T10:53:57.87Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ChartsProperties.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\ChartsProperties.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\ChartsProperties.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\ChartsProperties.cs",
+              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\ChartsProperties.cs",
+              "ViewState": "AQIAAGwBAAAAAAAAAAAgwI0BAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T10:53:52.382Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "VldErrorLog.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\VldErrorLog.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\Models\\VldErrorLog.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\VldErrorLog.cs",
+              "RelativeToolTip": "VldDataVisualizer\\Models\\VldErrorLog.cs",
+              "ViewState": "AQIAACkBAAAAAAAAAAAUwEEBAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T08:36:15.849Z"
             },
             {
               "$type": "Document",
@@ -73,44 +125,56 @@
               "RelativeDocumentMoniker": "VldDataVisualizer\\Models\\VldData.cs",
               "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\VldData.cs",
               "RelativeToolTip": "VldDataVisualizer\\Models\\VldData.cs",
-              "ViewState": "AQIAACcAAAAAAAAAAIA6wCwAAAAqAAAA",
+              "ViewState": "AQIAAEUAAAAAAAAAAADwv1sAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-25T08:12:13.365Z"
+              "WhenOpened": "2025-12-15T10:53:40.806Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "VldDataVisualizer.csproj",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\VldDataVisualizer.csproj",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\VldDataVisualizer.csproj",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\VldDataVisualizer.csproj",
-              "RelativeToolTip": "VldDataVisualizer\\VldDataVisualizer.csproj",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAANAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-25T08:09:01.469Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "MainWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\MainWindow.xaml",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\MainWindow.xaml",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\MainWindow.xaml",
-              "RelativeToolTip": "VldDataVisualizer\\MainWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-10-25T08:22:54.873Z"
+              "DocumentIndex": 1,
+              "Title": "SignalizationData.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\SignalizationData.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\Models\\SignalizationData.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\SignalizationData.cs",
+              "RelativeToolTip": "VldDataVisualizer\\Models\\SignalizationData.cs",
+              "ViewState": "AQIAAEkAAAAAAAAAAAAmwBgAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T10:53:34.766Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "MainWindow.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\MainWindow.xaml.cs",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\MainWindow.xaml.cs",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\MainWindow.xaml.cs",
-              "RelativeToolTip": "VldDataVisualizer\\MainWindow.xaml.cs",
-              "ViewState": "AQIAAAYAAAAAAAAAAAAAABsAAAAkAAAA",
+              "Title": "VLDSimulator.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
+              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\VLDSimulator.cs",
+              "ViewState": "AQIAAM8BAAAAAAAAAAAkwPEBAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-25T07:58:23.757Z"
+              "WhenOpened": "2025-12-15T10:54:07.51Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\Views\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Views\\MainWindow.xaml",
+              "RelativeToolTip": "VldDataVisualizer\\Views\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-11T10:32:58.774Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "EN50122Analyzer.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\EN50122Analyzer.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\Models\\EN50122Analyzer.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\Models\\EN50122Analyzer.cs",
+              "RelativeToolTip": "VldDataVisualizer\\Models\\EN50122Analyzer.cs",
+              "ViewState": "AQIAAPEAAAAAAAAAAAAiwBIBAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T07:58:02.729Z"
             }
           ]
         }
