@@ -47,7 +47,6 @@ namespace VldDataVisualizer.ViewModels
                 data.Current = Math.Round(regs[3] * 0.1, 3);
                 data.Frequency = Math.Round(regs[4] * 0.01, 3);
                 data.Temperature = Math.Round(regs[5] * 0.1, 3);
-                data.AcVoltage = Math.Round(regs[6] * 0.1, 3);
 
                 // === STATUS WORD ===
                 data.DeviceStatusWord = ReadHoldingRegisters(0x0010, 1)[0];

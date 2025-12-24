@@ -378,7 +378,7 @@ namespace VldDataVisualizer.Views
                 ShowStatusMessage($"Başlatma hatası: {ex.Message}", StatusType.Error);
             }
 
-            _tcpReader = new TfprVldModbusTcpReader("192.168.1.50");
+            _tcpReader = new TfprVldModbusTcpReader("172.1.0.253");
 
             Task.Run(async () =>
             {
