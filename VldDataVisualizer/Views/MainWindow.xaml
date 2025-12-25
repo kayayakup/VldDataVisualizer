@@ -208,7 +208,7 @@
                                             <TextBlock x:Name="Station1Header" Text="🚉 Depo" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart1" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman" AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200"/>
+                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"  LineColor="Blue" BackgroundColor="White" MaxY="2200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 2 - OSB -->
@@ -218,7 +218,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart2" 
                         Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                        AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                         LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 3 - Mutlukent -->
@@ -228,7 +228,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart3" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 4 - Adliye -->
@@ -238,7 +238,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart4" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 5 - Akse Sapağı -->
@@ -248,7 +248,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart5" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 6 - Gebze Stadyum -->
@@ -258,7 +258,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart6" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 7 - Gebze Kent Meydanı -->
@@ -268,7 +268,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart7" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 8 - Fatih D. Hastanesi -->
@@ -278,7 +278,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart8" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 9 - TCDD Gar -->
@@ -288,7 +288,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart9" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 10 - Farabi D. Hastanesi -->
@@ -298,7 +298,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart10" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 11 - Darıca Cumhuriyet -->
@@ -308,7 +308,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart11" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 12 - Darıca Sahil -->
@@ -318,7 +318,7 @@
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart12" 
                     Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                    AutoScaleY="True" LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
                                     </GroupBox>
 
                                 </StackPanel>

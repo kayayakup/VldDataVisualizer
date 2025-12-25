@@ -1,11 +1,8 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Windows.Controls;
-using System.Linq;
-using System.Collections.Generic;
 using VldDataVisualizer.Models;
 using VldDataVisualizer.ViewModels;
 using System.Windows.Shapes;
@@ -13,7 +10,7 @@ using System.IO;
 using System.Windows.Media.Animation;
 using System.ComponentModel;
 using System.Windows.Data;
-using System.Text;
+using VldDataVisualizer.Helpers;
 
 namespace VldDataVisualizer.Views
 {
@@ -528,7 +525,7 @@ namespace VldDataVisualizer.Views
 
                 // DC voltaj kategorisine göre sembol
                 string dcCategory = EN50122Analyzer.GetDcVoltageCategory(dcVoltage);
-                string symbol = EN50122Analyzer.GetStatusSymbol(dcCategory);
+                string symbol = ColorSituation.GetStatusSymbol(dcCategory);
 
                 // Eğer dokunma gerilimi varsa göster
                 double faultDuration = _faultDurations.ContainsKey(stationId) ? _faultDurations[stationId] : 0;
@@ -537,21 +534,9 @@ namespace VldDataVisualizer.Views
                 header.Text = $"{symbol} {stationName}\n{dcVoltage:N0} V{touchVoltageInfo}";
 
                 // Durum rengine göre başlık rengi
-                header.Foreground = EN50122Analyzer.GetStatusColor(status);
+                header.Foreground = ColorSituation.GetStatusColor(status);
             }
         }
-
-        private string GetStatusSymbol(string status)
-        {
-            return status switch
-            {
-                "NORMAL" => "✅",
-                "WARNING" => "⚠️",
-                "ALARM" => "🚨",
-                _ => "⚡"
-            };
-        }
-
         private void OnSignalizationDataGenerated(object sender, SignalizationData data)
         {
             Dispatcher.Invoke(() =>
@@ -704,11 +689,11 @@ namespace VldDataVisualizer.Views
                     Timestamp = DateTime.Now,
                     Category = overallCategory,
                     RepeatCount = repeatCount,
-                    AffectedDevices = criticalDevices.Select(d => new AnomalyDevice
+                    AffectedDevices = criticalDevices.Select(d => new EN50122AnomalyDevice
                     {
                         // Temel özellikler
                         DeviceId = d.DeviceId,
-                        Voltage = d.VoltageOut,
+                        Voltage = d.Voltage,
                         Kilometer = d.Kilometer,
                         StartPosition = d.StartPosition,
                         EndPosition = d.EndPosition,
@@ -1551,7 +1536,6 @@ namespace VldDataVisualizer.Views
                 XAxisTitle = "Zaman",
                 MinY = min,
                 MaxY = max,
-                AutoScaleY = true,
                 LineColor = color,
                 BackgroundColor = Brushes.White,
                 Height = 150
@@ -2626,7 +2610,7 @@ namespace VldDataVisualizer.Views
             return minShort;
         }
 
-        private int CalculateRepeatCount(List<AnomalyDevice> anomalyDevices)
+        private int CalculateRepeatCount(List<EN50122AnomalyDevice> anomalyDevices)
         {
             // Tren konumlarına göre tekrar sayısını hesapla
             int totalRepeatCount = 0;

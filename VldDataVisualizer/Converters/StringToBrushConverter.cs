@@ -9,59 +9,50 @@ namespace VldDataVisualizer.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string colorHex)
+            if (value is string colorHex &&
+                ColorConverter.ConvertFromString(colorHex) is Color color)
             {
-                try
-                {
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
-                }
-                catch
-                {
-                    return Brushes.Gray;
-                }
+                var brush = new SolidColorBrush(color);
+                brush.Freeze();
+                return brush;
             }
+
             return Brushes.Gray;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => Binding.DoNothing;
     }
 
     public class TrackTypeToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string trackType)
+            return value switch
             {
-                return trackType == "UP" ? Brushes.Blue : Brushes.Red;
-            }
-            return Brushes.Gray;
+                "UP" => Brushes.Blue,
+                "DOWN" => Brushes.Red,
+                _ => Brushes.Gray
+            };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => Binding.DoNothing;
     }
 
     public class SpeedToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double speed)
-            {
-                if (speed > 80) return Brushes.Red;
-                if (speed > 60) return Brushes.Orange;
-                return Brushes.Green;
-            }
-            return Brushes.Gray;
+            if (value is not double speed)
+                return Brushes.Gray;
+
+            if (speed > 80) return Brushes.Red;
+            if (speed > 60) return Brushes.Orange;
+            return Brushes.Green;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => Binding.DoNothing;
     }
 }
