@@ -692,7 +692,7 @@ namespace VldDataVisualizer.Views
                     AffectedDevices = criticalDevices.Select(d => new EN50122AnomalyDevice
                     {
                         // Temel özellikler
-                        DeviceId = d.DeviceId,
+                        DeviceId = d.StationName,
                         Voltage = d.Voltage,
                         Kilometer = d.Kilometer,
                         StartPosition = d.StartPosition,
@@ -836,11 +836,15 @@ namespace VldDataVisualizer.Views
 
         private int CalculateEN50122RepeatCount(List<EN50122AnomalyDevice> anomalyDevices)
         {
-            int totalRepeatCount = 0;
+            int maxRepeatCount = 0;
             var activeTrains = _activeTrains.ToList();
+
+            // Tolerans: ±10 metre
+            const double POSITION_TOLERANCE = 10.0;
 
             foreach (var device in anomalyDevices)
             {
+                // Bu cihazın kontrol bölgesindeki trenler
                 var trainsInSection = activeTrains
                     .Where(train =>
                         train.CurrentPosition >= Math.Min(device.StartPosition, device.EndPosition) &&
@@ -849,32 +853,73 @@ namespace VldDataVisualizer.Views
 
                 foreach (var train in trainsInSection)
                 {
-                    double roundedPosition = Math.Round(train.CurrentPosition, 1);
+                    double currentPosition = train.CurrentPosition;
 
-                    // Anahtar: İstasyon + Hata türü + Kategori
-                    string positionKey = $"{device.StationId}_{device.OverallCategory}_{roundedPosition:N1}";
+                    // Mevcut hataya benzer bir hata var mı kontrol et (±10m tolerans)
+                    string matchedKey = null;
+                    int matchedCount = 0;
 
-                    if (!_errorRepeatCounts.ContainsKey(positionKey))
-                        _errorRepeatCounts[positionKey] = 0;
+                    foreach (var existingKey in _errorRepeatCounts.Keys.ToList())
+                    {
+                        // Key formatı: "StationId_Category_Position_TrainId"
+                        var parts = existingKey.Split('_');
 
-                    _errorRepeatCounts[positionKey]++;
-                    totalRepeatCount = Math.Max(totalRepeatCount, _errorRepeatCounts[positionKey]);
+                        if (parts.Length >= 4 &&
+                            parts[0] == device.StationId.ToString() &&
+                            parts[1] == device.OverallCategory)
+                        {
+                            // Kayıtlı pozisyonu çıkar
+                            if (double.TryParse(parts[2], out double recordedPosition))
+                            {
+                                // ±10 metre tolerans kontrolü
+                                double positionDiff = Math.Abs(currentPosition - recordedPosition);
+
+                                if (positionDiff <= POSITION_TOLERANCE)
+                                {
+                                    // Aynı tren mi kontrol et
+                                    if (parts[3] == train.TrainId.ToString())
+                                    {
+                                        matchedKey = existingKey;
+                                        matchedCount = _errorRepeatCounts[existingKey];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (matchedKey != null)
+                    {
+                        // Mevcut kayıt bulundu, sayacı artır
+                        _errorRepeatCounts[matchedKey]++;
+                        maxRepeatCount = Math.Max(maxRepeatCount, _errorRepeatCounts[matchedKey]);
+                    }
+                    else
+                    {
+                        // Yeni kayıt oluştur
+                        // Format: "StationId_Category_Position_TrainId"
+                        string newKey = $"{device.StationId}_{device.OverallCategory}_{currentPosition:F1}_{train.TrainId}";
+                        _errorRepeatCounts[newKey] = 1;
+                        maxRepeatCount = Math.Max(maxRepeatCount, 1);
+                    }
                 }
             }
 
-            if (totalRepeatCount == 0 && anomalyDevices.Any())
+            // Eğer hiç tren yoksa ama anomali varsa
+            if (maxRepeatCount == 0 && anomalyDevices.Any())
             {
-                string positionKey = string.Join("|",
-                    anomalyDevices.Select(d => $"{d.StationId}-{d.OverallCategory}"));
+                // Tren olmadan oluşan hatalar için basit key
+                string deviceKey = string.Join("|",
+                    anomalyDevices.Select(d => $"{d.StationId}_{d.OverallCategory}"));
 
-                if (!_errorRepeatCounts.ContainsKey(positionKey))
-                    _errorRepeatCounts[positionKey] = 0;
+                if (!_errorRepeatCounts.ContainsKey(deviceKey))
+                    _errorRepeatCounts[deviceKey] = 0;
 
-                _errorRepeatCounts[positionKey]++;
-                return _errorRepeatCounts[positionKey];
+                _errorRepeatCounts[deviceKey]++;
+                return _errorRepeatCounts[deviceKey];
             }
 
-            return totalRepeatCount;
+            return maxRepeatCount;
         }
 
         private List<TrainInfoLog> GetTrainsInAffectedArea(List<EN50122AnomalyDevice> anomalyDevices)
@@ -1109,25 +1154,10 @@ namespace VldDataVisualizer.Views
 
         private void DetailUpdateTimer_Tick(object sender, EventArgs e)
         {
-            // Sadece aktif sekmeyi güncelle
-            var selectedTab = DeviceTabControl.SelectedItem as TabItem;
-            if (selectedTab != null && selectedTab.Tag is int stationId)
+            // TÜM PANEL'LERİ GÜNCELLE (sadece seçili olanı değil)
+            for (int stationId = 1; stationId <= 12; stationId++)
             {
                 UpdateDevicePanel(stationId);
-
-                // Hat görselini güncelle
-                var scrollViewer = selectedTab.Content as ScrollViewer;
-                var stackPanel = scrollViewer?.Content as StackPanel;
-                if (stackPanel != null && stackPanel.Children.Count > 1)
-                {
-                    if (stackPanel.Children[1] is GroupBox controlAreaGroup)
-                    {
-                        if (controlAreaGroup.Content is Grid grid && grid.Children[0] is Canvas canvas)
-                        {
-                            DrawStationControlArea(canvas, stationId);
-                        }
-                    }
-                }
             }
         }
 
