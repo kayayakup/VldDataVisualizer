@@ -358,7 +358,7 @@ namespace VldDataVisualizer.Views
 
         #region BUTON CLICK EVENTS
         private TfprVldModbusTcpReader _tcpReader;
-        private void StartAllButton_Click(object sender, RoutedEventArgs e)
+        private async void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -378,7 +378,7 @@ namespace VldDataVisualizer.Views
                 ShowStatusMessage($"Başlatma hatası: {ex.Message}", StatusType.Error);
             }
 
-            _tcpReader = new TfprVldModbusTcpReader("172.1.0.253");
+            _tcpReader = new TfprVldModbusTcpReader("192.168.1.10");
 
             Task.Run(async () =>
             {
@@ -391,9 +391,16 @@ namespace VldDataVisualizer.Views
                         OnVLDDataGenerated(this, new List<VldData> { data });
                     });
 
+
                     await Task.Delay(500);
                 }
             });
+
+            await Task.Delay(5000);
+            MessageBox.Show("Current: " + _tcpReader.Read().Current.ToString()+"\n"+
+                "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n"+
+                "Status: " + _tcpReader.Read().Status.ToString() + "\n"+
+                "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n");
         }
 
         private void StopAllButton_Click(object sender, RoutedEventArgs e)
