@@ -3,11 +3,11 @@
   "WorkspaceRootPath": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\viewmodels\\tfprvldmodbusreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|c:\\users\\yakup\\onedrive\\belgeler\\github\\vlddatavisualizer\\vlddatavisualizer\\viewmodels\\tfprvldmodbusreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\viewmodels\\tfprvldmodbusreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|c:\\users\\yakup\\onedrive\\belgeler\\github\\vlddatavisualizer\\vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6A4B509A-9759-4AC9-85FC-B7E2E9E8D826}|VldDataVisualizer\\VldDataVisualizer.csproj|solutionrelative:vlddatavisualizer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -33,23 +33,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ObjectDisposedException.cs",
-              "DocumentMoniker": "C:\\Users\\yakup\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs",
-              "ToolTip": "C:\\Users\\yakup\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs [Read Only]",
-              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs [Read Only]",
-              "ViewState": "AQIAACsAAAAAAAAAAAAWwEQAAAABAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-19T13:09:10.9Z"
             },
             {
               "$type": "Document",
@@ -62,6 +50,31 @@
               "ViewState": "AQIAAF0AAAAAAAAAAAAjwIgAAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-17T10:19:37.868Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TfprVldModbusReader.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
+              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
+              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
+              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAAA8AAAAqAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T11:55:51.616Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ObjectDisposedException.cs",
+              "DocumentMoniker": "C:\\Users\\yakup\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs",
+              "ToolTip": "C:\\Users\\yakup\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs [Read Only]",
+              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\63d18f590e8f34c458101f1936fcad58775082969ad337ca2b4ade645ae76738\\ObjectDisposedException.cs [Read Only]",
+              "ViewState": "AQIAACsAAAAAAAAAAAAWwEQAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-19T13:09:10.9Z"
             },
             {
               "$type": "Document",
@@ -84,21 +97,7 @@
               "RelativeToolTip": "VldDataVisualizer\\Views\\MainWindow.xaml.cs",
               "ViewState": "AQIAAF8EAAAAAAAAAAAQwHgEAAAqAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T12:49:17.098Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TfprVldModbusReader.cs",
-              "DocumentMoniker": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
-              "RelativeDocumentMoniker": "VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
-              "ToolTip": "C:\\Users\\yakup\\OneDrive\\Belgeler\\GitHub\\VldDataVisualizer\\VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
-              "RelativeToolTip": "VldDataVisualizer\\ViewModels\\TfprVldModbusReader.cs",
-              "ViewState": "AQIAAGkAAAAAAAAAAAAtwIIAAABSAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T11:55:51.616Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-16T12:49:17.098Z"
             },
             {
               "$type": "Document",
