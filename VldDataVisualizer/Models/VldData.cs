@@ -5,6 +5,8 @@ namespace VldDataVisualizer.Models
 {
     public class VldData
     {
+        public ushort DeviceStatusWord { get; set; } // Röle durum word’ü (bit alanı)
+
         // Temel kimlik bilgileri
         public string DeviceId { get; set; } = "VLD_TFPR_001";
         public string DeviceType { get; set; } = "VLD-TFPR";

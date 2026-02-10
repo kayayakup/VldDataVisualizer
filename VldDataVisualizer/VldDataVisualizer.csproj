@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="ActiproSoftware.Controls.WPF.SyntaxEditor" Version="25.1.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.1" />
   </ItemGroup>
 
 </Project>

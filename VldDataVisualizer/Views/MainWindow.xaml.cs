@@ -86,8 +86,8 @@ namespace VldDataVisualizer.Views
     };
 
             // Event handler'lar
-            _vldSimulator.DataGenerated += OnVLDDataGenerated;
-            _vldSimulator.StatusChanged += OnVLDStatusChanged;
+            //_vldSimulator.DataGenerated += OnVLDDataGenerated;
+            //_vldSimulator.StatusChanged += OnVLDStatusChanged;
             _signalizationSimulator.DataGenerated += OnSignalizationDataGenerated;
 
             InitializeTimers();
@@ -354,12 +354,12 @@ namespace VldDataVisualizer.Views
         #endregion
 
         #region BUTON CLICK EVENTS
-
-        private void StartAllButton_Click(object sender, RoutedEventArgs e)
+        private TfprVldModbusTcpReader _tcpReader;
+        private async void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                _vldSimulator.StartSimulation();
+                //_vldSimulator.StartSimulation();
                 _signalizationSimulator.StartSimulation();
                 _railwayUpdateTimer.Start();
                 _chartUpdateTimer.Start();
@@ -374,13 +374,37 @@ namespace VldDataVisualizer.Views
             {
                 ShowStatusMessage($"Başlatma hatası: {ex.Message}", StatusType.Error);
             }
+
+            _tcpReader = new TfprVldModbusTcpReader("192.168.1.10");
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var data = _tcpReader.Read();
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        OnVLDDataGenerated(this, new List<VldData> { data });
+                    });
+
+
+                    await Task.Delay(500);
+                }
+            });
+
+            await Task.Delay(5000);
+            MessageBox.Show("Current: " + _tcpReader.Read().Current.ToString()+"\n"+
+                "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n"+
+                "Status: " + _tcpReader.Read().Status.ToString() + "\n"+
+                "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n");
         }
 
         private void StopAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                _vldSimulator.StopSimulation();
+                //_vldSimulator.StopSimulation();
                 _signalizationSimulator.StopSimulation();
                 _railwayUpdateTimer.Stop();
                 _chartUpdateTimer.Stop();
@@ -1029,8 +1053,8 @@ namespace VldDataVisualizer.Views
             try
             {
                 // Sadece simülasyon çalışıyorsa kontrol et
-                if (!_vldSimulator.IsRunning)
-                    return;
+                //if (!_vldSimulator.IsRunning)
+                //    return;
 
                 // Minimum 2 saniyede bir kontrol et (çok sık log oluşturma)
                 if (DateTime.Now.Subtract(_lastLogCheck).TotalSeconds < 2.0)
@@ -2450,7 +2474,7 @@ namespace VldDataVisualizer.Views
 
         private void EmergencyStopAllSystems()
         {
-            _vldSimulator.StopSimulation();
+            //_vldSimulator.StopSimulation();
             _signalizationSimulator.StopSimulation();
             _railwayUpdateTimer.Stop();
             _chartUpdateTimer.Stop();
@@ -2894,7 +2918,7 @@ namespace VldDataVisualizer.Views
 
         protected override void OnClosed(EventArgs e)
         {
-            _vldSimulator?.StopSimulation();
+            //_vldSimulator?.StopSimulation();
             _signalizationSimulator?.StopSimulation();
             _chartUpdateTimer?.Stop();
             _railwayUpdateTimer?.Stop();

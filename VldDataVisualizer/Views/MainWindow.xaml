@@ -345,6 +345,11 @@
                 <StatusBarItem x:Name="LastUpdateText" Content="Son Güncelleme: --"/>
                 <Separator/>
                 <StatusBarItem Content="🟢 Hazır"/>
+                <TextBox x:Name="OutputBox"
+         FontFamily="Consolas"
+         FontSize="14"
+         IsReadOnly="True"
+         VerticalScrollBarVisibility="Auto"/>
             </StatusBar>
         </Grid>
         <!-- GRIDSPLITTER -->
