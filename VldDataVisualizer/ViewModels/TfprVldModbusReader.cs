@@ -13,21 +13,12 @@ namespace VldDataVisualizer.ViewModels
         private readonly object _syncLock = new object();
         private bool _disposed = false;
 
-        private const byte UNIT_ID = 0x01;
-        private const byte FC_READ_HOLDING = 0x03;
-        private const byte FC_ERROR_FLAG = 0x80;
+        private const byte UNIT_ID = 0xFF;
+        private const byte FC_READ = 0x03;
 
-        private const ushort LW_MEASURE_BASE = 0x0064; // LW-100
-        private const ushort LW_STATUS_WORD = 0x006E;  // LW-110
-
-        private const double VOLTAGE_SCALE = 0.1;
-        private const double CURRENT_SCALE = 0.01;
-        private const double FREQUENCY_SCALE = 0.01;
-        private const double TEMPERATURE_SCALE = 0.1;
-
-        private const double TOUCH_VOLTAGE_ALARM = 120.0;
-        private const double GROUND_CURRENT_ALARM = 10.0;
-        private const double TEMPERATURE_ALARM = 80.0;
+        // Measurement block (FLOAT values)
+        private const ushort MEASURE_BASE = 630;
+        private const ushort STATUS_REG = 528;
 
         private const int DEFAULT_PORT = 502;
         private const int CONNECT_TIMEOUT = 3000;
@@ -35,9 +26,6 @@ namespace VldDataVisualizer.ViewModels
 
         public TfprVldModbusTcpReader(string ipAddress, int port = DEFAULT_PORT)
         {
-            if (string.IsNullOrWhiteSpace(ipAddress))
-                throw new ArgumentException("IP adresi boş olamaz.", nameof(ipAddress));
-
             _client = new TcpClient
             {
                 ReceiveTimeout = IO_TIMEOUT,
@@ -46,10 +34,7 @@ namespace VldDataVisualizer.ViewModels
 
             var connectTask = _client.ConnectAsync(ipAddress, port);
             if (!connectTask.Wait(CONNECT_TIMEOUT))
-            {
-                _client.Close();
-                throw new TimeoutException($"Bağlantı zaman aşımı: {ipAddress}:{port}");
-            }
+                throw new TimeoutException("Modbus bağlantı timeout");
 
             _stream = _client.GetStream();
         }
@@ -58,9 +43,6 @@ namespace VldDataVisualizer.ViewModels
         {
             lock (_syncLock)
             {
-                if (_disposed)
-                    throw new ObjectDisposedException(nameof(TfprVldModbusTcpReader));
-
                 var data = new VldData
                 {
                     Timestamp = DateTime.Now,
@@ -70,38 +52,28 @@ namespace VldDataVisualizer.ViewModels
 
                 try
                 {
-                    // === BLOCK READ LW-100 – LW-105 ===
-                    ushort[] measurementRegs = ReadHoldingRegisters(LW_MEASURE_BASE, 6);
+                    // ===== FLOAT MEASUREMENT BLOCK =====
+                    ushort[] regs = ReadHoldingRegisters(MEASURE_BASE, 8);
 
-                    // Raw registerleri konsola yazdır
-                    for (int i = 0; i < measurementRegs.Length; i++)
-                        Debug.WriteLine($"LW-{100 + i} raw: {measurementRegs[i]}");
+                    data.DcVoltage = ToFloat(regs[0], regs[1]);
+                    data.GroundCurrent = ToFloat(regs[2], regs[3]);
+                    data.Frequency = ToFloat(regs[4], regs[5]);
+                    data.Temperature = ToFloat(regs[6], regs[7]);
 
-                    // Scaling uygulanarak gerçek ölçüm değerleri
-                    data.DcVoltage = Math.Round(measurementRegs[0] * VOLTAGE_SCALE, 3);   // LW-100
-                    data.GroundCurrent = Math.Round(measurementRegs[1] * CURRENT_SCALE, 3); // LW-101
-                    data.VoltageIn = Math.Round(measurementRegs[2] * VOLTAGE_SCALE, 3);    // LW-102
-                    data.Current = Math.Round(measurementRegs[3] * CURRENT_SCALE, 3);      // LW-103
-                    data.Frequency = Math.Round(measurementRegs[4] * FREQUENCY_SCALE, 3);  // LW-104
-                    data.Temperature = Math.Round(measurementRegs[5] * TEMPERATURE_SCALE, 3); // LW-105
+                    Debug.WriteLine($"DC Voltage = {data.DcVoltage}");
+                    Debug.WriteLine($"Ground Current = {data.GroundCurrent}");
+                    Debug.WriteLine($"Frequency = {data.Frequency}");
+                    Debug.WriteLine($"Temperature = {data.Temperature}");
 
-                    // === STATUS WORD ===
-                    ushort[] statusReg = ReadHoldingRegisters(LW_STATUS_WORD, 1);
-                    data.DeviceStatusWord = statusReg[0];
-                    Debug.WriteLine($"Status Word raw: 0x{data.DeviceStatusWord:X4}");
+                    // ===== STATUS =====
+                    ushort[] status = ReadHoldingRegisters(STATUS_REG, 1);
+                    data.DeviceStatusWord = status[0];
 
-                    // === DERIVED VALUES ===
-                    data.TouchVoltage = Math.Round(data.GroundCurrent * 1000.0, 1);
-                    data.DcPower = Math.Round(data.DcVoltage * data.Current, 1); // DC Power gerçek current ile
-
-                    // Validate data
-                    ValidateMeasurements(data);
-
-                    // Evaluate alarms
                     EvaluateStatus(data);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine("ERROR: " + ex.Message);
                     data.IsCommunicationActive = false;
                     data.Status = "COMM_LOST";
                 }
@@ -113,40 +85,39 @@ namespace VldDataVisualizer.ViewModels
         private ushort[] ReadHoldingRegisters(ushort startAddress, ushort count)
         {
             byte[] request = BuildReadRequest(startAddress, count);
-            lock (_syncLock)
+
+            _stream.Write(request, 0, request.Length);
+
+            int expectedLength = 9 + (count * 2);
+            byte[] response = ReadExact(expectedLength);
+
+            ushort[] registers = new ushort[count];
+
+            int index = 9;
+            for (int i = 0; i < count; i++)
             {
-                _stream.Write(request, 0, request.Length);
-                int expectedResponseLength = 9 + (count * 2);
-                byte[] response = ReadExact(expectedResponseLength);
-
-                ValidateResponse(request, response, count);
-
-                ushort[] registers = new ushort[count];
-                int dataIndex = 9; // MBAP(7) + FC(1) + ByteCount(1)
-                for (int i = 0; i < count; i++)
-                {
-                    registers[i] = (ushort)((response[dataIndex] << 8) | response[dataIndex + 1]);
-                    dataIndex += 2;
-                }
-                return registers;
+                registers[i] = (ushort)((response[index] << 8) | response[index + 1]);
+                index += 2;
             }
+
+            return registers;
         }
 
         private byte[] BuildReadRequest(ushort address, ushort count)
         {
             byte[] frame = new byte[12];
-            ushort transactionId = _transactionId++;
+
+            ushort transId = _transactionId++;
             if (_transactionId == 0) _transactionId = 1;
 
-            frame[0] = (byte)(transactionId >> 8);
-            frame[1] = (byte)(transactionId & 0xFF);
-            frame[2] = 0x00;
-            frame[3] = 0x00;
+            frame[0] = (byte)(transId >> 8);
+            frame[1] = (byte)(transId & 0xFF);
+
             frame[4] = 0x00;
             frame[5] = 0x06;
             frame[6] = UNIT_ID;
+            frame[7] = FC_READ;
 
-            frame[7] = FC_READ_HOLDING;
             frame[8] = (byte)(address >> 8);
             frame[9] = (byte)(address & 0xFF);
             frame[10] = (byte)(count >> 8);
@@ -158,62 +129,35 @@ namespace VldDataVisualizer.ViewModels
         private byte[] ReadExact(int length)
         {
             byte[] buffer = new byte[length];
-            int totalRead = 0;
-            DateTime startTime = DateTime.Now;
+            int total = 0;
 
-            while (totalRead < length)
+            while (total < length)
             {
-                if ((DateTime.Now - startTime).TotalMilliseconds > IO_TIMEOUT)
-                    throw new TimeoutException($"Okuma zaman aşımı: {totalRead}/{length} bytes okundu");
+                int read = _stream.Read(buffer, total, length - total);
+                if (read == 0)
+                    throw new SocketException();
 
-                int bytesRead = _stream.Read(buffer, totalRead, length - totalRead);
-                if (bytesRead == 0)
-                    throw new SocketException((int)SocketError.ConnectionReset);
-
-                totalRead += bytesRead;
+                total += read;
             }
 
             return buffer;
         }
 
-        private void ValidateResponse(byte[] request, byte[] response, ushort expectedRegisterCount)
+        // ===== FLOAT CONVERSION =====
+        private float ToFloat(ushort reg1, ushort reg2)
         {
-            if (response == null || response.Length < 9)
-                throw new InvalidOperationException("Geçersiz Modbus yanıtı");
+            byte[] bytes = new byte[4];
 
-            ushort reqTransId = (ushort)((request[0] << 8) | request[1]);
-            ushort respTransId = (ushort)((response[0] << 8) | response[1]);
+            // Word order test (Most TFPR cihazları bu formatı kullanır)
+            bytes[0] = (byte)(reg1 >> 8);
+            bytes[1] = (byte)(reg1 & 0xFF);
+            bytes[2] = (byte)(reg2 >> 8);
+            bytes[3] = (byte)(reg2 & 0xFF);
 
-            if (reqTransId != respTransId)
-                throw new InvalidOperationException("Transaction ID uyuşmuyor");
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
 
-            if (response[6] != UNIT_ID)
-                throw new InvalidOperationException($"Unit ID uyuşmuyor: {response[6]}");
-
-            if ((response[7] & FC_ERROR_FLAG) == FC_ERROR_FLAG)
-                throw new InvalidOperationException($"Modbus hatası: Code {response[8]}");
-
-            if (response[7] != FC_READ_HOLDING)
-                throw new InvalidOperationException($"Beklenen fonksiyon kodu: {FC_READ_HOLDING}, alınan: {response[7]}");
-
-            int expectedByteCount = expectedRegisterCount * 2;
-            if (response[8] != expectedByteCount)
-                throw new InvalidOperationException($"Byte sayısı uyuşmuyor: {response[8]}, beklenen: {expectedByteCount}");
-        }
-
-        private void ValidateMeasurements(VldData data)
-        {
-            if (data.DcVoltage < 0 || data.DcVoltage > 1000)
-                throw new InvalidOperationException($"Geçersiz DC gerilim: {data.DcVoltage}V");
-
-            if (data.GroundCurrent < 0 || data.GroundCurrent > 100)
-                throw new InvalidOperationException($"Geçersiz toprak akımı: {data.GroundCurrent}A");
-
-            if (data.Temperature < -40 || data.Temperature > 150)
-                throw new InvalidOperationException($"Geçersiz sıcaklık: {data.Temperature}°C");
-
-            if (data.Frequency < 45 || data.Frequency > 65)
-                data.Status = "FREQ_WARN";
+            return BitConverter.ToSingle(bytes, 0);
         }
 
         private void EvaluateStatus(VldData data)
@@ -224,58 +168,23 @@ namespace VldDataVisualizer.ViewModels
 
             if ((status & 0x0001) == 0)
                 data.ActiveAlarms.Add("COMM_FAULT");
+
             if ((status & 0x0002) != 0)
                 data.ActiveAlarms.Add("OVER_VOLTAGE");
+
             if ((status & 0x0004) != 0)
                 data.ActiveAlarms.Add("UNDER_VOLTAGE");
+
             if ((status & 0x0008) != 0)
                 data.ActiveAlarms.Add("OVER_CURRENT");
-
-            if (data.TouchVoltage > TOUCH_VOLTAGE_ALARM)
-                data.ActiveAlarms.Add($"DOKUNMA_GERILIMI_YUKSEK ({data.TouchVoltage:F1}V)");
-
-            if (data.GroundCurrent > GROUND_CURRENT_ALARM)
-                data.ActiveAlarms.Add($"TOPRAK_ARIZASI ({data.GroundCurrent:F2}A)");
-
-            if (data.Temperature > TEMPERATURE_ALARM)
-                data.ActiveAlarms.Add($"ASIRI_SICAKLIK ({data.Temperature:F1}°C)");
-
-            if (data.DcPower > data.DcVoltage * 100)
-                data.ActiveAlarms.Add($"ASIRI_GUC ({data.DcPower:F1}W)");
 
             data.Status = data.ActiveAlarms.Count > 0 ? "ALARM" : "NORMAL";
         }
 
-        private void DisposeResources()
-        {
-            _stream?.Close();
-            _stream?.Dispose();
-            _client?.Close();
-            _client?.Dispose();
-        }
-
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    lock (_syncLock)
-                        DisposeResources();
-                }
-                _disposed = true;
-            }
-        }
-
-        ~TfprVldModbusTcpReader()
-        {
-            Dispose(false);
+            _stream?.Dispose();
+            _client?.Dispose();
         }
     }
 }

@@ -11,6 +11,8 @@ using System.Windows.Media.Animation;
 using System.ComponentModel;
 using System.Windows.Data;
 using VldDataVisualizer.Helpers;
+using VldDataVisualizer.Services;
+using System.Threading;
 
 namespace VldDataVisualizer.Views
 {
@@ -60,7 +62,7 @@ namespace VldDataVisualizer.Views
 
         private void InitializeSystems()
         {
-            _vldSimulator = new VLDSimulator();
+            //_vldSimulator = new VLDSimulator();
             _signalizationSimulator = new SignalizationSimulator();
 
             // 12 cihaz için koleksiyonlar
@@ -355,7 +357,8 @@ namespace VldDataVisualizer.Views
 
         #region BUTON CLICK EVENTS
         private TfprVldModbusTcpReader _tcpReader;
-        private async void StartAllButton_Click(object sender, RoutedEventArgs e)
+        private TfprPollingService _pollingService;
+        private void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -376,6 +379,25 @@ namespace VldDataVisualizer.Views
             }
 
             _tcpReader = new TfprVldModbusTcpReader("192.168.1.10");
+            //_pollingService = new TfprPollingService(_tcpReader);
+            //var data = _tcpReader.Read();
+            //_pollingService.DataReceived += (s, data) =>
+            //{
+            //    Application.Current.Dispatcher.InvokeAsync(() =>
+            //    {
+            //        OnVLDDataGenerated(this, new List<VldData> { data });
+            //        _pollingService.Start(_tcpReader, 500);
+            //        _pollingService.dataa = "Current: " + _tcpReader.Read().Current.ToString() + "/" +
+            //        "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "/" +
+            //        "Status: " + _tcpReader.Read().Status.ToString() + "/" +
+            //        "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "/";
+            //        OutputBox.Text = _pollingService.dataa;
+            //    });
+            //};
+
+
+
+
 
             Task.Run(async () =>
             {
@@ -389,15 +411,34 @@ namespace VldDataVisualizer.Views
                     });
 
 
-                    await Task.Delay(500);
+                    await Task.Delay(3000);
                 }
             });
 
-            await Task.Delay(5000);
+            Task.Delay(3000);
+            OutputBox.Text = "Current: " + _tcpReader.Read().Current.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().VoltageIn.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL1.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL2.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL3.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().DcCurrent.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
+                "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n" +
+                "Status: " + _tcpReader.Read().Status.ToString() + "\n" +
+                "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n";
             MessageBox.Show("Current: " + _tcpReader.Read().Current.ToString()+"\n"+
+                "Current: " + _tcpReader.Read().VoltageIn.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL1.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL2.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().CurrentL3.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().DcCurrent.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
+                "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
                 "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n"+
                 "Status: " + _tcpReader.Read().Status.ToString() + "\n"+
                 "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n");
+
         }
 
         private void StopAllButton_Click(object sender, RoutedEventArgs e)
