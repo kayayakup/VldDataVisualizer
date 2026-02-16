@@ -416,24 +416,12 @@ namespace VldDataVisualizer.Views
             });
 
             Task.Delay(3000);
-            OutputBox.Text = "Current: " + _tcpReader.Read().Current.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().VoltageIn.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL1.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL2.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL3.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().DcCurrent.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
+            OutputBox.Text = "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
                 "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
                 "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n" +
                 "Status: " + _tcpReader.Read().Status.ToString() + "\n" +
                 "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n";
-            MessageBox.Show("Current: " + _tcpReader.Read().Current.ToString()+"\n"+
-                "Current: " + _tcpReader.Read().VoltageIn.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL1.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL2.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().CurrentL3.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().DcCurrent.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
+            MessageBox.Show("Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
                 "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
                 "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n"+
                 "Status: " + _tcpReader.Read().Status.ToString() + "\n"+
