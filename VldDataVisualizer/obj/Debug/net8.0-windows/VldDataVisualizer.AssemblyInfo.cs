@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4445f1ace8503b3fd8353afc05f5f4e75fa2a5be")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac2caf24ce50f4182998a380181e720ff454b7ca")]
 [assembly: System.Reflection.AssemblyProductAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

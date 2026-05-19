@@ -1,4 +1,4 @@
-﻿// Models/SignalizationData.cs - Düzeltilmiş
+// Models/SignalizationData.cs - Düzeltilmiş
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -31,7 +31,7 @@ namespace VldDataVisualizer.Models
         // ÖNEMLI: TrackType ve Direction birbirine bağlı - rastgele OLMAMALI!
         // TrackType belirlendikten sonra Direction otomatik ayarlanmalı
 
-        private string _trackType;
+        private string _trackType = string.Empty;
         public string TrackType
         {
             get => _trackType;
@@ -50,7 +50,7 @@ namespace VldDataVisualizer.Models
             }
         }
 
-        private string _direction;
+        private string _direction = string.Empty;
         public string Direction
         {
             get => _direction;
@@ -69,20 +69,20 @@ namespace VldDataVisualizer.Models
             }
         }
 
-        private string _status;
+        private string _status = string.Empty;
         public string Status
         {
             get => _status ?? "MOVING";
             set => _status = value;
         }
 
-        public string TrainName { get; set; }
+        public string TrainName { get; set; } = string.Empty;
         public double Speed { get; set; }
         public int CurrentBlockId { get; set; }
         public double CurrentPosition { get; set; }
         public double PositionInBlock { get; set; }
         public int NextStationId { get; set; }
-        public string NextStationName { get; set; }
+        public string NextStationName { get; set; } = string.Empty;
         public double DistanceToNextStation { get; set; }
         public bool IsInService { get; set; } = true;
         public int PassengerCount { get; set; }
@@ -118,7 +118,7 @@ namespace VldDataVisualizer.Models
     public class StationInfo
     {
         public int StationId { get; set; }
-        public string StationName { get; set; }
+        public string StationName { get; set; } = string.Empty;
         public List<ArrivingTrain> ArrivingTrains { get; set; } = new List<ArrivingTrain>();
         public int WaitingPassengers { get; set; }
         public string Status { get; set; } = "NORMAL";
@@ -135,9 +135,9 @@ namespace VldDataVisualizer.Models
     public class ArrivingTrain
     {
         public int TrainId { get; set; }
-        public string TrainName { get; set; }
+        public string TrainName { get; set; } = string.Empty;
         public int ArrivalMinutes { get; set; }
-        public string Destination { get; set; }
+        public string Destination { get; set; } = string.Empty;
         public bool WillStop { get; set; } = true;
         public double CurrentDistance { get; set; }
     }
@@ -149,14 +149,14 @@ namespace VldDataVisualizer.Models
         private string _status;
 
         public int BlockId { get; set; }
-        public string BlockName { get; set; }
+        public string BlockName { get; set; } = string.Empty;
         public double StartPosition { get; set; }
         public double EndPosition { get; set; }
         public double BlockLength { get; set; }
         public double Gradient { get; set; }
         public double Curvature { get; set; }
         public int SpeedLimit { get; set; }
-        public string BlockType { get; set; }
+        public string BlockType { get; set; } = string.Empty;
 
         public bool IsOccupied
         {
@@ -199,7 +199,7 @@ namespace VldDataVisualizer.Models
 
         public List<BlockCoordinate> Coordinates { get; set; } = new List<BlockCoordinate>();
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -230,10 +230,10 @@ namespace VldDataVisualizer.Models
     public class RouteInfo : INotifyPropertyChanged
     {
         private int _activeTrainCount;
-        private string _routeStatus;
+        private string _routeStatus = string.Empty;
 
         public int RouteId { get; set; }
-        public string RouteName { get; set; }
+        public string RouteName { get; set; } = string.Empty;
         public List<int> BlockSequence { get; set; } = new List<int>();
         public double TotalRouteLength { get; set; }
 
@@ -268,7 +268,7 @@ namespace VldDataVisualizer.Models
         public double EndLatitude { get; set; }
         public double EndLongitude { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

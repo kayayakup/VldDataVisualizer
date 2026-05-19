@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
@@ -18,24 +18,24 @@ namespace VldDataVisualizer.Views
 {
     public partial class MainWindow : Window
     {
-        private VLDSimulator _vldSimulator;
-        private SignalizationSimulator _signalizationSimulator;
+        private VLDSimulator _vldSimulator = null!;
+        private SignalizationSimulator _signalizationSimulator = null!;
 
         // 12 cihaz için ayrı veri koleksiyonları
-        private Dictionary<int, ObservableCollection<VldData>> _deviceDataCollections;
-        private Dictionary<int, List<string>> _deviceAlarms;
+        private Dictionary<int, ObservableCollection<VldData>> _deviceDataCollections = null!;
+        private Dictionary<int, List<string>> _deviceAlarms = null!;
 
         // Collections
-        private ObservableCollection<TrainInfo> _activeTrains;
-        private ObservableCollection<StationInfo> _stations;
-        private ObservableCollection<TrackBlock> _blocks;
-        private ObservableCollection<RouteInfo> _routes;
+        private ObservableCollection<TrainInfo> _activeTrains = null!;
+        private ObservableCollection<StationInfo> _stations = null!;
+        private ObservableCollection<TrackBlock> _blocks = null!;
+        private ObservableCollection<RouteInfo> _routes = null!;
 
         // Timers
-        private DispatcherTimer _chartUpdateTimer;
-        private DispatcherTimer _railwayUpdateTimer;
-        private DispatcherTimer _detailUpdateTimer;
-        private DispatcherTimer _logCheckTimer;
+        private DispatcherTimer _chartUpdateTimer = null!;
+        private DispatcherTimer _railwayUpdateTimer = null!;
+        private DispatcherTimer _detailUpdateTimer = null!;
+        private DispatcherTimer _logCheckTimer = null!;
 
         // Railway drawing constants
         private const double CANVAS_HEIGHT = 400;
@@ -51,7 +51,7 @@ namespace VldDataVisualizer.Views
         private Random _random = new Random();
 
         // Chart referansları
-        private List<ChartsProperties> _allCharts;
+        private List<ChartsProperties> _allCharts = null!;
         private int _selectedStationId = 1;
 
         public MainWindow()
@@ -62,7 +62,7 @@ namespace VldDataVisualizer.Views
 
         private void InitializeSystems()
         {
-            //_vldSimulator = new VLDSimulator();
+            _vldSimulator = new VLDSimulator();
             _signalizationSimulator = new SignalizationSimulator();
 
             // 12 cihaz için koleksiyonlar
@@ -88,8 +88,8 @@ namespace VldDataVisualizer.Views
     };
 
             // Event handler'lar
-            //_vldSimulator.DataGenerated += OnVLDDataGenerated;
-            //_vldSimulator.StatusChanged += OnVLDStatusChanged;
+            _vldSimulator.DataGenerated += OnVLDDataGenerated;
+            _vldSimulator.StatusChanged += OnVLDStatusChanged;
             _signalizationSimulator.DataGenerated += OnSignalizationDataGenerated;
 
             InitializeTimers();
@@ -362,7 +362,41 @@ namespace VldDataVisualizer.Views
         {
             try
             {
-                //_vldSimulator.StartSimulation();
+                if (RealDataModeCheckBox.IsChecked == true)
+                {
+                    // GERÇEK VERİ MODU
+                    _tcpReader = new TfprVldModbusTcpReader("192.168.1.10");
+                    _pollingService = new TfprPollingService(_tcpReader);
+                    _pollingService.DataReceived += (s, pollingData) =>
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            OnVLDDataGenerated(this, new List<VldData> { pollingData });
+                            OutputBox.Text = FormatVldStatusText(pollingData);
+                        });
+                    };
+                    _pollingService.Start(_tcpReader, 500);
+
+                    // İlk okumayı yap ve göster
+                    try
+                    {
+                        var initialData = _tcpReader.Read();
+                        OutputBox.Text = FormatVldStatusText(initialData);
+                    }
+                    catch (Exception ex)
+                    {
+                        OutputBox.Text = $"İlk okuma hatası: {ex.Message}";
+                    }
+                    
+                    ShowStatusMessage("Gerçek Veri Modu (Modbus) başlatıldı", StatusType.Info);
+                }
+                else
+                {
+                    // SİMÜLASYON MODU
+                    _vldSimulator.StartSimulation();
+                    ShowStatusMessage("Simülasyon Modu başlatıldı", StatusType.Info);
+                }
+
                 _signalizationSimulator.StartSimulation();
                 _railwayUpdateTimer.Start();
                 _chartUpdateTimer.Start();
@@ -371,69 +405,28 @@ namespace VldDataVisualizer.Views
 
                 UpdateButtonStates(true);
                 UpdateHeaderStatus("🟡 12 Cihaz Çalışıyor", Colors.Orange);
-                ShowStatusMessage("Tüm simülasyonlar başlatıldı", StatusType.Info);
             }
             catch (Exception ex)
             {
                 ShowStatusMessage($"Başlatma hatası: {ex.Message}", StatusType.Error);
             }
-
-            _tcpReader = new TfprVldModbusTcpReader("192.168.1.10");
-            //_pollingService = new TfprPollingService(_tcpReader);
-            //var data = _tcpReader.Read();
-            //_pollingService.DataReceived += (s, data) =>
-            //{
-            //    Application.Current.Dispatcher.InvokeAsync(() =>
-            //    {
-            //        OnVLDDataGenerated(this, new List<VldData> { data });
-            //        _pollingService.Start(_tcpReader, 500);
-            //        _pollingService.dataa = "Current: " + _tcpReader.Read().Current.ToString() + "/" +
-            //        "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "/" +
-            //        "Status: " + _tcpReader.Read().Status.ToString() + "/" +
-            //        "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "/";
-            //        OutputBox.Text = _pollingService.dataa;
-            //    });
-            //};
-
-
-
-
-
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    var data = _tcpReader.Read();
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        OnVLDDataGenerated(this, new List<VldData> { data });
-                    });
-
-
-                    await Task.Delay(3000);
-                }
-            });
-
-            Task.Delay(3000);
-            OutputBox.Text = "Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
-                "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n" +
-                "Status: " + _tcpReader.Read().Status.ToString() + "\n" +
-                "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n";
-            MessageBox.Show("Current: " + _tcpReader.Read().GroundCurrent.ToString() + "\n" +
-                "Current: " + _tcpReader.Read().THDCurrent.ToString() + "\n" +
-                "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "\n"+
-                "Status: " + _tcpReader.Read().Status.ToString() + "\n"+
-                "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "\n");
-
         }
 
         private void StopAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                //_vldSimulator.StopSimulation();
+                if (RealDataModeCheckBox.IsChecked == true)
+                {
+                    _pollingService?.Stop();
+                    _tcpReader?.Dispose();
+                    _tcpReader = null;
+                }
+                else
+                {
+                    _vldSimulator.StopSimulation();
+                }
+
                 _signalizationSimulator.StopSimulation();
                 _railwayUpdateTimer.Stop();
                 _chartUpdateTimer.Stop();
@@ -442,7 +435,7 @@ namespace VldDataVisualizer.Views
 
                 UpdateButtonStates(false);
                 UpdateHeaderStatus("🟢 12 Cihaz Hazır", Colors.Green);
-                ShowStatusMessage("Tüm simülasyonlar durduruldu", StatusType.Info);
+                ShowStatusMessage("Tüm sistemler durduruldu", StatusType.Info);
             }
             catch (Exception ex)
             {
@@ -476,6 +469,70 @@ namespace VldDataVisualizer.Views
             _signalizationSimulator.StopSimulation();
             _railwayUpdateTimer.Stop();
             ShowStatusMessage("Sinyalizasyon simülasyonu durduruldu", StatusType.Info);
+        }
+
+        #endregion
+
+        #region GERÇEK VERİ FORMAT HELPER
+
+        /// <summary>
+        /// VLD panosundan okunan gerçek bit sinyallerini kullanıcı dostu formata çevirir.
+        /// Fotoğraftaki adres tablosuna göre:
+        /// Adres 0x06: DC_Gerilim_Trip (bit4), AC_Gerilim_Trip (bit5), I_RMS_Trip (bit6)
+        /// Adres 0x07: Ayirici_Acik (bit0), Ayirici_Kapali (bit1), Toprak_Poz (bit4)
+        /// </summary>
+        private string FormatVldStatusText(VldData data)
+        {
+            if (data == null)
+                return "Veri okunamadı!";
+
+            if (!data.IsCommunicationActive)
+                return $"❌ HABERLEŞME KAYBI\nZaman: {data.Timestamp:HH:mm:ss}";
+
+            // DeviceStatusWord'den bit sinyallerini çöz
+            ushort tripWord = (ushort)(data.DeviceStatusWord & 0x00FF);   // Alt byte: Adres 0x06
+            ushort switchWord = (ushort)((data.DeviceStatusWord >> 8) & 0x00FF); // Üst byte: Adres 0x07
+
+            bool dcGerilimTrip = (tripWord & (1 << 4)) != 0;
+            bool acGerilimTrip = (tripWord & (1 << 5)) != 0;
+            bool iRmsTrip = (tripWord & (1 << 6)) != 0;
+
+            bool ayiriciAcik = (switchWord & (1 << 0)) != 0;
+            bool ayiriciKapali = (switchWord & (1 << 1)) != 0;
+            bool toprakPoz = (switchWord & (1 << 4)) != 0;
+
+            // Ayırıcı durumu metni
+            string ayiriciDurum;
+            if (ayiriciAcik && !ayiriciKapali)
+                ayiriciDurum = "🔓 AÇIK";
+            else if (!ayiriciAcik && ayiriciKapali)
+                ayiriciDurum = "🔒 KAPALI";
+            else if (ayiriciAcik && ayiriciKapali)
+                ayiriciDurum = "⚠️ HATA (Çelişkili)";
+            else
+                ayiriciDurum = "❓ BELİRSİZ";
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine("   VLD PANO DURUM BİLGİSİ");
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine($"📅 Zaman: {data.Timestamp:HH:mm:ss.fff}");
+            sb.AppendLine($"🔧 Cihaz: {data.DeviceId}");
+            sb.AppendLine($"📊 Genel Durum: {data.Status}");
+            sb.AppendLine("───────────────────────────────────");
+            sb.AppendLine("  TRIP DURUMLARI (Adres 0x06)");
+            sb.AppendLine("───────────────────────────────────");
+            sb.AppendLine($"  ⚡ DC Gerilim Trip:  {(dcGerilimTrip ? "🔴 AKTİF" : "🟢 Normal")}");
+            sb.AppendLine($"  ⚡ AC Gerilim Trip:  {(acGerilimTrip ? "🔴 AKTİF" : "🟢 Normal")}");
+            sb.AppendLine($"  🔌 I RMS Trip:       {(iRmsTrip ? "🔴 AKTİF" : "🟢 Normal")}");
+            sb.AppendLine("───────────────────────────────────");
+            sb.AppendLine("  ANAHTAR DURUMLARI (Adres 0x07)");
+            sb.AppendLine("───────────────────────────────────");
+            sb.AppendLine($"  🔀 Ayırıcı:          {ayiriciDurum}");
+            sb.AppendLine($"  🌍 Toprak Pozisyonu: {(toprakPoz ? "🟡 AKTİF" : "⚪ Pasif")}");
+            sb.AppendLine("═══════════════════════════════════");
+
+            return sb.ToString();
         }
 
         #endregion
@@ -2503,11 +2560,16 @@ namespace VldDataVisualizer.Views
 
         private void EmergencyStopAllSystems()
         {
-            //_vldSimulator.StopSimulation();
+            _vldSimulator.StopSimulation();
+            _pollingService?.Stop();
+            _tcpReader?.Dispose();
+            _tcpReader = null;
+
             _signalizationSimulator.StopSimulation();
             _railwayUpdateTimer.Stop();
             _chartUpdateTimer.Stop();
             _detailUpdateTimer.Stop();
+            _logCheckTimer.Stop();
 
             foreach (var train in _activeTrains)
             {

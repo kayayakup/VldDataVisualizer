@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using VldDataVisualizer.Models;
@@ -16,9 +16,25 @@ namespace VldDataVisualizer.ViewModels
         private const byte UNIT_ID = 0xFF;
         private const byte FC_READ = 0x03;
 
-        // Measurement block (FLOAT values)
-        private const ushort MEASURE_BASE = 630;
-        private const ushort STATUS_REG = 528;
+        // ===== GERÇEK ADRESLER (Fotoğraftaki tabloya göre) =====
+        // Adres 0x06 → Decimal 6: DC Gerilim Trip (bit4), AC Gerilim Trip (bit5), I_RMS Trip (bit6)
+        // Adres 0x07 → Decimal 7: Ayirici_Acik (bit0), Ayirici_Kapali (bit1), Seçici Anahtar Toprak Poz (bit4)
+        // Adres 0x0F → Decimal 15: Reset (0xAA01)
+
+        // Status/Trip register adresleri
+        private const ushort STATUS_TRIP_REG = 0x06;   // DC_Gerilim_Trip(bit4), AC_Gerilim_Trip(bit5), I_RMS_Trip(bit6)
+        private const ushort STATUS_SWITCH_REG = 0x07;  // Ayirici_Acik(bit0), Ayirici_Kapali(bit1), Toprak Poz(bit4)
+        private const ushort RESET_REG = 0x0F;          // Reset komutu (0xAA01)
+
+        // Bit maskeleri - Adres 0x06
+        private const ushort BIT_DC_GERILIM_TRIP = 1 << 4;  // Bit 4
+        private const ushort BIT_AC_GERILIM_TRIP = 1 << 5;  // Bit 5
+        private const ushort BIT_I_RMS_TRIP = 1 << 6;       // Bit 6
+
+        // Bit maskeleri - Adres 0x07
+        private const ushort BIT_AYIRICI_ACIK = 1 << 0;     // Bit 0
+        private const ushort BIT_AYIRICI_KAPALI = 1 << 1;   // Bit 1
+        private const ushort BIT_TOPRAK_POZ = 1 << 4;       // Bit 4
 
         private const int DEFAULT_PORT = 502;
         private const int CONNECT_TIMEOUT = 3000;
@@ -47,29 +63,46 @@ namespace VldDataVisualizer.ViewModels
                 {
                     Timestamp = DateTime.Now,
                     DeviceType = "TFPR-VLD",
+                    StationId = 1,
+                    StationName = "Depo",
                     IsCommunicationActive = true
                 };
 
                 try
                 {
-                    // ===== FLOAT MEASUREMENT BLOCK =====
-                    ushort[] regs = ReadHoldingRegisters(MEASURE_BASE, 8);
+                    // ===== DURUM/TRIP REGISTERLERİ (Adres 0x06 ve 0x07) =====
+                    // Her iki adresi tek seferde oku (2 register: 0x06 ve 0x07)
+                    ushort[] statusRegs = ReadHoldingRegisters(STATUS_TRIP_REG, 2);
 
-                    data.DcVoltage = ToFloat(regs[0], regs[1]);
-                    data.GroundCurrent = ToFloat(regs[2], regs[3]);
-                    data.Frequency = ToFloat(regs[4], regs[5]);
-                    data.Temperature = ToFloat(regs[6], regs[7]);
+                    ushort tripWord = statusRegs[0];    // Adres 0x06
+                    ushort switchWord = statusRegs[1];  // Adres 0x07
 
-                    Debug.WriteLine($"DC Voltage = {data.DcVoltage}");
-                    Debug.WriteLine($"Ground Current = {data.GroundCurrent}");
-                    Debug.WriteLine($"Frequency = {data.Frequency}");
-                    Debug.WriteLine($"Temperature = {data.Temperature}");
+                    // Trip durumlarını çöz
+                    bool dcGerilimTrip = (tripWord & BIT_DC_GERILIM_TRIP) != 0;
+                    bool acGerilimTrip = (tripWord & BIT_AC_GERILIM_TRIP) != 0;
+                    bool iRmsTrip = (tripWord & BIT_I_RMS_TRIP) != 0;
 
-                    // ===== STATUS =====
-                    ushort[] status = ReadHoldingRegisters(STATUS_REG, 1);
-                    data.DeviceStatusWord = status[0];
+                    // Ayırıcı ve anahtar durumlarını çöz
+                    bool ayiriciAcik = (switchWord & BIT_AYIRICI_ACIK) != 0;
+                    bool ayiriciKapali = (switchWord & BIT_AYIRICI_KAPALI) != 0;
+                    bool toprakPozisyonu = (switchWord & BIT_TOPRAK_POZ) != 0;
 
-                    EvaluateStatus(data);
+                    // DeviceStatusWord'e tüm bilgileri birleştir
+                    data.DeviceStatusWord = (ushort)(tripWord | (switchWord << 8));
+
+                    Debug.WriteLine($"--- VLD Gerçek Veri Okuma ---");
+                    Debug.WriteLine($"Adres 0x06 (Trip): 0x{tripWord:X4}");
+                    Debug.WriteLine($"  DC Gerilim Trip: {dcGerilimTrip}");
+                    Debug.WriteLine($"  AC Gerilim Trip: {acGerilimTrip}");
+                    Debug.WriteLine($"  I RMS Trip: {iRmsTrip}");
+                    Debug.WriteLine($"Adres 0x07 (Switch): 0x{switchWord:X4}");
+                    Debug.WriteLine($"  Ayırıcı Açık: {ayiriciAcik}");
+                    Debug.WriteLine($"  Ayırıcı Kapalı: {ayiriciKapali}");
+                    Debug.WriteLine($"  Toprak Pozisyonu: {toprakPozisyonu}");
+
+                    // Alarm ve durum değerlendirmesi
+                    EvaluateStatus(data, dcGerilimTrip, acGerilimTrip, iRmsTrip,
+                                   ayiriciAcik, ayiriciKapali, toprakPozisyonu);
                 }
                 catch (Exception ex)
                 {
@@ -143,48 +176,86 @@ namespace VldDataVisualizer.ViewModels
             return buffer;
         }
 
-        // ===== FLOAT CONVERSION =====
-        private float ToFloat(ushort reg1, ushort reg2)
-        {
-            byte[] bytes = new byte[4];
-
-            // Word order test (Most TFPR cihazları bu formatı kullanır)
-            bytes[0] = (byte)(reg1 >> 8);
-            bytes[1] = (byte)(reg1 & 0xFF);
-            bytes[2] = (byte)(reg2 >> 8);
-            bytes[3] = (byte)(reg2 & 0xFF);
-
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            return BitConverter.ToSingle(bytes, 0);
-        }
-
-        private void EvaluateStatus(VldData data)
+        private void EvaluateStatus(VldData data,
+            bool dcGerilimTrip, bool acGerilimTrip, bool iRmsTrip,
+            bool ayiriciAcik, bool ayiriciKapali, bool toprakPozisyonu)
         {
             data.ActiveAlarms.Clear();
 
-            ushort status = data.DeviceStatusWord;
+            // Trip alarmları
+            if (dcGerilimTrip)
+            {
+                data.ActiveAlarms.Add("DC_GERILIM_TRIP");
+                data.Status = "ALARM";
+            }
 
-            if ((status & 0x0001) == 0)
-                data.ActiveAlarms.Add("COMM_FAULT");
+            if (acGerilimTrip)
+            {
+                data.ActiveAlarms.Add("AC_GERILIM_TRIP");
+                data.Status = "ALARM";
+            }
 
-            if ((status & 0x0002) != 0)
-                data.ActiveAlarms.Add("OVER_VOLTAGE");
+            if (iRmsTrip)
+            {
+                data.ActiveAlarms.Add("I_RMS_TRIP");
+                data.Status = "ALARM";
+            }
 
-            if ((status & 0x0004) != 0)
-                data.ActiveAlarms.Add("UNDER_VOLTAGE");
+            // Ayırıcı durum kontrolleri
+            if (ayiriciAcik && ayiriciKapali)
+            {
+                // İki bit aynı anda aktif olmamalı - çelişkili durum
+                data.ActiveAlarms.Add("AYIRICI_DURUM_HATASI");
+                data.Status = "ALARM";
+            }
+            else if (!ayiriciAcik && !ayiriciKapali)
+            {
+                // Ayırıcı belirsiz durumda
+                data.ActiveAlarms.Add("AYIRICI_BELIRSIZ");
+            }
 
-            if ((status & 0x0008) != 0)
-                data.ActiveAlarms.Add("OVER_CURRENT");
+            if (toprakPozisyonu)
+            {
+                data.ActiveAlarms.Add("TOPRAK_POZISYONU_AKTIF");
+            }
 
-            data.Status = data.ActiveAlarms.Count > 0 ? "ALARM" : "NORMAL";
+            // Genel durum değerlendirmesi
+            if (data.ActiveAlarms.Count == 0)
+            {
+                data.Status = "NORMAL";
+            }
+            else if (data.Status != "ALARM")
+            {
+                data.Status = "UYARI";
+            }
+
+            // Durum bilgilerini VldData'ya yaz
+            // Ayırıcı açıksa gerilim 0, kapalıysa nominal değer varsayımı
+            if (ayiriciAcik && !ayiriciKapali)
+            {
+                // Ayırıcı açık: devre kesilmiş
+                data.DcVoltage = 0;
+                data.DcCurrent = 0;
+                data.Current = 0;
+            }
+
+            // Trip durumundaysa durum bilgisini güncelle
+            if (dcGerilimTrip || acGerilimTrip || iRmsTrip)
+            {
+                data.DcVoltage = 0;  // Trip durumunda gerilim kesilir
+                data.DcCurrent = 0;
+                data.Current = 0;
+            }
         }
 
         public void Dispose()
         {
-            _stream?.Dispose();
-            _client?.Dispose();
+            if (!_disposed)
+            {
+                _stream?.Dispose();
+                _client?.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

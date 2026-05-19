@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,6 @@ namespace VldDataVisualizer.Services
         private CancellationTokenSource _cts;
 
         public event EventHandler<VldData> DataReceived;
-        public string dataa;
 
         public TfprPollingService(TfprVldModbusTcpReader reader)
         {
@@ -49,10 +48,6 @@ namespace VldDataVisualizer.Services
                         Status = "COMM_LOST"
                     });
                 }
-                dataa = "Current: " + _tcpReader.Read().Current.ToString() + "/" +
-            "Voltage: " + _tcpReader.Read().DcVoltage.ToString() + "/" +
-            "Status: " + _tcpReader.Read().Status.ToString() + "/" +
-            "Device ID: " + _tcpReader.Read().DeviceId.ToString() + "/";
                 await Task.Delay(interval, token);
             }
         }

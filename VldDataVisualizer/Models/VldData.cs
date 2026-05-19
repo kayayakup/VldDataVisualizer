@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using VldDataVisualizer.ViewModels;
 
 namespace VldDataVisualizer.Models
@@ -8,11 +8,11 @@ namespace VldDataVisualizer.Models
         public ushort DeviceStatusWord { get; set; } // Röle durum word’ü (bit alanı)
 
         // Temel kimlik bilgileri
-        public string DeviceId { get; set; } = "VLD_TFPR_001";
-        public string DeviceType { get; set; } = "VLD-TFPR";
-        public string Location { get; set; } = "TRANSFORMER_STATION";
+        public string DeviceId { get; set; } = string.Empty;
+        public string DeviceType { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
         public int StationId { get; set; } // Hangi istasyona ait
-        public string StationName { get; set; } // İstasyon adı
+        public string StationName { get; set; } = string.Empty; // İstasyon adı
         public double StartPosition { get; set; } // Kontrol başlangıç pozisyonu (metre)
         public double EndPosition { get; set; } // Kontrol bitiş pozisyonu (metre)
         public DateTime Timestamp { get; set; }
@@ -52,7 +52,7 @@ namespace VldDataVisualizer.Models
         public double THDCurrent { get; set; }          // Akım THD %
 
         // Durum ve alarm bilgileri
-        public string Status { get; set; } = "NORMAL";
+        public string Status { get; set; } = string.Empty;
         public List<string> ActiveAlarms { get; set; } = new List<string>();
         public bool IsCommunicationActive { get; set; } = true;
 
@@ -69,26 +69,26 @@ namespace VldDataVisualizer.Models
     // UI elemanlarına tekrar tekrar ulaşmak için referans tutucu
     public class DevicePanelRefs
     {
-        public TextBlock TitleText { get; set; }
-        public TextBlock NoDataText { get; set; }
-        public Grid MainContentGrid { get; set; }
+        public TextBlock TitleText { get; set; } = null!;
+        public TextBlock NoDataText { get; set; } = null!;
+        public Grid MainContentGrid { get; set; } = null!;
 
         // Değer TextBlock'ları (Güncellenecek olanlar)
         public Dictionary<string, TextBlock> ValueTexts { get; set; } = new Dictionary<string, TextBlock>();
 
         // Grafikler
-        public ChartsProperties PowerChart { get; set; }
-        public ChartsProperties VoltageChart { get; set; }
-        public ChartsProperties CurrentChart { get; set; }
-        public ChartsProperties TempChart { get; set; }
+        public ChartsProperties PowerChart { get; set; } = null!;
+        public ChartsProperties VoltageChart { get; set; } = null!;
+        public ChartsProperties CurrentChart { get; set; } = null!;
+        public ChartsProperties TempChart { get; set; } = null!;
 
         // Kontrol Alanı
-        public Canvas ControlCanvas { get; set; }
-        public TextBlock ControlAreaHeader { get; set; } // Başlığı güncellemek gerekirse
+        public Canvas ControlCanvas { get; set; } = null!;
+        public TextBlock ControlAreaHeader { get; set; } = null!; // Başlığı güncellemek gerekirse
 
         // Tablo ve Alarmlar
-        public DataGrid DataGrid { get; set; }
-        public WrapPanel AlarmPanel { get; set; }
-        public GroupBox AlarmGroup { get; set; }
+        public DataGrid DataGrid { get; set; } = null!;
+        public WrapPanel AlarmPanel { get; set; } = null!;
+        public GroupBox AlarmGroup { get; set; } = null!;
     }
 }
