@@ -203,9 +203,8 @@
                             </Grid>
                         </GroupBox>
 
-                        <!-- 12 VLD-TFPR Güç Grafikleri (ScrollViewer içinde yan yana) -->
-                        <!-- 12 VLD-TFPR Gerilim Grafikleri (DEĞİŞİKLİK BURADA) -->
-                        <GroupBox Grid.Row="1" Header="12 İstasyon VLD-TFPR Çıkış Gerilimi Grafikleri" Margin="5" Height="280">
+                        <!-- 12 VLD-TFPR Ute Grafikleri -->
+                        <GroupBox Grid.Row="1" Header="12 İstasyon Ute Grafikleri" Margin="5" Height="280">
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                                 <StackPanel Orientation="Horizontal">
 
@@ -215,7 +214,7 @@
                                             <TextBlock x:Name="Station1Header" Text="🚉 Depo" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart1" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"  LineColor="Blue" BackgroundColor="White" MaxY="2200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"  LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- VLD Pano Durum Bilgisi (Depo grafiğinin yanında) -->
@@ -241,8 +240,8 @@
                                             <TextBlock x:Name="Station2Header" Text="🚉 OSB" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart2" 
-                        Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                         LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                        Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                         LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 3 - Mutlukent -->
@@ -251,8 +250,8 @@
                                             <TextBlock x:Name="Station3Header" Text="🚉 Mutlukent" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart3" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 4 - Adliye -->
@@ -261,8 +260,8 @@
                                             <TextBlock x:Name="Station4Header" Text="🚉 Adliye" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart4" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 5 - Akse Sapağı -->
@@ -271,8 +270,8 @@
                                             <TextBlock x:Name="Station5Header" Text="🚉 Akse Sapağı" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart5" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 6 - Gebze Stadyum -->
@@ -281,8 +280,8 @@
                                             <TextBlock x:Name="Station6Header" Text="🚉 Gebze Stadyum" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart6" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 7 - Gebze Kent Meydanı -->
@@ -291,8 +290,8 @@
                                             <TextBlock x:Name="Station7Header" Text="🚉 Gebze Kent Meydanı" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart7" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 8 - Fatih D. Hastanesi -->
@@ -301,8 +300,8 @@
                                             <TextBlock x:Name="Station8Header" Text="🚉 Fatih D. Hastanesi" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart8" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 9 - TCDD Gar -->
@@ -311,8 +310,8 @@
                                             <TextBlock x:Name="Station9Header" Text="🚉 TCDD Gar" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart9" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 10 - Farabi D. Hastanesi -->
@@ -321,8 +320,8 @@
                                             <TextBlock x:Name="Station10Header" Text="🚉 Farabi D. Hastanesi" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart10" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 11 - Darıca Cumhuriyet -->
@@ -331,8 +330,8 @@
                                             <TextBlock x:Name="Station11Header" Text="🚉 Darıca Cumhuriyet" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart11" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                     <!-- İstasyon 12 - Darıca Sahil -->
@@ -341,8 +340,8 @@
                                             <TextBlock x:Name="Station12Header" Text="🚉 Darıca Sahil" FontWeight="Bold" Foreground="#1976d2"/>
                                         </GroupBox.Header>
                                         <local:ChartsProperties x:Name="Chart12" 
-                    Title="Gerilim (V)" YAxisTitle="V" XAxisTitle="Zaman"
-                     LineColor="Blue" BackgroundColor="White" MaxY="2200" MinY="1200"/>
+                    Title="Ute" YAxisTitle="V/A" XAxisTitle="Zaman"
+                     LineColor="Red" BackgroundColor="White" MinY="0" MaxY="1000"/>
                                     </GroupBox>
 
                                 </StackPanel>
@@ -529,7 +528,7 @@
                         </DataGridTextColumn>
 
                         <!-- TFPR Cihazları (Birden fazla) -->
-                        <DataGridTemplateColumn Header="TFPR Cihazları" Width="125">
+                        <DataGridTemplateColumn Header="TFPR Cihazları" Width="160">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ScrollViewer VerticalScrollBarVisibility="Auto" 
@@ -547,8 +546,10 @@
                                                        FontWeight="SemiBold"
                                                        Foreground="#1976D2"/>
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="{Binding DcVoltage, StringFormat='{}{0:N0}V'}" 
-                                                           Margin="0,0,10,0"/>
+                                                                <TextBlock Text="{Binding TouchVoltage, StringFormat='{}Ute:{0:N0}V'}" 
+                                                           Foreground="#d32f2f" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                                                <TextBlock Text="{Binding GroundCurrent, StringFormat='{}Ig:{0:N1}A'}" 
+                                                           Foreground="#388e3c" FontWeight="SemiBold" Margin="0,0,6,0"/>
                                                                 <TextBlock Text="{Binding Kilometer, StringFormat='{}{0:N2}km'}"/>
                                                             </StackPanel>
                                                         </StackPanel>
@@ -632,5 +633,12 @@
                 </DataGrid>
             </DockPanel>
         </Border>
+        <!-- Toast Notification Stack (sağ alt köşe) -->
+        <ItemsControl x:Name="ToastStackPanel"
+                      Margin="20"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Panel.ZIndex="1000"
+                      Width="360"/>
     </Grid>
 </Window>

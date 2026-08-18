@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
@@ -9,6 +9,7 @@ namespace VldDataVisualizer.ViewModels
     public class ChartsProperties : FrameworkElement
     {
         private readonly List<double> _values = new();
+        private readonly List<double> _secondaryValues = new();
         private readonly List<DateTime> _timestamps = new();
 
         #region Public Properties
@@ -18,6 +19,8 @@ namespace VldDataVisualizer.ViewModels
         public string XAxisTitle { get; set; } = "Zaman";
 
         public Brush LineColor { get; set; } = Brushes.Blue;
+        public Brush SecondaryLineColor { get; set; } = Brushes.Blue;
+        public bool HasSecondarySeries { get; set; } = false;
         public Brush BackgroundColor { get; set; } = Brushes.White;
 
         public bool IsPaused { get; set; }
@@ -29,16 +32,29 @@ namespace VldDataVisualizer.ViewModels
 
         #region Data Methods
 
-        public void AddValue(double value)
+        public void AddValue(double value, double? secondaryValue = null)
         {
             if (IsPaused) return;
 
             _values.Add(value);
+            
+            if (secondaryValue.HasValue)
+            {
+                HasSecondarySeries = true;
+                _secondaryValues.Add(secondaryValue.Value);
+            }
+            else if (HasSecondarySeries)
+            {
+                _secondaryValues.Add(0); // Veya en son değeri koruyabiliriz
+            }
+
             _timestamps.Add(DateTime.Now);
 
             if (_values.Count > 50)
             {
                 _values.RemoveAt(0);
+                if (HasSecondarySeries && _secondaryValues.Count > 0)
+                    _secondaryValues.RemoveAt(0);
                 _timestamps.RemoveAt(0);
             }
 
@@ -48,6 +64,7 @@ namespace VldDataVisualizer.ViewModels
         public void Clear()
         {
             _values.Clear();
+            _secondaryValues.Clear();
             _timestamps.Clear();
             InvalidateVisual();
         }
@@ -88,7 +105,7 @@ namespace VldDataVisualizer.ViewModels
                 -90);
 
             DrawText(dc, XAxisTitle, 10, FontWeights.Normal,
-                new Point(ActualWidth / 2 - 30, ActualHeight - 20));
+                new Point(ActualWidth / 2 - 20, ActualHeight - 15));
         }
 
         private void DrawAxes(DrawingContext dc)
@@ -97,18 +114,18 @@ namespace VldDataVisualizer.ViewModels
 
             // Y Axis
             dc.DrawLine(axisPen,
-                new Point(50, 30),
-                new Point(50, ActualHeight - 30));
+                new Point(60, 30),
+                new Point(60, ActualHeight - 40));
 
             // X Axis
             dc.DrawLine(axisPen,
-                new Point(50, ActualHeight - 30),
-                new Point(ActualWidth - 10, ActualHeight - 30));
+                new Point(60, ActualHeight - 40),
+                new Point(ActualWidth - 10, ActualHeight - 40));
         }
 
         private void DrawGrid(DrawingContext dc)
         {
-            double height = ActualHeight - 60;
+            double height = ActualHeight - 70;
             double minY = MinY;
             double maxY = MaxY;
             double range = maxY - minY;
@@ -118,14 +135,30 @@ namespace VldDataVisualizer.ViewModels
             for (int i = 0; i <= 5; i++)
             {
                 double value = minY + (range * i / 5);
-                double y = (ActualHeight - 30) - (value - minY) / range * height;
+                double y = (ActualHeight - 40) - (value - minY) / range * height;
 
                 dc.DrawLine(gridPen,
-                    new Point(50, y),
+                    new Point(60, y),
                     new Point(ActualWidth - 10, y));
 
                 DrawText(dc, value.ToString("0.0"), 9, FontWeights.Normal,
-                    new Point(10, y - 7));
+                    new Point(20, y - 7));
+            }
+
+            // X Axis Time Labels
+            if (_timestamps.Count > 1)
+            {
+                double width = ActualWidth - 70;
+                int numLabels = 5;
+                for (int i = 0; i <= numLabels; i++)
+                {
+                    int idx = (int)((_timestamps.Count - 1) * ((double)i / numLabels));
+                    double x = 60 + i * (width / numLabels);
+                    string timeStr = _timestamps[idx].ToString("HH:mm:ss");
+                    DrawText(dc, timeStr, 8, FontWeights.Normal, new Point(x - 18, ActualHeight - 35));
+                    
+                    dc.DrawLine(gridPen, new Point(x, 30), new Point(x, ActualHeight - 40));
+                }
             }
         }
 
@@ -133,21 +166,22 @@ namespace VldDataVisualizer.ViewModels
         {
             if (_values.Count < 2) return;
 
-            double width = ActualWidth - 60;
-            double height = ActualHeight - 60;
+            double width = ActualWidth - 70;
+            double height = ActualHeight - 70;
             double minY = MinY;
             double maxY = MaxY;
             double range = maxY - minY;
 
             double xStep = width / (_values.Count - 1);
 
-            StreamGeometry geometry = new();
-            using (var ctx = geometry.Open())
+            // Çizgi 1 (Primary)
+            StreamGeometry geometry1 = new();
+            using (var ctx = geometry1.Open())
             {
                 for (int i = 0; i < _values.Count; i++)
                 {
-                    double x = 50 + i * xStep;
-                    double y = (ActualHeight - 30) - (_values[i] - minY) / range * height;
+                    double x = 60 + i * xStep;
+                    double y = (ActualHeight - 40) - (_values[i] - minY) / range * height;
 
                     if (i == 0)
                         ctx.BeginFigure(new Point(x, y), false, false);
@@ -156,8 +190,30 @@ namespace VldDataVisualizer.ViewModels
                 }
             }
 
-            geometry.Freeze();
-            dc.DrawGeometry(null, new Pen(LineColor, 2), geometry);
+            geometry1.Freeze();
+            dc.DrawGeometry(null, new Pen(LineColor, 2), geometry1);
+
+            // Çizgi 2 (Secondary)
+            if (HasSecondarySeries && _secondaryValues.Count >= 2)
+            {
+                StreamGeometry geometry2 = new();
+                using (var ctx = geometry2.Open())
+                {
+                    for (int i = 0; i < _secondaryValues.Count && i < _values.Count; i++)
+                    {
+                        double x = 60 + i * xStep;
+                        double y = (ActualHeight - 40) - (_secondaryValues[i] - minY) / range * height;
+
+                        if (i == 0)
+                            ctx.BeginFigure(new Point(x, y), false, false);
+                        else
+                            ctx.LineTo(new Point(x, y), true, false);
+                    }
+                }
+
+                geometry2.Freeze();
+                dc.DrawGeometry(null, new Pen(SecondaryLineColor, 2), geometry2);
+            }
         }
 
         private void DrawText(

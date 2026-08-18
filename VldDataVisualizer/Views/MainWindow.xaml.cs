@@ -387,7 +387,7 @@ namespace VldDataVisualizer.Views
                     {
                         OutputBox.Text = $"İlk okuma hatası: {ex.Message}";
                     }
-                    
+
                     ShowStatusMessage("Gerçek Veri Modu (Modbus) başlatıldı", StatusType.Info);
                 }
                 else
@@ -589,10 +589,10 @@ namespace VldDataVisualizer.Views
                     // İlgili chart'ı güncelle (index 0-11)
                     if (i < _allCharts.Count)
                     {
-                        _allCharts[i].AddValue(data.DcVoltage); // Gerilim grafiği
+                        _allCharts[i].AddValue(data.TouchVoltage, data.Current); // Dokunma Gerilimi Ute ve Akım grafiği
 
                         // Header'ı güncelle - EN 50122 uyumlu
-                        UpdateStationHeader(stationId, data.Status, data.DcVoltage, data.TouchVoltage);
+                        UpdateStationHeader(stationId, data.Status, data.DcVoltage, data.TouchVoltage, data.Current);
                     }
                 }
 
@@ -608,7 +608,7 @@ namespace VldDataVisualizer.Views
         }
 
         // Güncellenmiş UpdateStationHeader metodu
-        private void UpdateStationHeader(int stationId, string status, double dcVoltage, double touchVoltage = 0)
+        private void UpdateStationHeader(int stationId, string status, double dcVoltage, double touchVoltage = 0, double current = 0)
         {
             TextBlock header = null;
 
@@ -637,11 +637,11 @@ namespace VldDataVisualizer.Views
                 string dcCategory = EN50122Analyzer.GetDcVoltageCategory(dcVoltage);
                 string symbol = ColorSituation.GetStatusSymbol(dcCategory);
 
-                // Eğer dokunma gerilimi varsa göster
-                double faultDuration = _faultDurations.ContainsKey(stationId) ? _faultDurations[stationId] : 0;
-                string touchVoltageInfo = touchVoltage > 10 ? $"\n⚠️ Ute: {touchVoltage:N0}V" : "";
+                // Dokunma gerilimi ve akım bilgisi
+                string uteInfo = touchVoltage > 10 ? $"⚠️ Ute: {touchVoltage:N0} V" : $"Ute: {touchVoltage:N0} V";
+                string currentInfo = $"\n⚡ Akım: {current:N0} A";
 
-                header.Text = $"{symbol} {stationName}\n{dcVoltage:N0} V{touchVoltageInfo}";
+                header.Text = $"{symbol} {stationName}\n{uteInfo}{currentInfo}";
 
                 // Durum rengine göre başlık rengi
                 header.Foreground = ColorSituation.GetStatusColor(status);
@@ -863,6 +863,13 @@ namespace VldDataVisualizer.Views
                 {
                     _errorLogs.RemoveAt(_errorLogs.Count - 1);
                 }
+
+                // Toast bildirimi göster
+                string toastMsg = $"⚡ EN 50122 İhlali: {log.StationNames}\n" +
+                                  $"Kategori: {log.OverallCategory} | " +
+                                  $"Ute: {log.MaxTouchVoltage:N0} V | " +
+                                  $"{log.CriticalDeviceCount} cihaz";
+                ShowToastNotification(toastMsg, isError: true);
 
                 // Debug bilgisi
                 Console.WriteLine($"EN50122 Log: {criticalDevices.Count} cihaz, {overallCategory}, " +
@@ -1384,14 +1391,15 @@ namespace VldDataVisualizer.Views
                 chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 chartsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-                // Grafikleri oluştur ve referanslara kaydet - DC DEĞERLER İÇİN
+                // Grafikleri oluştur ve referanslara kaydet - UTE VE DC DEĞERLER İÇİN
                 refs.PowerChart = CreateChart($"PowerChart{stationId}", "DC Aktif Güç", "Güç (kW)", Brushes.Green, 350000, 750000);
-                refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "DC Çıkış Gerilimi", "Gerilim (V)", Brushes.Blue, 1200, 1800);
-                refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "DC Akım", "Akım (A)", Brushes.Red, 0, 1500);
+                refs.VoltageChart = CreateChart($"VoltageChart{stationId}", "Ute", "Ute (V) / Akım (A)", Brushes.Red, 0, 1500);
+                refs.VoltageChart.SecondaryLineColor = Brushes.Blue; // Akım için ikinci renk
+                refs.CurrentChart = CreateChart($"CurrentChart{stationId}", "DC Akım", "Akım (A)", Brushes.Blue, 0, 1500);
                 refs.TempChart = CreateChart($"TempChart{stationId}", "Sıcaklık", "Sıcaklık (°C)", Brushes.Orange, -10, 100);
 
                 AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Güç", refs.PowerChart), 0, 0);
-                AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Gerilim", refs.VoltageChart), 0, 1);
+                AddToGrid(chartsGrid, CreateGroupBoxForChart("Ute", refs.VoltageChart), 0, 1);
                 AddToGrid(chartsGrid, CreateGroupBoxForChart("DC Akım", refs.CurrentChart), 1, 0);
                 AddToGrid(chartsGrid, CreateGroupBoxForChart("Sıcaklık", refs.TempChart), 1, 1);
 
@@ -1420,40 +1428,46 @@ namespace VldDataVisualizer.Views
                 var tableGroup = CreateGroupBox("Son 10 Ölçüm - DC Sistem");
                 refs.DataGrid = new DataGrid { AutoGenerateColumns = false, Height = 150 };
 
-                // KOLON TANIMLARI - DC SİSTEM İÇİN
+                // KOLON TANIMLARI - UTE DOKUNMA GERİLİMİ VE AKIM DEĞERLERİ İLE
                 refs.DataGrid.Columns.Add(new DataGridTextColumn
                 {
                     Header = "Zaman",
                     Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" },
-                    Width = 80
-                });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn
-                {
-                    Header = "DC Gerilim",
-                    Binding = new System.Windows.Data.Binding("DcVoltage") { StringFormat = "N1" },
-                    Width = 80
-                });
-                refs.DataGrid.Columns.Add(new DataGridTextColumn
-                {
-                    Header = "DC Akım",
-                    Binding = new System.Windows.Data.Binding("DcCurrent") { StringFormat = "N0" },
                     Width = 70
                 });
                 refs.DataGrid.Columns.Add(new DataGridTextColumn
                 {
-                    Header = "DC Güç",
-                    Binding = new System.Windows.Data.Binding("DcPower") { StringFormat = "N0" },
+                    Header = "Ute (V)",
+                    Binding = new System.Windows.Data.Binding("TouchVoltage") { StringFormat = "N1" },
                     Width = 70
                 });
                 refs.DataGrid.Columns.Add(new DataGridTextColumn
                 {
-                    Header = "Toprak Akım",
+                    Header = "Toprak Akım (A)",
                     Binding = new System.Windows.Data.Binding("GroundCurrent") { StringFormat = "N1" },
-                    Width = 80
+                    Width = 90
                 });
                 refs.DataGrid.Columns.Add(new DataGridTextColumn
                 {
-                    Header = "Sıcaklık",
+                    Header = "DC Akım (A)",
+                    Binding = new System.Windows.Data.Binding("DcCurrent") { StringFormat = "N0" },
+                    Width = 75
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "DC Gerilim (V)",
+                    Binding = new System.Windows.Data.Binding("DcVoltage") { StringFormat = "N1" },
+                    Width = 85
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "DC Güç (kW)",
+                    Binding = new System.Windows.Data.Binding("DcPower") { StringFormat = "N0" },
+                    Width = 75
+                });
+                refs.DataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "Sıcaklık (°C)",
                     Binding = new System.Windows.Data.Binding("Temperature") { StringFormat = "N1" },
                     Width = 70
                 });
@@ -1536,9 +1550,9 @@ namespace VldDataVisualizer.Views
             UpdateRefText(uiRefs, "ReactImp", $"{latestData.ReactiveEnergyImport:N0} kVArh");
             UpdateRefText(uiRefs, "DCEner", $"{CalculateDcEnergy(latestData):N0} kWh");
 
-            // Grafikleri Güncelle - DC DEĞERLER İLE
+            // Grafikleri Güncelle - UTE VE DC DEĞERLER İLE
             uiRefs.PowerChart.AddValue(dcPower); // DC güç
-            uiRefs.VoltageChart.AddValue(latestData.DcVoltage); // DC gerilim (V)
+            uiRefs.VoltageChart.AddValue(latestData.TouchVoltage, latestData.Current); // Dokunma gerilimi Ute (V) ve Akım (A)
             uiRefs.CurrentChart.AddValue(latestData.DcCurrent); // DC akım
             uiRefs.TempChart.AddValue(latestData.Temperature);
 
@@ -2585,7 +2599,38 @@ namespace VldDataVisualizer.Views
         private void ShowStatusMessage(string message, StatusType type)
         {
             if (type == StatusType.Error || type == StatusType.Emergency)
-                MessageBox.Show(message, type.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowToastNotification(message, isError: true);
+        }
+
+        private System.Threading.CancellationTokenSource? _toastCts;
+
+        private void ShowToastNotification(string message, bool isError = false)
+        {
+            // Önceki toast timer'ını iptal et
+            _toastCts?.Cancel();
+            _toastCts = new System.Threading.CancellationTokenSource();
+            var token = _toastCts.Token;
+
+            Dispatcher.Invoke(() =>
+            {
+                ToastNotificationText.Text = message;
+                ToastNotificationBorder.Background = isError
+                    ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xB0, 0x00, 0x20))
+                    : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x33, 0x33, 0x33));
+                ToastNotificationBorder.Visibility = Visibility.Visible;
+            });
+
+            // 5 saniye sonra gizle
+            System.Threading.Tasks.Task.Delay(10000, token).ContinueWith(t =>
+            {
+                if (!t.IsCanceled)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ToastNotificationBorder.Visibility = Visibility.Collapsed;
+                    });
+                }
+            });
         }
 
         #endregion
@@ -2621,8 +2666,7 @@ namespace VldDataVisualizer.Views
                 ErrorLogGrid.ItemsSource = _errorLogs;
                 ErrorLogGrid.Items.Refresh();
                 ErrorLogGrid.Items.SortDescriptions.Clear();
-                ErrorLogGrid.Items.SortDescriptions.Add(
-                    new SortDescription("Timestamp", ListSortDirection.Descending));
+                ErrorLogGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
 
                 // Animasyon (isteğe bağlı)
                 var animation = new DoubleAnimation

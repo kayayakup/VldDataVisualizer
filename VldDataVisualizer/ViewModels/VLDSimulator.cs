@@ -381,10 +381,12 @@ namespace VldDataVisualizer.ViewModels
 
         private double CalculateTouchVoltage(double groundCurrentA)
         {
-            // ✅ DÜZELTİLDİ: 50Ω toprak direnci (gerçekçi)
-            // 3A × 50Ω = 150V (EN50122 limitlerinde)
-            // 10A × 50Ω = 500V (kritik seviye)
-            return Math.Round(groundCurrentA * _touchResistance, 1);
+            // EN 50122-1 Çizelge 6'ya uygun dokunma gerilimi (Ute) hesabı
+            // 3A × 50Ω = 150V (uzun süreli limit 120V-150V aralığında)
+            // 10A × 50Ω = 500V (kısa süreli limit aralığında)
+            // EN 50122-1 azami izin verilen kısa süreli dokunma gerilimi: 870 V (0.02s)
+            double ute = groundCurrentA * _touchResistance;
+            return Math.Round(Math.Min(870.0, ute), 1);
         }
 
         private List<string> CheckForAlarms(VldData data, double leakDuration)

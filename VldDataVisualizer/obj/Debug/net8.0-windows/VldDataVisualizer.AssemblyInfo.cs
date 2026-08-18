@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+222264c8f74a6293ef08633cbe0bf9cccadd8daf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b2957d0ff02ab96ee04358c255bd7856830231c")]
 [assembly: System.Reflection.AssemblyProductAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VldDataVisualizer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -55,6 +55,14 @@ namespace VldDataVisualizer.Models
 
         public string DevicesDisplay =>
             string.Join(", ", AffectedDevices.Select(d => $"{d.DeviceId}({d.OverallCategory ?? d.Category})"));
+
+        // Toast bildirimi için kısa özet alanları
+        public string StationNames =>
+            string.Join(", ", AffectedDevices.Select(d => d.StationName).Distinct());
+
+        public int CriticalDeviceCount => AffectedDevices.Count;
+
+        public string OverallCategory => OverallEN50122Category ?? Category;
 
         public string TrainPositionsDisplay =>
             string.Join("\n", AllTrains.Select(t => $"{t.TrainId}: {t.Position:N0} m"));
