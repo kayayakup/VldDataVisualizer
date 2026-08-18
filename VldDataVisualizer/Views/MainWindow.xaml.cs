@@ -358,6 +358,8 @@ namespace VldDataVisualizer.Views
         #region BUTON CLICK EVENTS
         private TfprVldModbusTcpReader _tcpReader;
         private TfprPollingService _pollingService;
+        private AtsSignalizationModbusReader _atsReader;
+        private System.Timers.Timer _atsPollingTimer;
         private void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -388,16 +390,32 @@ namespace VldDataVisualizer.Views
                         OutputBox.Text = $"İlk okuma hatası: {ex.Message}";
                     }
 
+                    // YENİ: ATS Sinyalizasyon Gerçek Veri Modu
+                    _atsReader = new AtsSignalizationModbusReader("192.168.1.20"); // Örnek ATS Modbus Gateway IP
+                    _atsPollingTimer = new System.Timers.Timer(2000); // 2 saniyede bir güncelle
+                    _atsPollingTimer.Elapsed += (s, ev) => 
+                    {
+                        if (_atsReader != null)
+                        {
+                            var signalData = _atsReader.ReadData();
+                            Application.Current.Dispatcher.InvokeAsync(() =>
+                            {
+                                OnSignalizationDataGenerated(this, signalData);
+                            });
+                        }
+                    };
+                    _atsPollingTimer.Start();
+
                     ShowStatusMessage("Gerçek Veri Modu (Modbus) başlatıldı", StatusType.Info);
                 }
                 else
                 {
                     // SİMÜLASYON MODU
                     _vldSimulator.StartSimulation();
+                    _signalizationSimulator.StartSimulation();
                     ShowStatusMessage("Simülasyon Modu başlatıldı", StatusType.Info);
                 }
 
-                _signalizationSimulator.StartSimulation();
                 _railwayUpdateTimer.Start();
                 _chartUpdateTimer.Start();
                 _detailUpdateTimer.Start();
@@ -421,13 +439,20 @@ namespace VldDataVisualizer.Views
                     _pollingService?.Stop();
                     _tcpReader?.Dispose();
                     _tcpReader = null;
+
+                    _atsPollingTimer?.Stop();
+                    _atsPollingTimer?.Dispose();
+                    _atsPollingTimer = null;
+
+                    _atsReader?.Dispose();
+                    _atsReader = null;
                 }
                 else
                 {
                     _vldSimulator.StopSimulation();
+                    _signalizationSimulator.StopSimulation();
                 }
 
-                _signalizationSimulator.StopSimulation();
                 _railwayUpdateTimer.Stop();
                 _chartUpdateTimer.Stop();
                 _detailUpdateTimer.Stop();
