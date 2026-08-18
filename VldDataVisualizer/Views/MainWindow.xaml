@@ -633,6 +633,25 @@
                 </DataGrid>
             </DockPanel>
         </Border>
+        <!-- Toast Notification (tek bildirim) -->
+        <Border x:Name="ToastNotificationBorder"
+                Background="#333333"
+                CornerRadius="8"
+                Padding="16,10"
+                Margin="20"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Panel.ZIndex="999"
+                Visibility="Collapsed">
+            <TextBlock x:Name="ToastNotificationText"
+                       Text=""
+                       Foreground="White"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       MaxWidth="340"/>
+        </Border>
+
         <!-- Toast Notification Stack (sağ alt köşe) -->
         <ItemsControl x:Name="ToastStackPanel"
                       Margin="20"
