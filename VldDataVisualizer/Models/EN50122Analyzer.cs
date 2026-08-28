@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
@@ -14,25 +14,32 @@ namespace VldDataVisualizer.Models
     {
         /*
          * EN 50122-1:2011
-         * Çizelge 6 – Zamanın bir fonksiyonu olarak d.a. cer sistemleri için
-         * azami müsaade edilebilir etkin dokunma gerilimleri (Ute)
+         * Çizelge 7 – Zamanın bir fonksiyonu olarak a.a. cer sistemlerinde
+         * dokunma gerilimleri, vücut gerilimleri ve vücut akımları
+         *
+         * Ute,azami uzun süreli  → uzun süreli şartlar için ilgili dokunma gerilimi
+         * Ute,azami kısa süreli → kısa süreli şartlar için ilgili dokunma gerilimi
+         *   (eski ıslak ayakkabılar için ilave direnç dikkate alınarak)
+         *
+         * Ute,azami = Uc1 + Ra1 × Ic1 × 10⁻³
+         *   Ra1 = 100 Ω (ıslak eski ayakkabılar için direnç)
          */
         private static readonly List<(double timeS, double longTermV, double shortTermV)> _touchVoltageLimits = new()
         {
-            (double.MaxValue, 120, 0),   // >300 s – uzun süreli temas
-            (300, 150, 0),
-            (1, 160, 0),
-            (0.9, 165, 0),
-            (0.8, 170, 0),
-            (0.7, 175, 0),
-            (0.6, 0, 360),               // kısa süreli temas
-            (0.5, 0, 385),
-            (0.4, 0, 420),
-            (0.3, 0, 460),
-            (0.2, 0, 520),
-            (0.1, 0, 625),
-            (0.05, 0, 735),
-            (0.02, 0, 870),
+            (double.MaxValue, 60, 0),    // >300 s – uzun süreli temas
+            (300, 65, 0),                // 300 s
+            (1.0, 75, 0),               // 1.0 s
+            (0.9, 80, 0),               // 0.9 s
+            (0.8, 85, 0),               // 0.8 s
+            (0.7, 90, 0),               // 0.7 s – uzun/kısa süreli geçiş noktası
+            (0.6, 0, 180),              // 0.6 s – kısa süreli temas başlangıcı
+            (0.5, 0, 220),              // 0.5 s
+            (0.4, 0, 295),              // 0.4 s
+            (0.3, 0, 480),              // 0.3 s
+            (0.2, 0, 645),              // 0.2 s
+            (0.1, 0, 785),              // 0.1 s
+            (0.05, 0, 835),             // 0.05 s
+            (0.02, 0, 865),             // 0.02 s
         };
 
         /*
@@ -54,28 +61,29 @@ namespace VldDataVisualizer.Models
         private static readonly double ALARM_MAX = NOMINAL_DC_VOLTAGE * 1.30;
 
         /*
-         * EN 50122-1 Çizelge 6
+         * EN 50122-1 Çizelge 7
          * Dokunma gerilimi (Ute) ve maruz kalma süresine göre
-         * güvenlik durumunun sınıflandırılması
+         * güvenlik durumunun sınıflandırılması (AC cer sistemi)
          */
         public static string GetTouchVoltageCategory(double touchVoltage, double duration)
         {
-            if (duration <= 0)
-                return "NORMAL";
+            // Uygulamada erken bildiri önceliği olduğu için kırmızı eşik yükseltildi,
+            // sarı/yeşil hataları görünür tutmak için uyarı eşikleri daha gerçekçi ayarlandı.
+            const double EARLY_WARNING_VOLTAGE = 25.0;
+            const double CRITICAL_VOLTAGE = 70.0;
+            const double SUDDEN_SPIKE_VOLTAGE = 95.0;
 
-            var limits = GetTouchVoltageLimits(duration);
+            if (touchVoltage >= SUDDEN_SPIKE_VOLTAGE || touchVoltage >= CRITICAL_VOLTAGE)
+                return "KIRMIZI";
 
-            if (touchVoltage > limits.shortTermV && limits.shortTermV > 0)
-                return "KIRMIZI"; // Kısa süreli limit aşıldı
-
-            if (touchVoltage > limits.longTermV && limits.longTermV > 0)
-                return "SARI"; // Uzun süreli limit aşıldı
+            if (touchVoltage >= EARLY_WARNING_VOLTAGE)
+                return "SARI";
 
             return "NORMAL";
         }
 
         /*
-         * EN 50122-1 Çizelge 6
+         * EN 50122-1 Çizelge 7
          * Süreye bağlı olarak geçerli olan dokunma gerilimi limitlerini seçer
          */
         private static (double longTermV, double shortTermV) GetTouchVoltageLimits(double duration)
@@ -86,7 +94,7 @@ namespace VldDataVisualizer.Models
                     return (limit.longTermV, limit.shortTermV);
             }
 
-            return (120, 0); // EN 50122-1 uzun süreli maksimum değer
+            return (60, 0); // EN 50122-1 Çizelge 7 uzun süreli azami değer (>300s)
         }
 
         /*
@@ -112,9 +120,11 @@ namespace VldDataVisualizer.Models
          */
         public static string GetGroundCurrentCategory(double groundCurrent)
         {
-            const double NORMAL_LIMIT = 3.0;
-            const double WARNING_LIMIT = 6.0;
-            const double ALARM_LIMIT = 10.0;
+            // Kaçak ihtimalinden önce uyarı vermek için eşikler daha erken başlatıldı,
+            // fakat gerçek kırmızı alarm için sadece kritik akım değerleri kullanılacak.
+            const double NORMAL_LIMIT = 0.8;
+            const double WARNING_LIMIT = 1.2;
+            const double ALARM_LIMIT = 3.0;
 
             if (groundCurrent >= ALARM_LIMIT)
                 return "KIRMIZI";
@@ -150,32 +160,28 @@ namespace VldDataVisualizer.Models
         }
 
         /*
-         * EN 50122-1 Çizelge 6
+         * EN 50122-1 Çizelge 7
          * Belirli bir dokunma gerilimi için izin verilen maksimum temas süresi
          */
         public static double GetAllowedDurationForTouchVoltage(double touchVoltage)
         {
-            var shortTermLimits = _touchVoltageLimits
-                .Where(l => l.shortTermV > 0)
-                .OrderBy(l => l.shortTermV);
+            // Uzun süreli güvenli sınır (60V) altındaysa süresiz izin verilir
+            if (touchVoltage <= 60)
+                return double.MaxValue;
 
-            foreach (var limit in shortTermLimits)
+            // Süreye göre büyükten küçüğe sırala (double.MaxValue'dan 0.02s'ye)
+            var sortedLimits = _touchVoltageLimits.OrderByDescending(l => l.timeS);
+
+            foreach (var limit in sortedLimits)
             {
-                if (touchVoltage <= limit.shortTermV)
+                double limitVoltage = limit.shortTermV > 0 ? limit.shortTermV : limit.longTermV;
+                if (touchVoltage <= limitVoltage)
+                {
                     return limit.timeS;
+                }
             }
 
-            var longTermLimits = _touchVoltageLimits
-                .Where(l => l.longTermV > 0)
-                .OrderByDescending(l => l.longTermV);
-
-            foreach (var limit in longTermLimits)
-            {
-                if (touchVoltage <= limit.longTermV)
-                    return double.MaxValue;
-            }
-
-            return 0.0; // EN 50122'e göre anında tehlike
+            return 0.0; // Hiçbir limite uymuyorsa (örn: >865V) izin verilen süre 0'dır (anında tehlike)
         }
     }
 }

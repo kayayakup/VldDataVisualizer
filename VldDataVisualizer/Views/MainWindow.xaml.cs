@@ -38,11 +38,11 @@ namespace VldDataVisualizer.Views
         private DispatcherTimer _logCheckTimer = null!;
 
         // Railway drawing constants
-        private const double CANVAS_HEIGHT = 400;
-        private const double CANVAS_WIDTH = 2000;
-        private const double TRACK_SPACING = 60;
-        private const double UP_TRACK_Y = CANVAS_HEIGHT / 2 - TRACK_SPACING / 2;
-        private const double DOWN_TRACK_Y = CANVAS_HEIGHT / 2 + TRACK_SPACING / 2;
+        private const double CANVAS_HEIGHT = 500;
+        private const double CANVAS_WIDTH = 2400;
+        private const double TRACK_SPACING = 80;
+        private const double UP_TRACK_Y = 180;
+        private const double DOWN_TRACK_Y = 260;
         private const double TOTAL_TRACK_LENGTH = 15391.246;
         private const int MAX_TOTAL_TRAINS = 7;
         private const double TRAIN_LENGTH = 88;
@@ -99,6 +99,18 @@ namespace VldDataVisualizer.Views
             InitializeDeviceControlAreas();
 
             CreateDeviceTabs(); // 12 alt sekme oluştur
+
+            // Error summary grid'i hata koleksiyonuna bağla (UI hazır olduğunda)
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    ErrorSummaryGrid.ItemsSource = _errorLogs;
+                    ErrorSummaryGrid.Items.SortDescriptions.Clear();
+                    ErrorSummaryGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+                }
+                catch { }
+            }), DispatcherPriority.Background);
 
             // Başlangıç trenleri ekle
             Dispatcher.BeginInvoke(new Action(() =>
@@ -356,10 +368,10 @@ namespace VldDataVisualizer.Views
         #endregion
 
         #region BUTON CLICK EVENTS
-        private TfprVldModbusTcpReader _tcpReader;
-        private TfprPollingService _pollingService;
-        private AtsSignalizationModbusReader _atsReader;
-        private System.Timers.Timer _atsPollingTimer;
+        private TfprVldModbusTcpReader? _tcpReader;
+        private TfprPollingService? _pollingService;
+        private AtsSignalizationModbusReader? _atsReader;
+        private System.Timers.Timer? _atsPollingTimer;
         private void StartAllButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -564,7 +576,7 @@ namespace VldDataVisualizer.Views
 
         #region EVENT HANDLERS - GÜNCELLENMİŞ VERSİYON
 
-        private void OnVLDDataGenerated(object sender, List<VldData> allDevicesData)
+        private void OnVLDDataGenerated(object? sender, List<VldData> allDevicesData)
         {
             Dispatcher.Invoke(() =>
             {
@@ -635,7 +647,7 @@ namespace VldDataVisualizer.Views
         // Güncellenmiş UpdateStationHeader metodu
         private void UpdateStationHeader(int stationId, string status, double dcVoltage, double touchVoltage = 0, double current = 0)
         {
-            TextBlock header = null;
+            TextBlock? header = null;
 
             switch (stationId)
             {
@@ -672,7 +684,7 @@ namespace VldDataVisualizer.Views
                 header.Foreground = ColorSituation.GetStatusColor(status);
             }
         }
-        private void OnSignalizationDataGenerated(object sender, SignalizationData data)
+        private void OnSignalizationDataGenerated(object? sender, SignalizationData data)
         {
             Dispatcher.Invoke(() =>
             {
@@ -686,7 +698,7 @@ namespace VldDataVisualizer.Views
             });
         }
 
-        private void OnVLDStatusChanged(object sender, string status)
+        private void OnVLDStatusChanged(object? sender, string status)
         {
             Dispatcher.Invoke(() =>
             {
@@ -801,8 +813,8 @@ namespace VldDataVisualizer.Views
                 }
             }
 
-            // Anomali varsa log oluştur (minimum 1 saniye süren hatalar için)
-            if (anomalyDevices.Any(d => d.Duration >= 1.0 || d.DcVoltageCategory == "KIRMIZI"))
+            // Anomali varsa log oluştur (Kritik alarm durumları veya en az 1 saniyedir devam eden uyarılar için)
+            if (anomalyDevices.Any(d => d.OverallCategory == "KIRMIZI" || d.Duration >= 1.0))
             {
                 // Kritik hataları filtrele
                 var criticalDevices = anomalyDevices.Where(d =>
@@ -813,8 +825,9 @@ namespace VldDataVisualizer.Views
 
                 string key = $"EN50122_{overallCategory}_{DateTime.Now:yyyyMMddHHmmss}";
 
-                // Tekrar sayısını hesapla
-                int repeatCount = CalculateEN50122RepeatCount(criticalDevices);
+                // Tekrar sayısını hesapla (aynı konum anahtarı döndürülür)
+                string? matchedKeyForRepeat = null;
+                int repeatCount = CalculateEN50122RepeatCount(criticalDevices, out matchedKeyForRepeat);
 
                 // Bölgedeki trenleri topla
                 var trainsInAffectedArea = GetTrainsInAffectedArea(criticalDevices);
@@ -865,22 +878,37 @@ namespace VldDataVisualizer.Views
                     EN50122Violations = GetEN50122Violations(criticalDevices)
                 };
 
+                log.LeakLocations = BuildLeakLocations(criticalDevices, matchedKeyForRepeat);
+                log.LeakDetected = repeatCount >= 3 || log.LeakLocations.Any(l => l.RepeatCount >= 3);
+                log.RepeatCount = log.LeakLocations.Any() ? log.LeakLocations.Max(l => l.RepeatCount) : repeatCount;
+
+                if (log.LeakLocations.Any())
+                {
+                    var firstLeak = log.LeakLocations.OrderBy(l => l.Position).First();
+                    log.LeakPosition = firstLeak.Position;
+                    log.LeakTrainId = firstLeak.TrainId;
+                }
+                else if (repeatCount >= 3 && !string.IsNullOrWhiteSpace(matchedKeyForRepeat))
+                {
+                    var parts = matchedKeyForRepeat.Split('_');
+                    if (parts.Length >= 4)
+                    {
+                        if (double.TryParse(parts[2], out double pos)) log.LeakPosition = pos;
+                        if (int.TryParse(parts[3], out int tid)) log.LeakTrainId = tid;
+                    }
+                }
+
                 // En başa ekle (en yeni en üstte)
                 _errorLogs.Insert(0, log);
 
                 // Dosyaya yaz
                 WriteEN50122LogToFile(log);
 
-                // Eğer panel açıksa güncelle
-                if (_isLogPanelOpen)
+                // Hata özeti tablosunu yenile
+                ErrorSummaryGrid.Items.Refresh();
+                if (ErrorSummaryGrid.Items.Count > 0)
                 {
-                    ErrorLogGrid.Items.Refresh();
-
-                    // Yeni satıra kaydır
-                    if (ErrorLogGrid.Items.Count > 0)
-                    {
-                        ErrorLogGrid.ScrollIntoView(ErrorLogGrid.Items[0]);
-                    }
+                    ErrorSummaryGrid.ScrollIntoView(ErrorSummaryGrid.Items[0]);
                 }
 
                 // Çok fazla log varsa temizle
@@ -896,6 +924,8 @@ namespace VldDataVisualizer.Views
                                   $"{log.CriticalDeviceCount} cihaz";
                 ShowToastNotification(toastMsg, isError: true);
 
+                // Ray görüntüsünü güncelle (kaçak marker'ları için)
+                Dispatcher.Invoke(() => DrawRailwaySystem());
                 // Debug bilgisi
                 Console.WriteLine($"EN50122 Log: {criticalDevices.Count} cihaz, {overallCategory}, " +
                                  $"{trainsInAffectedArea.Count} tren");
@@ -976,10 +1006,11 @@ namespace VldDataVisualizer.Views
             return "NORMAL";
         }
 
-        private int CalculateEN50122RepeatCount(List<EN50122AnomalyDevice> anomalyDevices)
+        private int CalculateEN50122RepeatCount(List<EN50122AnomalyDevice> anomalyDevices, out string? matchedKey)
         {
             int maxRepeatCount = 0;
             var activeTrains = _activeTrains.ToList();
+            matchedKey = null;
 
             // Tolerans: ±10 metre
             const double POSITION_TOLERANCE = 10.0;
@@ -998,7 +1029,7 @@ namespace VldDataVisualizer.Views
                     double currentPosition = train.CurrentPosition;
 
                     // Mevcut hataya benzer bir hata var mı kontrol et (±10m tolerans)
-                    string matchedKey = null;
+                    string? localMatchedKey = null;
                     int matchedCount = 0;
 
                     foreach (var existingKey in _errorRepeatCounts.Keys.ToList())
@@ -1021,7 +1052,7 @@ namespace VldDataVisualizer.Views
                                     // Aynı tren mi kontrol et
                                     if (parts[3] == train.TrainId.ToString())
                                     {
-                                        matchedKey = existingKey;
+                                        localMatchedKey = existingKey;
                                         matchedCount = _errorRepeatCounts[existingKey];
                                         break;
                                     }
@@ -1030,11 +1061,16 @@ namespace VldDataVisualizer.Views
                         }
                     }
 
-                    if (matchedKey != null)
+                    if (localMatchedKey != null)
                     {
                         // Mevcut kayıt bulundu, sayacı artır
-                        _errorRepeatCounts[matchedKey]++;
-                        maxRepeatCount = Math.Max(maxRepeatCount, _errorRepeatCounts[matchedKey]);
+                        _errorRepeatCounts[localMatchedKey]++;
+                        int val = _errorRepeatCounts[localMatchedKey];
+                        if (val > maxRepeatCount)
+                        {
+                            maxRepeatCount = val;
+                            matchedKey = localMatchedKey;
+                        }
                     }
                     else
                     {
@@ -1042,7 +1078,11 @@ namespace VldDataVisualizer.Views
                         // Format: "StationId_Category_Position_TrainId"
                         string newKey = $"{device.StationId}_{device.OverallCategory}_{currentPosition:F1}_{train.TrainId}";
                         _errorRepeatCounts[newKey] = 1;
-                        maxRepeatCount = Math.Max(maxRepeatCount, 1);
+                        if (maxRepeatCount < 1)
+                        {
+                            maxRepeatCount = 1;
+                            matchedKey = newKey;
+                        }
                     }
                 }
             }
@@ -1058,10 +1098,132 @@ namespace VldDataVisualizer.Views
                     _errorRepeatCounts[deviceKey] = 0;
 
                 _errorRepeatCounts[deviceKey]++;
+                matchedKey = deviceKey;
                 return _errorRepeatCounts[deviceKey];
             }
 
             return maxRepeatCount;
+        }
+
+        private double GetDcStationPosition(string stationName)
+        {
+            return stationName switch
+            {
+                "Depo" => 15000,
+                "OSB" => 14000,
+                "Mutlukent" => 12000,
+                "Akse Sapağı" => 9000,
+                "TCDD Gar" => 4000,
+                "Darıca Cumhuriyet" => 1000,
+                "Darıca Sahil" => 0,
+                _ => 0
+            };
+        }
+
+        private List<LeakLocationInfo> BuildLeakLocations(List<EN50122AnomalyDevice> anomalyDevices, string? matchedKeyForRepeat)
+        {
+            var groups = new Dictionary<double, LeakLocationInfo>();
+            var dcStations = new Dictionary<string, double>
+            {
+                ["Depo"] = 15000,
+                ["OSB"] = 14000,
+                ["Mutlukent"] = 12000,
+                ["Akse Sapağı"] = 9000,
+                ["TCDD Gar"] = 4000,
+                ["Darıca Cumhuriyet"] = 1000,
+                ["Darıca Sahil"] = 0
+            };
+
+            foreach (var device in anomalyDevices)
+            {
+                var minPos = Math.Min(device.StartPosition, device.EndPosition);
+                var maxPos = Math.Max(device.StartPosition, device.EndPosition);
+
+                foreach (var train in _activeTrains.Where(t =>
+                             t.CurrentPosition >= minPos - 250 && t.CurrentPosition <= maxPos + 250))
+                {
+                    double pos = Math.Round(train.CurrentPosition, 0);
+                    var key = Math.Round(pos / 10.0, MidpointRounding.AwayFromZero) * 10.0;
+
+                    if (!groups.ContainsKey(key))
+                    {
+                        groups[key] = new LeakLocationInfo
+                        {
+                            Position = key,
+                            RepeatCount = 0,
+                            TrainId = train.TrainId,
+                            TrainStatus = train.Status,
+                            TrackType = train.TrackType,
+                            StationName = device.StationName,
+                            Category = device.OverallCategory,
+                            NearestDcStation = string.Empty,
+                            NearestDcStationDistanceMeters = 0
+                        };
+                    }
+
+                    groups[key].RepeatCount++;
+                    groups[key].Category = device.OverallCategory;
+                    groups[key].StationName = device.StationName;
+                    groups[key].TrainId = train.TrainId;
+                    groups[key].TrainStatus = train.Status;
+                    groups[key].TrackType = train.TrackType;
+                }
+            }
+
+            if (!groups.Any() && !string.IsNullOrWhiteSpace(matchedKeyForRepeat))
+            {
+                var parts = matchedKeyForRepeat.Split('_');
+                if (parts.Length >= 4 && double.TryParse(parts[2], out double keyPos))
+                {
+                    groups[keyPos] = new LeakLocationInfo
+                    {
+                        Position = keyPos,
+                        RepeatCount = 1,
+                        TrainId = int.TryParse(parts[3], out int tid) ? tid : 0,
+                        TrainStatus = _activeTrains.FirstOrDefault(t => t.TrainId == (int.TryParse(parts[3], out int parsedTrainId) ? parsedTrainId : 0))?.Status ?? "MOVING",
+                        StationName = "Belirsiz",
+                        Category = parts[1],
+                        NearestDcStation = string.Empty,
+                        NearestDcStationDistanceMeters = 0
+                    };
+                }
+            }
+
+            foreach (var item in groups.Values)
+            {
+                var nearest = dcStations
+                    .Select(s => new { Station = s.Key, Distance = Math.Abs(item.Position - s.Value) })
+                    .OrderBy(s => s.Distance)
+                    .First();
+
+                item.NearestDcStation = nearest.Station;
+                item.NearestDcStationDistanceMeters = nearest.Distance;
+            }
+
+            return groups.Values
+                .OrderBy(v => v.Position)
+                .ToList();
+        }
+
+        private string GetNearestDcStationName(double position)
+        {
+            var dcStations = new Dictionary<string, double>
+            {
+                ["Depo"] = 15000,
+                ["OSB"] = 14000,
+                ["Mutlukent"] = 12000,
+                ["Akse Sapağı"] = 9000,
+                ["TCDD Gar"] = 4000,
+                ["Darıca Cumhuriyet"] = 1000,
+                ["Darıca Sahil"] = 0
+            };
+
+            var nearest = dcStations
+                .Select(s => new { Station = s.Key, Distance = Math.Abs(position - s.Value) })
+                .OrderBy(s => s.Distance)
+                .First();
+
+            return nearest.Station;
         }
 
         private List<TrainInfoLog> GetTrainsInAffectedArea(List<EN50122AnomalyDevice> anomalyDevices)
@@ -1152,6 +1314,12 @@ namespace VldDataVisualizer.Views
                     }
                 }
 
+                // Kaçak bilgisi
+                if (log.LeakDetected)
+                {
+                    line += nl + $"KAÇAK TESPİTİ: {log.LeakPosition:N0} m | Tren: {log.LeakTrainId}{nl}";
+                }
+
                 // Dosyaya yaz
                 File.AppendAllText(LOG_FILE, line + nl + new string('=', 70) + nl);
 
@@ -1165,7 +1333,7 @@ namespace VldDataVisualizer.Views
             }
         }
 
-        private void LogCheckTimer_Tick(object sender, EventArgs e)
+        private void LogCheckTimer_Tick(object? sender, EventArgs e)
         {
             DateTime _lastLogCheck = DateTime.Now;
             try
@@ -1205,59 +1373,9 @@ namespace VldDataVisualizer.Views
         // XAML DataGrid için kolon güncellemesi (isteğe bağlı)
         private void InitializeErrorLogGrid()
         {
-            ErrorLogGrid.AutoGenerateColumns = false;
-            ErrorLogGrid.Columns.Clear();
-
-            // Kolon tanımlamaları
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Zaman",
-                Binding = new System.Windows.Data.Binding("Timestamp") { StringFormat = "HH:mm:ss" },
-                Width = 80
-            });
-
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Kategori",
-                Binding = new System.Windows.Data.Binding("Category"),
-                Width = 70,
-                CellStyle = new Style(typeof(DataGridCell))
-                {
-                    Setters = {
-                new Setter(Control.ForegroundProperty, new Binding("Category") {
-                    Converter = new CategoryToColorConverter()
-                })
-            }
-                }
-            });
-
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Standart",
-                Binding = new System.Windows.Data.Binding("Standard"),
-                Width = 90
-            });
-
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Özet",
-                Binding = new System.Windows.Data.Binding("Summary"),
-                Width = 200
-            });
-
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Cihaz Sayısı",
-                Binding = new System.Windows.Data.Binding("AffectedDevices.Count"),
-                Width = 90
-            });
-
-            ErrorLogGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Tren Sayısı",
-                Binding = new System.Windows.Data.Binding("AllTrains.Count"),
-                Width = 90
-            });
+            ErrorSummaryGrid.AutoGenerateColumns = false;
+            ErrorSummaryGrid.Columns.Clear();
+            ErrorSummaryGrid.ItemsSource = _errorLogs;
         }
 
         // Kategoriye göre renk converter (XAML için)
@@ -1287,14 +1405,14 @@ namespace VldDataVisualizer.Views
         #endregion
         #region TIMER EVENTS
 
-        private void RailwayUpdateTimer_Tick(object sender, EventArgs e)
+        private void RailwayUpdateTimer_Tick(object? sender, EventArgs e)
         {
             UpdateTrainPositions();
             UpdateTrainCountsInSections();
             DrawRailwaySystem();
         }
 
-        private void DetailUpdateTimer_Tick(object sender, EventArgs e)
+        private void DetailUpdateTimer_Tick(object? sender, EventArgs e)
         {
             // TÜM PANEL'LERİ GÜNCELLE (sadece seçili olanı değil)
             for (int stationId = 1; stationId <= 12; stationId++)
@@ -1514,6 +1632,8 @@ namespace VldDataVisualizer.Views
             // 2. AŞAMA: Veri Güncelleme (Her timer tick'te çalışır)
             // ---------------------------------------------------------
             var uiRefs = stackPanel.Tag as DevicePanelRefs;
+            if (uiRefs == null)
+                return;
 
             if (latestData == null)
             {
@@ -2375,7 +2495,7 @@ namespace VldDataVisualizer.Views
             return false;
         }
 
-        private StationInfo GetApproachingStation(TrainInfo train)
+        private StationInfo? GetApproachingStation(TrainInfo train)
         {
             foreach (var station in _stations)
             {
@@ -2416,166 +2536,727 @@ namespace VldDataVisualizer.Views
                 latestData.TrainsInSection = trainCount;
             }
         }
+        #endregion
+
+        #region PAN VE ZOOM KONTROLLERİ
+
+        private bool _isPanning;
+        private Point _panOrigin;
+        private double _startTranslateX;
+        private double _startTranslateY;
+
+        private void Canvas_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var border = sender as Border;
+            if (border == null) return;
+            
+            // Eğer doğrudan bir trene (Border nesnesi) tıklanmadıysa pan işlemini başlat.
+            var srcBorder = e.OriginalSource as Border;
+            if (!(srcBorder != null && srcBorder.ToolTip != null) && !(e.OriginalSource is TextBlock))
+            {
+                _isPanning = true;
+                _panOrigin = e.GetPosition(border);
+                _startTranslateX = CanvasTranslateTransform.X;
+                _startTranslateY = CanvasTranslateTransform.Y;
+                border.CaptureMouse();
+            }
+        }
+
+        private void Canvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var border = sender as Border;
+            if (border != null && _isPanning)
+            {
+                _isPanning = false;
+                border.ReleaseMouseCapture();
+            }
+        }
+
+        private void Canvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (!_isPanning) return;
+
+            var border = sender as Border;
+            if (border == null) return;
+
+            Point currentPos = e.GetPosition(border);
+            double deltaX = currentPos.X - _panOrigin.X;
+            double deltaY = currentPos.Y - _panOrigin.Y;
+
+            CanvasTranslateTransform.X = _startTranslateX + deltaX;
+            CanvasTranslateTransform.Y = _startTranslateY + deltaY;
+        }
+
+        private void Canvas_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            double zoomFactor = 1.1;
+            if (e.Delta < 0) zoomFactor = 1.0 / zoomFactor;
+
+            // Farenin bulunduğu noktayı al
+            Point mousePos = e.GetPosition(RailwayCanvas);
+
+            // Yeni scale değerini hesapla
+            double newScaleX = CanvasScaleTransform.ScaleX * zoomFactor;
+            double newScaleY = CanvasScaleTransform.ScaleY * zoomFactor;
+
+            // Scale limitleri (çok fazla küçülmeyi ve büyümeyi engelle)
+            if (newScaleX < 0.2 || newScaleX > 5.0) return;
+
+            // Merkez noktayı fare imlecinin olduğu yer olarak ayarla
+            CanvasTranslateTransform.X -= mousePos.X * (newScaleX - CanvasScaleTransform.ScaleX);
+            CanvasTranslateTransform.Y -= mousePos.Y * (newScaleY - CanvasScaleTransform.ScaleY);
+
+            CanvasScaleTransform.ScaleX = newScaleX;
+            CanvasScaleTransform.ScaleY = newScaleY;
+        }
 
         #endregion
 
         #region ÇİZİM SİSTEMİ
 
+        private bool _isStaticDrawn = false;
+        private Dictionary<int, Border> _trainUIElements = new Dictionary<int, Border>();
+        private List<UIElement> _leakUIElements = new List<UIElement>();
+
         private void DrawRailwaySystem()
         {
             try
             {
-                RailwayCanvas.Children.Clear();
                 if (_blocks.Count == 0 || _stations.Count == 0) return;
+                double scaleFactor = (CANVAS_WIDTH - 120) / TOTAL_TRACK_LENGTH;
 
-                double scaleFactor = (CANVAS_WIDTH - 100) / TOTAL_TRACK_LENGTH;
+                if (!_isStaticDrawn)
+                {
+                    RailwayCanvas.Children.Clear();
+                    DrawDoubleTrackSystem(scaleFactor);
+                    DrawGridAndScale(scaleFactor);
+                    foreach (var station in _stations) DrawStation(station, scaleFactor);
+                    DrawTrackLabels(scaleFactor);
+                    _isStaticDrawn = true;
+                }
 
-                DrawDoubleTrackSystem(scaleFactor);
-                foreach (var station in _stations) DrawStation(station, scaleFactor);
-                foreach (var train in _activeTrains.ToList()) DrawTrain(train, scaleFactor);
-                DrawGridAndScale(scaleFactor);
-                DrawTrackLabels();
+                UpdateTrainsUI(scaleFactor);
+                // Kaçak marker'larını çiz
+                DrawLeakMarkers(scaleFactor);
             }
             catch (Exception) { }
+        }
+
+        private string GetLeakTooltipText(VldErrorLog leak, double meterPosition)
+        {
+            var nearestStation = _stations
+                .OrderBy(s => Math.Abs(s.GridX - meterPosition))
+                .FirstOrDefault();
+
+            var nearestDcStation = VldErrorLog.GetNearestDcStationName(meterPosition);
+            var nearestDcStationDistance = VldErrorLog.GetNearestDcStationDistance(meterPosition);
+
+            var lastTrainPassText = leak.LeakLocations
+                .Where(l => Math.Abs(l.Position - meterPosition) <= 50)
+                .Select(l => $"{l.TrainId} / {l.TrainStatus}")
+                .FirstOrDefault();
+
+            var passTime = DateTime.Now.ToString("dd.MM HH:mm:ss");
+            if (!string.IsNullOrWhiteSpace(lastTrainPassText))
+            {
+                passTime = DateTime.Now.ToString("dd.MM HH:mm:ss");
+            }
+
+            return $"Son tren geçişi: {passTime}\n" +
+                   $"Metraj: {meterPosition:N0} m\n" +
+                   $"En yakın istasyon: {(nearestStation != null ? nearestStation.StationName : "—")}\n" +
+                   $"En yakın CER istasyonu: {nearestDcStation} ({nearestDcStationDistance:N0} m)\n" +
+                   $"Hata: {leak.OverallEN50122Category} | {leak.MaxTouchVoltage:N0} V / {leak.MaxGroundCurrent:N1} A";
+        }
+
+        private void DrawLeakMarkers(double scaleFactor)
+        {
+            foreach (var el in _leakUIElements)
+            {
+                RailwayCanvas.Children.Remove(el);
+            }
+            _leakUIElements.Clear();
+
+            double x0 = 60;
+
+            foreach (var leak in _errorLogs)
+            {
+                if (!leak.LeakDetected || !leak.LeakPosition.HasValue) continue;
+
+                double pos = leak.LeakPosition.Value;
+                double x = x0 + pos * scaleFactor;
+
+                var matchingLeak = leak.LeakLocations
+                    .OrderBy(l => Math.Abs(l.Position - pos))
+                    .FirstOrDefault(l => Math.Abs(l.Position - pos) <= 50)
+                    ?? new LeakLocationInfo
+                    {
+                        Position = pos,
+                        TrackType = _activeTrains
+                            .Where(t => Math.Abs(t.CurrentPosition - pos) <= 80)
+                            .OrderBy(t => Math.Abs(t.CurrentPosition - pos))
+                            .Select(t => t.TrackType)
+                            .FirstOrDefault() ?? "HAT - 1",
+                        TrainStatus = "MOVING"
+                    };
+
+                bool onUpperTrack = matchingLeak.TrackType == "HAT - 1";
+                double yTop = onUpperTrack ? UP_TRACK_Y - 16 : DOWN_TRACK_Y - 16;
+                double yBottom = onUpperTrack ? UP_TRACK_Y + 16 : DOWN_TRACK_Y + 16;
+
+                var category = string.IsNullOrWhiteSpace(leak.OverallEN50122Category)
+                    ? leak.EffectiveCategory
+                    : leak.OverallEN50122Category;
+
+                var markerBrush = category switch
+                {
+                    "KIRMIZI" => Brushes.Red,
+                    "SARI" => Brushes.Orange,
+                    "YEŞİL" => Brushes.Green,
+                    "NORMAL" => Brushes.Green,
+                    _ => Brushes.Green
+                };
+
+                var crossingTrain = _activeTrains
+                    .Where(t => Math.Abs(t.CurrentPosition - pos) <= 60)
+                    .OrderBy(t => Math.Abs(t.CurrentPosition - pos))
+                    .FirstOrDefault();
+
+                bool isBlinking = crossingTrain != null;
+                bool blinkVisible = !isBlinking || ((DateTime.Now.Millisecond / 250) % 2 == 0);
+
+                var marker = new Line
+                {
+                    X1 = x,
+                    X2 = x,
+                    Y1 = yTop,
+                    Y2 = yBottom,
+                    Stroke = markerBrush,
+                    StrokeThickness = 3,
+                    StrokeStartLineCap = PenLineCap.Flat,
+                    StrokeEndLineCap = PenLineCap.Flat,
+                    Opacity = blinkVisible ? 1.0 : 0.2,
+                    ToolTip = new ToolTip
+                    {
+                        Content = GetLeakTooltipText(leak, pos) + $"\nRay: {matchingLeak.TrackType}",
+                        Background = Brushes.White,
+                        Foreground = Brushes.Black,
+                        BorderBrush = Brushes.LightGray,
+                        BorderThickness = new Thickness(1),
+                        Padding = new Thickness(8),
+                        MaxWidth = 300
+                    }
+                };
+
+                Panel.SetZIndex(marker, 35);
+                RailwayCanvas.Children.Add(marker);
+                _leakUIElements.Add(marker);
+            }
+        }
+
+        private void UpdateTrainsUI(double scaleFactor)
+        {
+            var activeTrainIds = _activeTrains.Select(t => t.TrainId).ToList();
+
+            // Kaldırılan trenleri sil
+            var idsToRemove = _trainUIElements.Keys.Except(activeTrainIds).ToList();
+            foreach (var id in idsToRemove)
+            {
+                RailwayCanvas.Children.Remove(_trainUIElements[id]);
+                _trainUIElements.Remove(id);
+            }
+
+            // Mevcut trenleri güncelle veya yeni ekle
+            foreach (var train in _activeTrains.ToList())
+            {
+                if (!_trainUIElements.TryGetValue(train.TrainId, out var body))
+                {
+                    body = CreateTrainUI(train, scaleFactor);
+                    _trainUIElements[train.TrainId] = body;
+                    RailwayCanvas.Children.Add(body);
+                }
+                else
+                {
+                    UpdateTrainUI(body, train, scaleFactor);
+                }
+            }
         }
 
         private void DrawDoubleTrackSystem(double scaleFactor)
         {
             double scaledLength = TOTAL_TRACK_LENGTH * scaleFactor;
+            double x0 = 60;
 
+            // Üst hat gölgesi
+            var upGlow = new Line
+            {
+                X1 = x0, Y1 = UP_TRACK_Y, X2 = x0 + scaledLength, Y2 = UP_TRACK_Y,
+                Stroke = new SolidColorBrush(Color.FromArgb(60, 66, 165, 245)),
+                StrokeThickness = 12
+            };
+            RailwayCanvas.Children.Add(upGlow);
+
+            // Üst hat çizgisi
             var upTrack = new Line
             {
-                X1 = 50,
-                Y1 = UP_TRACK_Y,
-                X2 = 50 + scaledLength,
-                Y2 = UP_TRACK_Y,
-                Stroke = Brushes.Blue,
-                StrokeThickness = 4
+                X1 = x0, Y1 = UP_TRACK_Y, X2 = x0 + scaledLength, Y2 = UP_TRACK_Y,
+                Stroke = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
+                StrokeThickness = 4,
+                StrokeDashArray = new DoubleCollection { 20, 3 }
             };
             RailwayCanvas.Children.Add(upTrack);
 
+            // Alt hat gölgesi
+            var downGlow = new Line
+            {
+                X1 = x0, Y1 = DOWN_TRACK_Y, X2 = x0 + scaledLength, Y2 = DOWN_TRACK_Y,
+                Stroke = new SolidColorBrush(Color.FromArgb(60, 239, 83, 80)),
+                StrokeThickness = 12
+            };
+            RailwayCanvas.Children.Add(downGlow);
+
+            // Alt hat çizgisi
             var downTrack = new Line
             {
-                X1 = 50,
-                Y1 = DOWN_TRACK_Y,
-                X2 = 50 + scaledLength,
-                Y2 = DOWN_TRACK_Y,
-                Stroke = Brushes.Red,
-                StrokeThickness = 4
+                X1 = x0, Y1 = DOWN_TRACK_Y, X2 = x0 + scaledLength, Y2 = DOWN_TRACK_Y,
+                Stroke = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
+                StrokeThickness = 4,
+                StrokeDashArray = new DoubleCollection { 20, 3 }
             };
             RailwayCanvas.Children.Add(downTrack);
         }
 
         private void DrawStation(StationInfo station, double scaleFactor)
         {
-            double xPos = 50 + (station.GridX * scaleFactor);
+            double xPos = 60 + (station.GridX * scaleFactor);
+            double topY = UP_TRACK_Y - 12;
+            double botY = DOWN_TRACK_Y + 12;
 
-            var rect = new Rectangle
+            // İstasyon dikey bağlantı çizgisi (iki hat arasında)
+            var connector = new Line
             {
-                Width = 10,
-                Height = TRACK_SPACING + 20,
-                Fill = Brushes.DarkGray,
-                Opacity = 0.5
+                X1 = xPos, Y1 = topY, X2 = xPos, Y2 = botY,
+                Stroke = new SolidColorBrush(Color.FromRgb(0xBD, 0xBD, 0xBD)),
+                StrokeThickness = 1.5,
+                StrokeDashArray = new DoubleCollection { 4, 3 }
             };
-            Canvas.SetLeft(rect, xPos - 5);
-            Canvas.SetTop(rect, UP_TRACK_Y - 10);
-            RailwayCanvas.Children.Add(rect);
+            RailwayCanvas.Children.Add(connector);
 
-            var text = new TextBlock
+            // Üst peron marker (yuvarlak)
+            var upMarker = new Ellipse
+            {
+                Width = 12, Height = 12,
+                Fill = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
+                Stroke = Brushes.White, StrokeThickness = 2
+            };
+            Canvas.SetLeft(upMarker, xPos - 6);
+            Canvas.SetTop(upMarker, UP_TRACK_Y - 6);
+            Panel.SetZIndex(upMarker, 50);
+            RailwayCanvas.Children.Add(upMarker);
+
+            // Alt peron marker (yuvarlak)
+            var downMarker = new Ellipse
+            {
+                Width = 12, Height = 12,
+                Fill = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
+                Stroke = Brushes.White, StrokeThickness = 2
+            };
+            Canvas.SetLeft(downMarker, xPos - 6);
+            Canvas.SetTop(downMarker, DOWN_TRACK_Y - 6);
+            Panel.SetZIndex(downMarker, 50);
+            RailwayCanvas.Children.Add(downMarker);
+
+            // İstasyon adı (üst tarafta, eğik)
+            var nameText = new TextBlock
             {
                 Text = station.StationName,
-                FontSize = 18,
-                Foreground = Brushes.Black,
-                RenderTransform = new RotateTransform(-25)
+                FontSize = 13,
+                FontFamily = new FontFamily("Segoe UI"),
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x42, 0x42, 0x42)),
+                RenderTransform = new RotateTransform(-35)
             };
-            Canvas.SetLeft(text, xPos - 10);
-            Canvas.SetTop(text, UP_TRACK_Y - 75);
-            RailwayCanvas.Children.Add(text);
+            Canvas.SetLeft(nameText, xPos - 8);
+            Canvas.SetTop(nameText, UP_TRACK_Y - 80);
+            Panel.SetZIndex(nameText, 60);
+            RailwayCanvas.Children.Add(nameText);
+
+            // Kilometre etiketi (alt tarafta)
+            double km = station.GridX / 1000.0;
+            var kmText = new TextBlock
+            {
+                Text = $"{km:0.0} km",
+                FontSize = 10,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0x90, 0x90)),
+                TextAlignment = TextAlignment.Center
+            };
+            Canvas.SetLeft(kmText, xPos - 16);
+            Canvas.SetTop(kmText, DOWN_TRACK_Y + 18);
+            RailwayCanvas.Children.Add(kmText);
         }
 
-        private void DrawTrain(TrainInfo train, double scaleFactor)
+        private Border CreateTrainUI(TrainInfo train, double scaleFactor)
         {
-            double xPos = 50 + (train.CurrentPosition * scaleFactor);
-            if (xPos < -50 || xPos > CANVAS_WIDTH + 50) return;
+            bool isUp = train.TrackType == "HAT - 1";
+            double yPos = isUp ? UP_TRACK_Y : DOWN_TRACK_Y;
+
+            // Renk belirleme
+            Color trainBodyColor;
+            Color trainBorderColor;
+            if (train.Status == "STOPPED" || train.Status == "WAITING")
+            {
+                trainBodyColor = Color.FromRgb(0xFF, 0xA7, 0x26); // Turuncu
+                trainBorderColor = Color.FromRgb(0xE6, 0x8A, 0x00);
+            }
+            else if (isUp)
+            {
+                trainBodyColor = Color.FromRgb(0x29, 0xB6, 0xF6); // Açık mavi
+                trainBorderColor = Color.FromRgb(0x01, 0x88, 0xD1);
+            }
+            else
+            {
+                trainBodyColor = Color.FromRgb(0xEF, 0x53, 0x50); // Kırmızı
+                trainBorderColor = Color.FromRgb(0xC6, 0x28, 0x28);
+            }
+
+            // Tren gövdesi (yuvarlatılmış dikdörtgen)
+            var body = new Border
+            {
+                Width = 48,
+                Height = 20,
+                CornerRadius = new CornerRadius(4),
+                Background = new SolidColorBrush(trainBodyColor),
+                BorderBrush = new SolidColorBrush(trainBorderColor),
+                BorderThickness = new Thickness(1.5),
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = trainBodyColor,
+                    BlurRadius = 10,
+                    ShadowDepth = 0,
+                    Opacity = 0.6
+                }
+            };
+
+            // Tren üzerindeki yön oku ve ID
+            var bodyContent = new TextBlock
+            {
+                Text = isUp ? $"◀ {train.TrainName}" : $"{train.TrainName} ▶",
+                Foreground = Brushes.White,
+                FontSize = 8.5,
+                FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextAlignment = TextAlignment.Center
+            };
+            body.Child = bodyContent;
+
+            // Fare hover efektleri
+            body.MouseEnter += (s, e) =>
+            {
+                body.RenderTransform = new ScaleTransform(1.15, 1.15, 24, 10);
+                Panel.SetZIndex(body, 500);
+            };
+            body.MouseLeave += (s, e) =>
+            {
+                body.RenderTransform = null;
+                Panel.SetZIndex(body, 200);
+            };
+
+            // Zengin ToolTip oluştur (ilk kez)
+            var tooltip = new ToolTip
+            {
+                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x2E)),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush(trainBorderColor),
+                BorderThickness = new Thickness(1.5),
+                Padding = new Thickness(0),
+                HasDropShadow = true
+            };
+            body.ToolTip = tooltip;
+
+            UpdateTrainUI(body, train, scaleFactor);
+
+            return body;
+        }
+
+        private void UpdateTrainUI(Border body, TrainInfo train, double scaleFactor)
+        {
+            double xPos = 60 + (train.CurrentPosition * scaleFactor);
+            
+            // Ekran dışındaysa gizle
+            if (xPos < -60 || xPos > CANVAS_WIDTH + 60)
+            {
+                body.Visibility = Visibility.Hidden;
+                return;
+            }
+            body.Visibility = Visibility.Visible;
 
             bool isUp = train.TrackType == "HAT - 1";
             double yPos = isUp ? UP_TRACK_Y : DOWN_TRACK_Y;
 
-            var rect = new Rectangle
-            {
-                Width = 40,
-                Height = 16,
-                Fill = train.Status == "STOPPED" ? Brushes.Orange : (isUp ? Brushes.Blue : Brushes.Red),
-                Stroke = Brushes.White,
-                StrokeThickness = 1,
-                RadiusX = 2,
-                RadiusY = 2
-            };
-            Canvas.SetLeft(rect, xPos - 20);
-            Canvas.SetTop(rect, yPos - 8);
-            RailwayCanvas.Children.Add(rect);
+            Canvas.SetLeft(body, xPos - 24);
+            Canvas.SetTop(body, yPos - 10);
 
-            var arrow = new TextBlock
+            // Renk ve yön içeriğini (hareket sırasında durum değişebilir) güncelle
+            Color trainBodyColor;
+            Color trainBorderColor;
+            if (train.Status == "STOPPED" || train.Status == "WAITING")
             {
-                Text = isUp ? "◀" : "▶",
-                Foreground = Brushes.White,
-                FontSize = 10,
-                FontWeight = FontWeights.Bold
-            };
-            Canvas.SetLeft(arrow, xPos - 4);
-            Canvas.SetTop(arrow, yPos - 7);
-            RailwayCanvas.Children.Add(arrow);
+                trainBodyColor = Color.FromRgb(0xFF, 0xA7, 0x26);
+                trainBorderColor = Color.FromRgb(0xE6, 0x8A, 0x00);
+            }
+            else if (isUp)
+            {
+                trainBodyColor = Color.FromRgb(0x29, 0xB6, 0xF6);
+                trainBorderColor = Color.FromRgb(0x01, 0x88, 0xD1);
+            }
+            else
+            {
+                trainBodyColor = Color.FromRgb(0xEF, 0x53, 0x50);
+                trainBorderColor = Color.FromRgb(0xC6, 0x28, 0x28);
+            }
 
-            var infoText = new TextBlock
+            body.Background = new SolidColorBrush(trainBodyColor);
+            body.BorderBrush = new SolidColorBrush(trainBorderColor);
+            
+            if (body.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
             {
-                Text = $"{train.TrainId}\n{train.Speed:0} km/h\n{train.CurrentPosition:0}m",
-                FontSize = 10,
+                shadow.Color = trainBodyColor;
+            }
+
+            if (body.Child is TextBlock bodyContent)
+            {
+                bodyContent.Text = isUp ? $"◀ {train.TrainName}" : $"{train.TrainName} ▶";
+            }
+
+            // En yakın istasyonu bul
+            string nearestStationName = "—";
+            double nearestStationDist = double.MaxValue;
+            foreach (var st in _stations)
+            {
+                double d = Math.Abs(train.CurrentPosition - st.GridX);
+                if (d < nearestStationDist)
+                {
+                    nearestStationDist = d;
+                    nearestStationName = st.StationName;
+                }
+            }
+
+            // Durum metni
+            string statusEmoji;
+            string statusText;
+            switch (train.Status)
+            {
+                case "STOPPED":
+                    statusEmoji = "🔴";
+                    statusText = "İstasyonda Durdu";
+                    break;
+                case "WAITING":
+                    statusEmoji = "🟡";
+                    statusText = "Bekliyor (Önde Tren)";
+                    break;
+                default:
+                    statusEmoji = "🟢";
+                    statusText = "Seyir Halinde";
+                    break;
+            }
+
+            string hatYonu = isUp ? "← Darıca Sahil Yönü (HAT-1)" : "→ İdari Bina Yönü (HAT-2)";
+            double kmPos = train.CurrentPosition / 1000.0;
+
+            if (body.ToolTip is ToolTip tooltip)
+            {
+                tooltip.BorderBrush = new SolidColorBrush(trainBorderColor);
+
+                var tooltipPanel = new StackPanel { Margin = new Thickness(12, 10, 12, 10), MinWidth = 240 };
+
+                // Başlık
+                var headerBorder = new Border
+                {
+                    Background = new SolidColorBrush(trainBodyColor),
+                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(8, 4, 8, 4),
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                headerBorder.Child = new TextBlock
+                {
+                    Text = $"🚆 {train.TrainName}  (ID: {train.TrainId})",
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White
+                };
+                tooltipPanel.Children.Add(headerBorder);
+
+                // Bilgi satırları
+                AddTooltipRow(tooltipPanel, "Durum", $"{statusEmoji} {statusText}");
+                AddTooltipRow(tooltipPanel, "Hız", $"{train.Speed:0.0} km/h");
+                AddTooltipRow(tooltipPanel, "Konum", $"{train.CurrentPosition:N0} m  ({kmPos:0.00} km)");
+                AddTooltipRow(tooltipPanel, "Hat / Yön", hatYonu);
+                AddTooltipRow(tooltipPanel, "En Yakın İstasyon", $"{nearestStationName} ({nearestStationDist:N0} m)");
+                AddTooltipRow(tooltipPanel, "Yolcu Sayısı", $"{train.PassengerCount} kişi");
+                AddTooltipRow(tooltipPanel, "Blok No", $"{train.CurrentBlockId}");
+                AddTooltipRow(tooltipPanel, "Tren Uzunluğu", $"{train.TrainLength:0} m");
+                AddTooltipRow(tooltipPanel, "Son Güncelleme", $"{train.LastUpdateTime:HH:mm:ss}");
+
+                tooltip.Content = tooltipPanel;
+            }
+        }
+
+        private void AddTooltipRow(StackPanel panel, string label, string value)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
+            row.Children.Add(new TextBlock
+            {
+                Text = label + ": ",
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0xCA, 0xF9)),
+                FontFamily = new FontFamily("Segoe UI"),
+                Width = 120
+            });
+            row.Children.Add(new TextBlock
+            {
+                Text = value,
+                FontSize = 11,
                 Foreground = Brushes.White,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center,
-                Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
-                Padding = new Thickness(2)
-            };
-            Canvas.SetLeft(infoText, xPos - 22.5f);
-            Canvas.SetTop(infoText, yPos - 50);
-            Panel.SetZIndex(infoText, 100);
-            RailwayCanvas.Children.Add(infoText);
+                FontFamily = new FontFamily("Segoe UI")
+            });
+            panel.Children.Add(row);
         }
 
         private void DrawGridAndScale(double scaleFactor)
         {
+            // Kilometre çizgileri (her 1km'de bir)
             for (int i = 0; i <= 15; i++)
             {
-                double x = 50 + (i * 1000 * scaleFactor);
+                double x = 60 + (i * 1000 * scaleFactor);
+
                 var line = new Line
                 {
-                    X1 = x,
-                    Y1 = UP_TRACK_Y - 20,
-                    X2 = x,
-                    Y2 = DOWN_TRACK_Y + 20,
-                    Stroke = Brushes.LightGray,
-                    StrokeDashArray = new DoubleCollection { 2, 2 }
+                    X1 = x, Y1 = UP_TRACK_Y - 30,
+                    X2 = x, Y2 = DOWN_TRACK_Y + 40,
+                    Stroke = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+                    StrokeThickness = 1,
+                    StrokeDashArray = new DoubleCollection { 4, 4 }
                 };
                 RailwayCanvas.Children.Add(line);
 
-                var txt = new TextBlock { Text = $"{i}km", FontSize = 16, Foreground = Brushes.Gray };
-                Canvas.SetLeft(txt, x + 2);
-                Canvas.SetTop(txt, DOWN_TRACK_Y + 20);
+                // Kilometre çentiği (üstte)
+                var tick = new Line
+                {
+                    X1 = x, Y1 = DOWN_TRACK_Y + 40,
+                    X2 = x, Y2 = DOWN_TRACK_Y + 48,
+                    Stroke = new SolidColorBrush(Color.FromRgb(0xBD, 0xBD, 0xBD)),
+                    StrokeThickness = 1.5
+                };
+                RailwayCanvas.Children.Add(tick);
+
+                var txt = new TextBlock
+                {
+                    Text = $"{i} km",
+                    FontSize = 10,
+                    FontFamily = new FontFamily("Segoe UI"),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x70))
+                };
+                Canvas.SetLeft(txt, x - 10);
+                Canvas.SetTop(txt, DOWN_TRACK_Y + 50);
                 RailwayCanvas.Children.Add(txt);
             }
+
+            // Alt cetvel çizgisi
+            var ruler = new Line
+            {
+                X1 = 60, Y1 = DOWN_TRACK_Y + 45,
+                X2 = 60 + (TOTAL_TRACK_LENGTH * scaleFactor), Y2 = DOWN_TRACK_Y + 45,
+                Stroke = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+                StrokeThickness = 1
+            };
+            RailwayCanvas.Children.Add(ruler);
         }
 
-        private void DrawTrackLabels()
+        private void DrawTrackLabels(double scaleFactor)
         {
-            var upLabel = new TextBlock { Text = "Darıca Yönü", Foreground = Brushes.Blue, FontWeight = FontWeights.Bold };
-            Canvas.SetLeft(upLabel, 60);
-            Canvas.SetTop(upLabel, UP_TRACK_Y - 40);
-            RailwayCanvas.Children.Add(upLabel);
+            double scaledLength = TOTAL_TRACK_LENGTH * scaleFactor;
 
-            var downLabel = new TextBlock { Text = "İdari Bina ve Atölye Yönü", Foreground = Brushes.Red, FontWeight = FontWeights.Bold };
-            Canvas.SetLeft(downLabel, 60);
-            Canvas.SetTop(downLabel, DOWN_TRACK_Y + 45);
-            RailwayCanvas.Children.Add(downLabel);
+            // === HAT-1 Etiket Paneli (Sol tarafta) ===
+            var upLabelBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(200, 0x42, 0xA5, 0xF5)),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(8, 3, 8, 3)
+            };
+            upLabelBorder.Child = new TextBlock
+            {
+                Text = "◀ HAT-1  Darıca Sahil Yönü",
+                FontSize = 11,
+                FontFamily = new FontFamily("Segoe UI"),
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White
+            };
+            Canvas.SetLeft(upLabelBorder, 60);
+            Canvas.SetTop(upLabelBorder, UP_TRACK_Y - 30);
+            Panel.SetZIndex(upLabelBorder, 80);
+            RailwayCanvas.Children.Add(upLabelBorder);
+
+            // Sağ ok (HAT-1 sonunda)
+            var upEndBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(140, 0x42, 0xA5, 0xF5)),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(6, 2, 6, 2)
+            };
+            upEndBorder.Child = new TextBlock
+            {
+                Text = "İdari Bina ▶",
+                FontSize = 10,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = Brushes.White
+            };
+            Canvas.SetLeft(upEndBorder, 60 + scaledLength - 80);
+            Canvas.SetTop(upEndBorder, UP_TRACK_Y - 28);
+            Panel.SetZIndex(upEndBorder, 80);
+            RailwayCanvas.Children.Add(upEndBorder);
+
+            // === HAT-2 Etiket Paneli (Sol tarafta) ===
+            var downLabelBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(200, 0xEF, 0x53, 0x50)),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(8, 3, 8, 3)
+            };
+            downLabelBorder.Child = new TextBlock
+            {
+                Text = "HAT-2  İdari Bina ve Atölye Yönü ▶",
+                FontSize = 11,
+                FontFamily = new FontFamily("Segoe UI"),
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White
+            };
+            Canvas.SetLeft(downLabelBorder, 60);
+            Canvas.SetTop(downLabelBorder, DOWN_TRACK_Y + 10);
+            Panel.SetZIndex(downLabelBorder, 80);
+            RailwayCanvas.Children.Add(downLabelBorder);
+
+            // Sağ etiket (HAT-2 sonunda)
+            var downEndBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(140, 0xEF, 0x53, 0x50)),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(6, 2, 6, 2)
+            };
+            downEndBorder.Child = new TextBlock
+            {
+                Text = "◀ Darıca Sahil",
+                FontSize = 10,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = Brushes.White
+            };
+            Canvas.SetLeft(downEndBorder, 60 + scaledLength - 90);
+            Canvas.SetTop(downEndBorder, DOWN_TRACK_Y + 12);
+            Panel.SetZIndex(downEndBorder, 80);
+            RailwayCanvas.Children.Add(downEndBorder);
         }
 
         #endregion
@@ -2639,9 +3320,20 @@ namespace VldDataVisualizer.Views
             Dispatcher.Invoke(() =>
             {
                 ToastNotificationText.Text = message;
-                ToastNotificationBorder.Background = isError
-                    ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xB0, 0x00, 0x20))
-                    : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x33, 0x33, 0x33));
+
+                var severity = isError ? "KIRMIZI" : message.Contains("SARI", StringComparison.OrdinalIgnoreCase) ? "SARI" : "NORMAL";
+
+                Color bgColor = severity switch
+                {
+                    "KIRMIZI" => Color.FromRgb(0xB0, 0x00, 0x20),
+                    "SARI" => Color.FromRgb(0xD9, 0x8A, 0x00),
+                    _ => Color.FromRgb(0x1B, 0x7A, 0x3A)
+                };
+
+                ToastNotificationBorder.Background = new SolidColorBrush(bgColor);
+                ToastNotificationBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF));
+                ToastNotificationBorder.BorderThickness = new Thickness(1.5);
+                ToastNotificationText.Foreground = Brushes.White;
                 ToastNotificationBorder.Visibility = Visibility.Visible;
             });
 
@@ -2672,71 +3364,14 @@ namespace VldDataVisualizer.Views
         {
             _isLogPanelOpen = open;
 
-            if (open)
-            {
-                // Panel açılıyor
-                RightLogPanel.Visibility = Visibility.Visible;
-
-                // GridSplitter'ı göster
-                var splitter = FindVisualChild<GridSplitter>(this);
-                if (splitter != null)
-                {
-                    splitter.Visibility = Visibility.Visible;
-                }
-
-                // Sütun genişliğini ayarla (750 piksel veya * kullan)
-                RightPanelColumn.Width = new GridLength(785, GridUnitType.Pixel);
-
-                // DataGrid'i güncelle
-                ErrorLogGrid.ItemsSource = _errorLogs;
-                ErrorLogGrid.Items.Refresh();
-                ErrorLogGrid.Items.SortDescriptions.Clear();
-                ErrorLogGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
-
-                // Animasyon (isteğe bağlı)
-                var animation = new DoubleAnimation
-                {
-                    From = 0,
-                    To = 785,
-                    Duration = TimeSpan.FromMilliseconds(300),
-                    AccelerationRatio = 0.2,
-                    DecelerationRatio = 0.8
-                };
-
-                // Sütun genişliğini animasyonla değiştir
-                RightPanelColumn.BeginAnimation(WidthProperty, animation);
-            }
-            else
-            {
-                // Panel kapanıyor
-                var animation = new DoubleAnimation
-                {
-                    From = RightPanelColumn.ActualWidth,
-                    To = 0,
-                    Duration = TimeSpan.FromMilliseconds(300),
-                    AccelerationRatio = 0.2,
-                    DecelerationRatio = 0.8
-                };
-
-                animation.Completed += (s, e) =>
-                {
-                    RightLogPanel.Visibility = Visibility.Collapsed;
-                    RightPanelColumn.Width = new GridLength(0, GridUnitType.Pixel);
-
-                    // GridSplitter'ı gizle
-                    var splitter = FindVisualChild<GridSplitter>(this);
-                    if (splitter != null)
-                    {
-                        splitter.Visibility = Visibility.Collapsed;
-                    }
-                };
-
-                RightPanelColumn.BeginAnimation(WidthProperty, animation);
-            }
+            ErrorSummaryGrid.ItemsSource = _errorLogs;
+            ErrorSummaryGrid.Items.Refresh();
+            ErrorSummaryGrid.Items.SortDescriptions.Clear();
+            ErrorSummaryGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
         }
 
         // GridSplitter'ı bulmak için yardımcı metod
-        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        private T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             if (parent == null) return null;
 
@@ -2917,8 +3552,9 @@ namespace VldDataVisualizer.Views
                 _errorRepeatCounts.Clear();
 
                 // DataGrid'i yenile
-                ErrorLogGrid.ItemsSource = null;
-                ErrorLogGrid.ItemsSource = _errorLogs;
+                ErrorSummaryGrid.ItemsSource = null;
+                ErrorSummaryGrid.ItemsSource = _errorLogs;
+                ErrorSummaryGrid.Items.Refresh();
             }
         }
         #endregion

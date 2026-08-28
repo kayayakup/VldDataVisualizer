@@ -149,12 +149,6 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Margin="5,0,0,0">
-                        <Button Content="🧾 Hata Logları"
-                Margin="0,0,5,0"
-                Padding="10,5"
-                Click="OpenErrorLogWindow_Click"
-                MinWidth="100"/>
-
                         <Button Content="📂 Log Dosyasını Aç"
                 Padding="10,5"
                 Click="OpenLogFile_Click"
@@ -182,16 +176,21 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <Grid Grid.Row="0">
-                                    <Viewbox Stretch="Fill">
-                                        <Canvas x:Name="RailwayCanvas" Height="400" Width="2000" 
-                                    Background="#f5f5f5" Margin="0, 0, 0,-100">
-                                            <TextBlock Text="Tren hatları görseli yükleniyor..." 
-                                          HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          Foreground="Gray" FontStyle="Italic"/>
-                                        </Canvas>
-                                    </Viewbox>
-                                </Grid>
+                                <Border Grid.Row="0" ClipToBounds="True" Background="White"
+                                        MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                                        MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                                        MouseMove="Canvas_MouseMove"
+                                        MouseWheel="Canvas_MouseWheel">
+                                    <Canvas x:Name="RailwayCanvas" Height="500" Width="2400" 
+                                            Margin="0,0,0,0" Background="Transparent">
+                                        <Canvas.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform x:Name="CanvasScaleTransform" ScaleX="1" ScaleY="1"/>
+                                                <TranslateTransform x:Name="CanvasTranslateTransform" X="0" Y="0"/>
+                                            </TransformGroup>
+                                        </Canvas.RenderTransform>
+                                    </Canvas>
+                                </Border>
 
                                 <Border Grid.Row="1" Background="#f8f9fa" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="5">
                                     <StackPanel Orientation="Horizontal">
@@ -350,11 +349,69 @@
                     </Grid>
                 </TabItem>
 
-                <!-- SEKME 3: 12 VLD-TFPR Detaylı Veriler (12 Alt Sekme) -->
+                <!-- SEKME 2: 12 VLD-TFPR Detaylı Veriler (12 Alt Sekme) -->
                 <TabItem Header="⚡ TFPR Cihaz Detayları">
                     <TabControl x:Name="DeviceTabControl" Margin="5">
                         <!-- Her istasyon için ayrı TabItem dinamik olarak kod tarafında oluşturulacak -->
                     </TabControl>
+                </TabItem>
+
+                <!-- SEKME 3: Hata Özeti (sağda) -->
+                <TabItem Header="🧾 Hata Özeti">
+                    <Grid Margin="6">
+                        <DataGrid x:Name="ErrorSummaryGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  AlternatingRowBackground="#F5F5F5"
+                                  GridLinesVisibility="None">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="#FFFFFF"/>
+                                    <Setter Property="BorderBrush" Value="#D9D9D9"/>
+                                    <Setter Property="Foreground" Value="#1F1F1F"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="KIRMIZI">
+                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                            <Setter Property="BorderBrush" Value="#F44336"/>
+                                            <Setter Property="Foreground" Value="#3B1A1A"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="SARI">
+                                            <Setter Property="Background" Value="#FFF8E1"/>
+                                            <Setter Property="BorderBrush" Value="#FFC107"/>
+                                            <Setter Property="Foreground" Value="#3C2A00"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="YEŞİL">
+                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
+                                            <Setter Property="Foreground" Value="#1B3A1D"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="NORMAL">
+                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
+                                            <Setter Property="Foreground" Value="#1B3A1D"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Zaman" Binding="{Binding Timestamp, StringFormat=HH:mm:ss}" Width="80"/>
+                                <DataGridTextColumn Header="Kategori" Binding="{Binding OverallEN50122Category}" Width="90"/>
+                                <DataGridTextColumn Header="İstasyonlar" Binding="{Binding StationNames}" Width="200"/>
+                                <DataGridTextColumn Header="Tekrar" Binding="{Binding RepeatCount}" Width="60"/>
+                                <DataGridTextColumn Header="Tren Konumları" Binding="{Binding TrainPositionsDisplay}" Width="250"/>
+                                <DataGridTemplateColumn Header="Hata / Gerilim-Akım" Width="425">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding LeakDisplay}"
+                                                       Foreground="{Binding CategoryBrush}"
+                                                       TextWrapping="NoWrap"
+                                                       FontWeight="SemiBold"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                 </TabItem>
 
             </TabControl>
@@ -371,268 +428,7 @@
 
             </StatusBar>
         </Grid>
-        <!-- GRIDSPLITTER -->
-        <GridSplitter Grid.Column="1"
-                  Width="5"
-                  VerticalAlignment="Stretch"
-                  ResizeDirection="Columns"
-                  ResizeBehavior="PreviousAndNext"
-                  Background="#888"
-                  Cursor="SizeWE"
-                  Visibility="Collapsed"/>
-        <!-- Başlangıçta gizli -->
 
-        <!-- SAĞ LOG PANELİ -->
-        <Border x:Name="RightLogPanel"
-            Grid.Column="2"
-            Background="#263238"
-            VerticalAlignment="Stretch"
-            Padding="10"
-            Visibility="Collapsed">
-            <!-- Başlangıçta gizli -->
-
-            <DockPanel>
-                <!-- Başlık ve Kapatma -->
-                <DockPanel DockPanel.Dock="Top">
-                    <TextBlock Text="🧾 VLD-TFPR Hata Logları"
-                           Foreground="White"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
-
-                    <Button x:Name="CloseLogPanelButton"
-                        Content="✖ Kapat"
-                        HorizontalAlignment="Right"
-                        Click="CloseLogPanel_Click"
-                        Margin="10,0,0,0"
-                        Padding="8,4"
-                        Background="Transparent"
-                        Foreground="White"
-                        DockPanel.Dock="Right"/>
-                    <Button x:Name="OpenLogFileButton"
-                        Content="📁 Dosyayı Aç"
-                        Click="OpenLogFile_Click"
-                        HorizontalAlignment="Right"
-                        Margin="10,0,0,0"
-                        Padding="8,4"
-                        Background="Transparent"
-                        Foreground="White"
-                        DockPanel.Dock="Right"/>
-                    <Button x:Name="ClearLogsButton"
-                        Content="🗑️ Temizle"
-                        Click="ClearLogsButton_Click"
-                        HorizontalAlignment="Right"
-                        Margin="10,0,0,0"
-                        Padding="8,4"
-                        Background="Transparent"
-                        Foreground="White"
-                        DockPanel.Dock="Right"/>
-                </DockPanel>
-
-                <!-- Log Listesi -->
-                <DataGrid x:Name="ErrorLogGrid"
-          AutoGenerateColumns="False"
-          IsReadOnly="True"
-          Background="White"
-          RowHeight="80" 
-          DockPanel.Dock="Top"
-          GridLinesVisibility="None"
-          AlternatingRowBackground="#F5F5F5"
-          SelectionUnit="FullRow">
-
-                    <DataGrid.Resources>
-                        <!-- Varsayılan highlight'ı gizle: sadece bu DataGrid içinde geçerli -->
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="White"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Red"/>
-
-                        <!-- Hücre stili: padding, hizalama ve seçili iken appearance -->
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="Padding" Value="5"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="Black"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="Foreground" Value="Red"/>
-                                </Trigger>
-                                <!-- Eğer hücre focus olduğunda çerçeve istersen buraya ekle -->
-                            </Style.Triggers>
-                        </Style>
-
-                        <!-- Satır stili: yükseklik ve seçili appearance -->
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Height" Value="80"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="Black"/>
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <!-- Ön plandaki yazı ve arka plan -->
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="Foreground" Value="Red"/>
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <!-- İstersen hover rengi ekle; kaldırabilirsin -->
-                                    <Setter Property="Background" Value="#F7F7F7"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
-
-                    <!-- Kolonlar -->
-                    <DataGrid.Columns>
-                        <!-- Zaman -->
-                        <DataGridTextColumn Header="Zaman" 
-                            Width="80"
-                            Binding="{Binding Timestamp, StringFormat='HH:mm:ss'}">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- Kategori (Renkli) -->
-                        <DataGridTemplateColumn Header="Kategori" Width="80">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="3" 
-                            Background="{Binding CategoryColor, Converter={StaticResource StringToBrushConverter}}"
-                            Padding="5,2"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Category}" 
-                                   Foreground="White"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"/>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                        <!-- Tekrar Sayısı -->
-                        <DataGridTextColumn Header="Tekrar" 
-                            Width="60"
-                            Binding="{Binding RepeatCount}">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="Foreground" Value="{Binding CategoryColor, Converter={StaticResource StringToBrushConverter}}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- TFPR Cihazları (Birden fazla) -->
-                        <DataGridTemplateColumn Header="TFPR Cihazları" Width="160">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  MaxHeight="70">
-                                        <ItemsControl ItemsSource="{Binding AffectedDevices}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="#E0E0E0" 
-                                            BorderThickness="0,0,0,1" 
-                                            Padding="0,2,0,2"
-                                            Margin="0,0,0,2">
-                                                        <StackPanel>
-                                                            <TextBlock Text="{Binding DeviceId}" 
-                                                       FontWeight="SemiBold"
-                                                       Foreground="#1976D2"/>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="{Binding TouchVoltage, StringFormat='{}Ute:{0:N0}V'}" 
-                                                           Foreground="#d32f2f" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                                                <TextBlock Text="{Binding GroundCurrent, StringFormat='{}Ig:{0:N1}A'}" 
-                                                           Foreground="#388e3c" FontWeight="SemiBold" Margin="0,0,6,0"/>
-                                                                <TextBlock Text="{Binding Kilometer, StringFormat='{}{0:N2}km'}"/>
-                                                            </StackPanel>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                        <!-- Bütün Tren Konumları -->
-                        <DataGridTemplateColumn Header="Tren Konumları" Width="200">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  MaxHeight="70">
-                                        <ItemsControl ItemsSource="{Binding AllTrains}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="#E0E0E0" 
-                                            BorderThickness="0,0,0,1" 
-                                            Padding="0,2,0,2"
-                                            Margin="0,0,0,2">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding TrainName}" 
-                                                       Width="60"
-                                                       FontWeight="SemiBold"/>
-                                                            <TextBlock Text="{Binding Position, StringFormat='{}{0:N0}m'}" 
-                                                       Width="70"/>
-                                                            <TextBlock Text="{Binding TrackType}" 
-                                                       Width="40"
-                                                       Foreground="{Binding TrackType, Converter={StaticResource TrackTypeToColorConverter}}"/>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                        <!-- Bütün Tren Hızları -->
-                        <DataGridTemplateColumn Header="Tren Hızları" Width="200">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  MaxHeight="70">
-                                        <ItemsControl ItemsSource="{Binding AllTrains}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="#E0E0E0" 
-                                            BorderThickness="0,0,0,1" 
-                                            Padding="0,2,0,2"
-                                            Margin="0,0,0,2">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding TrainName}" 
-                                                       Width="60"
-                                                       FontWeight="SemiBold"/>
-                                                            <TextBlock Text="{Binding Speed, StringFormat='{}{0:N0}km/h'}" 
-                                                       Width="80"
-                                                       Foreground="{Binding Speed, Converter={StaticResource SpeedToColorConverter}}"/>
-                                                            <TextBlock Text="{Binding Status}" 
-                                                       Width="50"
-                                                       FontSize="10"/>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-        </Border>
         <!-- Toast Notification (tek bildirim) -->
         <Border x:Name="ToastNotificationBorder"
                 Background="#333333"

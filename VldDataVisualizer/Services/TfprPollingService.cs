@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using VldDataVisualizer.Models;
 using VldDataVisualizer.ViewModels;
 
@@ -11,9 +12,9 @@ namespace VldDataVisualizer.Services
     public class TfprPollingService
     {
         private readonly TfprVldModbusTcpReader _reader;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public event EventHandler<VldData> DataReceived;
+        public event EventHandler<VldData>? DataReceived;
 
         public TfprPollingService(TfprVldModbusTcpReader reader)
         {

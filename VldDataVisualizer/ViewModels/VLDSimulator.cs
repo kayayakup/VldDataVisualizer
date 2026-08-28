@@ -18,9 +18,9 @@ namespace VldDataVisualizer.ViewModels
         private Dictionary<int, double> _reactiveEnergyCounters = new Dictionary<int, double>();
         private Dictionary<int, DateTime?> _leakStartTimes = new Dictionary<int, DateTime?>();
 
-        // ✅ DÜZELTİLDİ: Daha gerçekçi eşik değerleri
-        private const double _leakThresholdA = 3.0; // 3A yerine 5A → Daha sık hata
-        private const double _touchResistance = 50.0; // ✅ 1000Ω → 50Ω (Gerçekçi toprak direnci)
+        // ✅ DÜZELTİLDİ: Simülasyon yeşil/sarı uyarılar üretmek üzere ayarlandı
+        private const double _leakThresholdA = 1.2; // sarı uyarı için erken başlatma
+        private const double _touchResistance = 20.0; // daha gerçekçi temas gerilimi için düşürüldü
 
         // AC SİSTEM - kV cinsinden
         private double _systemLineVoltage = 34.5;
@@ -32,18 +32,18 @@ namespace VldDataVisualizer.ViewModels
 
         private readonly Dictionary<int, (string Name, double Position)> _stationPositions = new Dictionary<int, (string, double)>
         {
-            { 1, ("Depo", 15391.246) },
-            { 2, ("OSB", 13873.215) },
-            { 3, ("Mutlukent", 12081.341) },
-            { 4, ("Adliye", 10385.942) },
-            { 5, ("Akse Sapağı", 9070.108) },
-            { 6, ("Gebze Stadyum", 8234.420) },
-            { 7, ("Gebze Kent Meydanı", 7101.599) },
-            { 8, ("Fatih Devlet Hastanesi", 5781.120) },
-            { 9, ("TCDD Gar", 4389.210) },
-            { 10, ("Farabi Devlet Hastanesi", 3298.624) },
-            { 11, ("Darıca Cumhuriyet", 1379.242) },
-            { 12, ("Darıca Sahil", 136.100) }
+            { 1, ("Depo", 15000.0) },
+            { 2, ("OSB", 14000.0) },
+            { 3, ("Mutlukent", 12000.0) },
+            { 4, ("Adliye", 10000.0) },
+            { 5, ("Akse Sapağı", 9000.0) },
+            { 6, ("Gebze Stadyum", 8000.0) },
+            { 7, ("Gebze Kent Meydanı", 7000.0) },
+            { 8, ("Fatih Devlet Hastanesi", 6000.0) },
+            { 9, ("TCDD Gar", 4000.0) },
+            { 10, ("Farabi Devlet Hastanesi", 3000.0) },
+            { 11, ("Darıca Cumhuriyet", 1000.0) },
+            { 12, ("Darıca Sahil", 0.0) }
         };
 
         private readonly Dictionary<int, double> _stationLoadProfiles = new Dictionary<int, double>
@@ -179,8 +179,8 @@ namespace VldDataVisualizer.ViewModels
 
                 newData.ActiveAlarms = CheckForAlarms(newData, leakDuration);
 
-                // Kritik: TouchVoltage limit kontrolü
-                if (leakDuration > 0 && leakDuration > touchLimits)
+                // Kritik: TouchVoltage limit kontrolü (EN 50122 standardına göre KIRMIZI ise)
+                if (EN50122Analyzer.GetTouchVoltageCategory(newData.TouchVoltage, leakDuration) == "KIRMIZI")
                 {
                     newData.ActiveAlarms.Add($"[{newData.StationName}] ❌ TEHLIKELI_DOKUNMA_GERİLİMİ " +
                         $"Ute={newData.TouchVoltage:N0}V " +
@@ -214,13 +214,13 @@ namespace VldDataVisualizer.ViewModels
             double fluctuation = (_random.NextDouble() - 0.5) * 40;
             double voltage = baseV + stationVariation + fluctuation;
 
-            // ✅ ARTTIRILDI: %10 ihtimalle DC gerilim anormalliği (eskiden %2)
-            if (_random.NextDouble() < 0.10)
+            // ✅ DÜZELTİLDİ: Sadece %1 ihtimalle DC gerilim anormalliği (eskiden %10)
+            if (_random.NextDouble() < 0.003)
             {
                 if (_random.NextDouble() < 0.5)
-                    voltage = baseV * (0.80 + _random.NextDouble() * 0.10); // Düşük: 1200-1350V
+                    voltage = baseV * (0.82 + _random.NextDouble() * 0.08); // Düşük: 1230-1500V
                 else
-                    voltage = baseV * (1.15 + _random.NextDouble() * 0.15); // Yüksek: 1725-1950V
+                    voltage = baseV * (1.12 + _random.NextDouble() * 0.10); // Yüksek: 1680-1950V
             }
 
             return Math.Round(voltage, 1);
@@ -233,16 +233,16 @@ namespace VldDataVisualizer.ViewModels
             double fluctuation = (_random.NextDouble() - 0.5) * baseCurrent * 0.15;
             double current = baseCurrent + fluctuation;
 
-            // ✅ ARTTIRILDI: %8 ihtimalle DC akım anomalisi (eskiden %3)
-            if (_random.NextDouble() < 0.08)
+            // ✅ DÜZELTİLDİ: Sadece %1 ihtimalle DC akım anomalisi (eskiden %8)
+            if (_random.NextDouble() < 0.005)
             {
                 double r = _random.NextDouble();
                 if (r < 0.4)
-                    current = baseCurrent * (1.05 + _random.NextDouble() * 0.25);
+                    current = baseCurrent * (1.05 + _random.NextDouble() * 0.18);
                 else if (r < 0.8)
-                    current = baseCurrent * (0.2 + _random.NextDouble() * 0.4);
+                    current = baseCurrent * (0.2 + _random.NextDouble() * 0.3);
                 else
-                    current = baseCurrent * (1.5 + _random.NextDouble() * 1.0);
+                    current = baseCurrent * (1.25 + _random.NextDouble() * 0.5);
             }
 
             return Math.Round(Math.Max(10.0, current), 1);
@@ -283,12 +283,12 @@ namespace VldDataVisualizer.ViewModels
             double fluctuation = (_random.NextDouble() - 0.5) * 0.6;
             double kv = baseKv + stationVariation + fluctuation;
 
-            if (_random.NextDouble() < 0.015)
+            if (_random.NextDouble() < 0.006)
             {
                 if (_random.NextDouble() < 0.5)
-                    kv = baseKv * (0.85 + _random.NextDouble() * 0.05);
+                    kv = baseKv * (0.88 + _random.NextDouble() * 0.04);
                 else
-                    kv = baseKv * (1.1 + _random.NextDouble() * 0.05);
+                    kv = baseKv * (1.08 + _random.NextDouble() * 0.04);
             }
 
             return Math.Round(kv, 3);
@@ -308,15 +308,15 @@ namespace VldDataVisualizer.ViewModels
             double fluctuation = (_random.NextDouble() - 0.5) * baseCurrent * 0.15;
             double current = baseCurrent + fluctuation;
 
-            if (_random.NextDouble() < 0.03)
+            if (_random.NextDouble() < 0.012)
             {
                 double r = _random.NextDouble();
                 if (r < 0.4)
-                    current = baseCurrent * (1.05 + _random.NextDouble() * 0.25);
+                    current = baseCurrent * (1.04 + _random.NextDouble() * 0.18);
                 else if (r < 0.8)
-                    current = baseCurrent * (0.2 + _random.NextDouble() * 0.4);
+                    current = baseCurrent * (0.2 + _random.NextDouble() * 0.3);
                 else
-                    current = baseCurrent * (1.5 + _random.NextDouble() * 1.0);
+                    current = baseCurrent * (1.2 + _random.NextDouble() * 0.45);
             }
 
             return Math.Round(Math.Max(0.1, current), 1);
@@ -331,18 +331,18 @@ namespace VldDataVisualizer.ViewModels
 
         private double GenerateGroundCurrent(int stationId)
         {
-            // ✅ DÜZELTİLDİ: Daha sık toprak arızası
-            double current = _random.NextDouble() * 2.0;
+            double roll = _random.NextDouble();
 
-            // %15 ihtimalle 3-8A arası (SARI - Warning)
-            if (_random.NextDouble() < 0.15)
-                current = 3.0 + _random.NextDouble() * 5.0;
+            // %65 normal: 0.0 - 0.8 A (YEŞİL)
+            if (roll < 0.65)
+                return Math.Round(_random.NextDouble() * 0.8, 2);
 
-            // %8 ihtimalle 10-30A arası (KIRMIZI - Critical)
-            if (_random.NextDouble() < 0.08)
-                current = 10.0 + _random.NextDouble() * 20.0;
+            // %30 warning: 1.2 - 2.5 A (SARI)
+            if (roll < 0.95)
+                return Math.Round(1.2 + _random.NextDouble() * 1.3, 2);
 
-            return Math.Round(current, 2);
+            // %5 critical: 2.8 - 4.5 A (KIRMIZI, çok nadir)
+            return Math.Round(2.8 + _random.NextDouble() * 1.7, 2);
         }
 
         private double GenerateFrequency(int stationId)
@@ -381,12 +381,13 @@ namespace VldDataVisualizer.ViewModels
 
         private double CalculateTouchVoltage(double groundCurrentA)
         {
-            // EN 50122-1 Çizelge 6'ya uygun dokunma gerilimi (Ute) hesabı
-            // 3A × 50Ω = 150V (uzun süreli limit 120V-150V aralığında)
+            // EN 50122-1 Çizelge 7'ye uygun dokunma gerilimi (Ute) hesabı (AC sistemi)
+            // Ute,azami = Uc1 + Ra1 × Ic1 × 10⁻³
+            // 3A × 50Ω = 150V (uzun süreli limit: 60V-90V aralığında → UYARI)
             // 10A × 50Ω = 500V (kısa süreli limit aralığında)
-            // EN 50122-1 azami izin verilen kısa süreli dokunma gerilimi: 870 V (0.02s)
+            // EN 50122-1 Çizelge 7 azami kısa süreli dokunma gerilimi: 865 V (0.02s)
             double ute = groundCurrentA * _touchResistance;
-            return Math.Round(Math.Min(870.0, ute), 1);
+            return Math.Round(Math.Min(865.0, ute), 1);
         }
 
         private List<string> CheckForAlarms(VldData data, double leakDuration)
@@ -411,11 +412,11 @@ namespace VldDataVisualizer.ViewModels
             if (data.DcCurrent > 1000)
                 alarms.Add($"[{data.StationName}] ASIRI_DC_AKIM ({data.DcCurrent} A)");
 
-            // ✅ DÜZELTİLDİ: TOPRAK ARİZASI
-            if (data.GroundCurrent > 10.0)
+            // ✅ GÜNCELLENDİ: Kaçak ihtimalinden önce erken uyarı verilir.
+            if (data.GroundCurrent > 3.0)
                 alarms.Add($"[{data.StationName}] 🚨 TOPRAK_ARIZASI ({data.GroundCurrent} A, {leakDuration:F1}s)");
-            else if (data.GroundCurrent > 3.0)
-                alarms.Add($"[{data.StationName}] ⚠️ YUKSEK_TOPRAK_AKIMI ({data.GroundCurrent} A)");
+            else if (data.GroundCurrent > 1.5)
+                alarms.Add($"[{data.StationName}] ⚠️ ERKEN_UYARI_TOPRAK_AKIMI ({data.GroundCurrent} A)");
 
             // SICAKLIK
             if (data.Temperature > 80.0)

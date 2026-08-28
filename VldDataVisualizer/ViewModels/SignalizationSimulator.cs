@@ -6,10 +6,10 @@ namespace VldDataVisualizer.ViewModels
 {
     public class SignalizationSimulator
     {
-        public event EventHandler<SignalizationData> DataGenerated;
-        public event EventHandler<string> StatusChanged;
+        public event EventHandler<SignalizationData>? DataGenerated;
+        public event EventHandler<string>? StatusChanged;
 
-        private System.Timers.Timer _simulationTimer;
+        private System.Timers.Timer? _simulationTimer;
         private Random _random = new Random();
         private bool _isSimulationRunning = false;
 
@@ -280,7 +280,7 @@ namespace VldDataVisualizer.ViewModels
     internal class Station
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public double Position { get; set; } // metre cinsinden
     }
 
@@ -288,14 +288,14 @@ namespace VldDataVisualizer.ViewModels
     {
         public int TrainNumber { get; set; }
         public int TrainId { get; set; }
-        public string TrainName { get; set; }
+        public string TrainName { get; set; } = string.Empty;
         public double Speed { get; set; }
         public double CurrentPosition { get; set; }
         public int Direction { get; set; } // 1: ileri, -1: geri
         public bool IsInService { get; set; }
         public int PassengerCount { get; set; }
         public int NextStationId { get; set; }
-        public string NextStationName { get; set; }
+        public string NextStationName { get; set; } = string.Empty;
         public double DistanceToNextStation { get; set; }
         public DateTime LastUpdateTime { get; set; }
     }
