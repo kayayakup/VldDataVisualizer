@@ -105,9 +105,7 @@ namespace VldDataVisualizer.Views
             {
                 try
                 {
-                    ErrorSummaryGrid.ItemsSource = _errorLogs;
-                    ErrorSummaryGrid.Items.SortDescriptions.Clear();
-                    ErrorSummaryGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+                    ConfigureErrorLogView();
                 }
                 catch { }
             }), DispatcherPriority.Background);
@@ -405,7 +403,7 @@ namespace VldDataVisualizer.Views
                     // YENİ: ATS Sinyalizasyon Gerçek Veri Modu
                     _atsReader = new AtsSignalizationModbusReader("192.168.1.20"); // Örnek ATS Modbus Gateway IP
                     _atsPollingTimer = new System.Timers.Timer(2000); // 2 saniyede bir güncelle
-                    _atsPollingTimer.Elapsed += (s, ev) => 
+                    _atsPollingTimer.Elapsed += (s, ev) =>
                     {
                         if (_atsReader != null)
                         {
@@ -778,16 +776,23 @@ namespace VldDataVisualizer.Views
                     dcVoltageCategory,
                     groundCurrentCategory);
 
+                // En kritik kategoriyi güncelle (KIRMIZI > SARI > YEŞİL)
+                if (deviceOverallCategory == "KIRMIZI")
+                {
+                    overallCategory = "KIRMIZI";
+                }
+                else if (deviceOverallCategory == "SARI" && overallCategory != "KIRMIZI")
+                {
+                    overallCategory = "SARI";
+                }
+                else if (deviceOverallCategory == "YEŞİL" && overallCategory == "NORMAL")
+                {
+                    overallCategory = "YEŞİL";
+                }
+
                 // Sadece NORMAL olmayan cihazları log'a ekle
                 if (deviceOverallCategory != "NORMAL")
                 {
-                    // En kritik kategoriyi güncelle
-                    if ((deviceOverallCategory == "KIRMIZI" && overallCategory != "KIRMIZI") ||
-                        (deviceOverallCategory == "SARI" && overallCategory == "NORMAL"))
-                    {
-                        overallCategory = deviceOverallCategory;
-                    }
-
                     anomalyDevices.Add(new EN50122AnomalyDevice
                     {
                         DeviceId = data.DeviceId,
@@ -813,31 +818,67 @@ namespace VldDataVisualizer.Views
                 }
             }
 
-            // Anomali varsa log oluştur (Kritik alarm durumları veya en az 1 saniyedir devam eden uyarılar için)
-            if (anomalyDevices.Any(d => d.OverallCategory == "KIRMIZI" || d.Duration >= 1.0))
+            // Anomali/Kaçak varsa log oluştur (YEŞİL, SARI veya KIRMIZI)
+            if (anomalyDevices.Any())
             {
-                // Kritik hataları filtrele
-                var criticalDevices = anomalyDevices.Where(d =>
-                    d.OverallCategory == "KIRMIZI" || d.Duration >= 0.5).ToList();
+                var activeAnomalyDevices = anomalyDevices.ToList();
 
-                if (!criticalDevices.Any())
-                    return; // Kritik hata yoksa log oluşturma
+                // 1. KURAL: Duran trenler kaçak noktasında durduğu sürece yalnızca 1 kez sinyal iletir
+                var trainsInSections = _activeTrains.Where(t =>
+                    activeAnomalyDevices.Any(d =>
+                        t.CurrentPosition >= Math.Min(d.StartPosition, d.EndPosition) - 300 &&
+                        t.CurrentPosition <= Math.Max(d.StartPosition, d.EndPosition) + 300)).ToList();
+
+                if (trainsInSections.Any())
+                {
+                    bool allowNewSignal = false;
+                    foreach (var tr in trainsInSections)
+                    {
+                        bool isStopped = tr.Status == "STOPPED" || tr.Status == "WAITING" || tr.Speed <= 0.1;
+                        if (isStopped)
+                        {
+                            if (_stoppedTrainLastLogged.TryGetValue(tr.TrainId, out var lastLogged) &&
+                                Math.Abs(tr.CurrentPosition - lastLogged.Position) <= 25.0)
+                            {
+                                // Bu duruş noktasında zaten 1 kere sinyal iletildi -> mükerrer sinyal üretme
+                            }
+                            else
+                            {
+                                // Yeni durdu veya ilk kez kaçak gördü -> 1 kere sinyale izin ver
+                                _stoppedTrainLastLogged[tr.TrainId] = (tr.CurrentPosition, DateTime.Now);
+                                allowNewSignal = true;
+                            }
+                        }
+                        else
+                        {
+                            // Tren hareket halinde -> duruş kilidini kaldır ve sinyale izin ver
+                            _stoppedTrainLastLogged.Remove(tr.TrainId);
+                            allowNewSignal = true;
+                        }
+                    }
+
+                    // Eğer kaçak bölgesindeki tüm trenler durmuş ve hepsi daha önce 1 kez sinyalini iletmişse yeni log oluşturma
+                    if (!allowNewSignal && trainsInSections.All(t => t.Status == "STOPPED" || t.Status == "WAITING" || t.Speed <= 0.1))
+                    {
+                        return;
+                    }
+                }
 
                 string key = $"EN50122_{overallCategory}_{DateTime.Now:yyyyMMddHHmmss}";
 
                 // Tekrar sayısını hesapla (aynı konum anahtarı döndürülür)
                 string? matchedKeyForRepeat = null;
-                int repeatCount = CalculateEN50122RepeatCount(criticalDevices, out matchedKeyForRepeat);
+                int repeatCount = CalculateEN50122RepeatCount(activeAnomalyDevices, out matchedKeyForRepeat);
 
                 // Bölgedeki trenleri topla
-                var trainsInAffectedArea = GetTrainsInAffectedArea(criticalDevices);
+                var trainsInAffectedArea = GetTrainsInAffectedArea(activeAnomalyDevices);
 
                 var log = new VldErrorLog
                 {
                     Timestamp = DateTime.Now,
                     Category = overallCategory,
                     RepeatCount = repeatCount,
-                    AffectedDevices = criticalDevices.Select(d => new EN50122AnomalyDevice
+                    AffectedDevices = activeAnomalyDevices.Select(d => new EN50122AnomalyDevice
                     {
                         // Temel özellikler
                         DeviceId = d.StationName,
@@ -851,7 +892,7 @@ namespace VldDataVisualizer.Views
                         Category = d.OverallCategory,
                         Duration = d.Duration,
 
-                        // YENİ: EN 50122 özellikleri
+                        // EN 50122 özellikleri
                         StationName = d.StationName,
                         StationId = d.StationId,
                         DcVoltageCategory = d.DcVoltageCategory,
@@ -865,20 +906,18 @@ namespace VldDataVisualizer.Views
                     AllTrains = trainsInAffectedArea,
                     Standard = "EN 50122-1",
 
-                    // YENİ: EN 50122 özel özellikleri
+                    // EN 50122 özel özellikleri
                     OverallEN50122Category = overallCategory,
-                    MaxTouchVoltage = criticalDevices.Max(d => d.TouchVoltage),
-                    MaxTouchVoltageDuration = criticalDevices.Max(d => d.Duration),
-                    MaxDcVoltageDeviation = criticalDevices.Max(d => Math.Abs(d.DcVoltage - 1500)),
-                    MaxGroundCurrent = criticalDevices.Max(d => d.GroundCurrent),
-                    CriticalViolationCount = criticalDevices.Count(d => d.OverallCategory == "KIRMIZI"),
-                    WarningViolationCount = criticalDevices.Count(d => d.OverallCategory == "SARI"),
-
-                    // YENİ: EN 50122 ihlalleri
-                    EN50122Violations = GetEN50122Violations(criticalDevices)
+                    MaxTouchVoltage = activeAnomalyDevices.Max(d => d.TouchVoltage),
+                    MaxTouchVoltageDuration = activeAnomalyDevices.Max(d => d.Duration),
+                    MaxDcVoltageDeviation = activeAnomalyDevices.Max(d => Math.Abs(d.DcVoltage - 1500)),
+                    MaxGroundCurrent = activeAnomalyDevices.Max(d => d.GroundCurrent),
+                    CriticalViolationCount = activeAnomalyDevices.Count(d => d.OverallCategory == "KIRMIZI"),
+                    WarningViolationCount = activeAnomalyDevices.Count(d => d.OverallCategory == "SARI"),
+                    EN50122Violations = GetEN50122Violations(activeAnomalyDevices)
                 };
 
-                log.LeakLocations = BuildLeakLocations(criticalDevices, matchedKeyForRepeat);
+                log.LeakLocations = BuildLeakLocations(activeAnomalyDevices, matchedKeyForRepeat);
                 log.LeakDetected = repeatCount >= 3 || log.LeakLocations.Any(l => l.RepeatCount >= 3);
                 log.RepeatCount = log.LeakLocations.Any() ? log.LeakLocations.Max(l => l.RepeatCount) : repeatCount;
 
@@ -905,10 +944,10 @@ namespace VldDataVisualizer.Views
                 WriteEN50122LogToFile(log);
 
                 // Hata özeti tablosunu yenile
-                ErrorSummaryGrid.Items.Refresh();
-                if (ErrorSummaryGrid.Items.Count > 0)
+                ConfigureErrorLogView();
+                if (ErrorLogList.Items.Count > 0)
                 {
-                    ErrorSummaryGrid.ScrollIntoView(ErrorSummaryGrid.Items[0]);
+                    ErrorLogList.ScrollIntoView(ErrorLogList.Items[0]);
                 }
 
                 // Çok fazla log varsa temizle
@@ -917,17 +956,17 @@ namespace VldDataVisualizer.Views
                     _errorLogs.RemoveAt(_errorLogs.Count - 1);
                 }
 
-                // Toast bildirimi göster
+                // Toast bildirimi göster (Hata kategorisine göre renkli)
                 string toastMsg = $"⚡ EN 50122 İhlali: {log.StationNames}\n" +
                                   $"Kategori: {log.OverallCategory} | " +
                                   $"Ute: {log.MaxTouchVoltage:N0} V | " +
                                   $"{log.CriticalDeviceCount} cihaz";
-                ShowToastNotification(toastMsg, isError: true);
+                ShowToastNotification(toastMsg, log.OverallCategory);
 
                 // Ray görüntüsünü güncelle (kaçak marker'ları için)
                 Dispatcher.Invoke(() => DrawRailwaySystem());
                 // Debug bilgisi
-                Console.WriteLine($"EN50122 Log: {criticalDevices.Count} cihaz, {overallCategory}, " +
+                Console.WriteLine($"EN50122 Log: {activeAnomalyDevices.Count} cihaz, {overallCategory}, " +
                                  $"{trainsInAffectedArea.Count} tren");
             }
         }
@@ -967,9 +1006,7 @@ namespace VldDataVisualizer.Views
                         StationName = device.StationName,
                         Value = device.TouchVoltage,
                         Duration = device.Duration,
-                        Limit = device.TouchVoltageCategory == "KIRMIZI" ?
-                            GetShortTermLimit(device.Duration) :
-                            GetLongTermLimit(device.Duration),
+                        Limit = EN50122Analyzer.GetAllowedTouchVoltage(device.Duration),
                         DeviationPercent = 0,
                         Timestamp = device.Timestamp,
                         Description = $"Dokunma Gerilimi {device.TouchVoltageCategory}: " +
@@ -1247,6 +1284,24 @@ namespace VldDataVisualizer.Views
                     train.CurrentPosition >= range.Min - 500 &&
                     train.CurrentPosition <= range.Max + 500);
 
+                // Trenin o konumdaki kaçak tekrar sayısını hesapla
+                int trainRepeatCount = 1;
+                foreach (var kvp in _errorRepeatCounts)
+                {
+                    // Format: "StationId_Category_Position_TrainId" veya "Position_Category"
+                    var parts = kvp.Key.Split('_');
+                    if (parts.Length >= 4)
+                    {
+                        if (parts[3] == train.TrainId.ToString() && double.TryParse(parts[2], out double pos))
+                        {
+                            if (Math.Abs(train.CurrentPosition - pos) <= 25.0)
+                            {
+                                trainRepeatCount = Math.Max(trainRepeatCount, kvp.Value);
+                            }
+                        }
+                    }
+                }
+
                 trainsInArea.Add(new TrainInfoLog
                 {
                     TrainId = train.TrainId,
@@ -1254,9 +1309,10 @@ namespace VldDataVisualizer.Views
                     Position = train.CurrentPosition,
                     Speed = train.Speed,
                     TrackType = train.TrackType,
-                    Status = train.Status
+                    Status = train.Status,
+                    RepeatCount = trainRepeatCount,
+                    IsInCriticalZone = isInAffectedArea
                 });
-
             }
 
             return trainsInArea;
@@ -1373,9 +1429,7 @@ namespace VldDataVisualizer.Views
         // XAML DataGrid için kolon güncellemesi (isteğe bağlı)
         private void InitializeErrorLogGrid()
         {
-            ErrorSummaryGrid.AutoGenerateColumns = false;
-            ErrorSummaryGrid.Columns.Clear();
-            ErrorSummaryGrid.ItemsSource = _errorLogs;
+            ConfigureErrorLogView();
         }
 
         // Kategoriye göre renk converter (XAML için)
@@ -2549,7 +2603,7 @@ namespace VldDataVisualizer.Views
         {
             var border = sender as Border;
             if (border == null) return;
-            
+
             // Eğer doğrudan bir trene (Border nesnesi) tıklanmadıysa pan işlemini başlat.
             var srcBorder = e.OriginalSource as Border;
             if (!(srcBorder != null && srcBorder.ToolTip != null) && !(e.OriginalSource is TextBlock))
@@ -2616,7 +2670,14 @@ namespace VldDataVisualizer.Views
 
         private bool _isStaticDrawn = false;
         private Dictionary<int, Border> _trainUIElements = new Dictionary<int, Border>();
-        private List<UIElement> _leakUIElements = new List<UIElement>();
+        private Dictionary<string, Line> _leakUIElements = new Dictionary<string, Line>();
+        // Popup için her marker'ın kaçak verilerini saklar
+        private Dictionary<string, (List<(VldErrorLog Log, LeakLocationInfo Location)> Entries, double Position, string TrackType, Brush AccentBrush)> _leakMarkerData = new();
+        // Duran trenlerin aynı duruş konumunda sadece 1 kez sinyal iletmesini takip eden sözlük
+        private readonly Dictionary<int, (double Position, DateTime Time)> _stoppedTrainLastLogged = new();
+        // Tren üstündeki 5 saniyelik kaçak metre rozetlerinin takibi
+        private readonly Dictionary<int, DateTime> _trainLeakBadgeShownTimes = new();
+        private readonly Dictionary<int, Border> _activeLeakTrainBadges = new();
 
         private void DrawRailwaySystem()
         {
@@ -2642,8 +2703,205 @@ namespace VldDataVisualizer.Views
             catch (Exception) { }
         }
 
-        private string GetLeakTooltipText(VldErrorLog leak, double meterPosition)
+        private bool IsValidTrackPosition(double position)
         {
+            return !double.IsNaN(position) &&
+                   !double.IsInfinity(position) &&
+                   position >= 0 &&
+                   position <= TOTAL_TRACK_LENGTH;
+        }
+
+        private string NormalizeTrackType(string? trackType)
+        {
+            return string.IsNullOrWhiteSpace(trackType) ? "HAT - 1" : trackType.Trim();
+        }
+
+        private string GetTrackTypeForLeak(VldErrorLog leak, double meterPosition)
+        {
+            var loggedTrain = leak.AllTrains
+                .Where(t => !string.IsNullOrWhiteSpace(t.TrackType))
+                .OrderBy(t => Math.Abs(t.Position - meterPosition))
+                .FirstOrDefault();
+
+            if (loggedTrain != null && Math.Abs(loggedTrain.Position - meterPosition) <= 250)
+                return loggedTrain.TrackType;
+
+            var liveTrain = _activeTrains
+                .Where(t => !string.IsNullOrWhiteSpace(t.TrackType))
+                .OrderBy(t => Math.Abs(t.CurrentPosition - meterPosition))
+                .FirstOrDefault();
+
+            return liveTrain != null && Math.Abs(liveTrain.CurrentPosition - meterPosition) <= 250
+                ? liveTrain.TrackType
+                : "HAT - 1";
+        }
+
+        private LeakLocationInfo CreateFallbackLeakLocation(VldErrorLog leak, double meterPosition)
+        {
+            var loggedTrain = leak.AllTrains
+                .OrderBy(t => Math.Abs(t.Position - meterPosition))
+                .FirstOrDefault();
+
+            var liveTrain = _activeTrains
+                .OrderBy(t => Math.Abs(t.CurrentPosition - meterPosition))
+                .FirstOrDefault();
+
+            return new LeakLocationInfo
+            {
+                Position = meterPosition,
+                RepeatCount = Math.Max(1, leak.RepeatCount),
+                TrainId = loggedTrain?.TrainId ?? liveTrain?.TrainId ?? leak.LeakTrainId ?? 0,
+                TrainStatus = loggedTrain?.Status ?? liveTrain?.Status ?? "MOVING",
+                TrackType = loggedTrain?.TrackType ?? liveTrain?.TrackType ?? "HAT - 1",
+                StationName = leak.StationNames,
+                Category = leak.EffectiveCategory,
+                NearestDcStation = VldErrorLog.GetNearestDcStationName(meterPosition),
+                NearestDcStationDistanceMeters = VldErrorLog.GetNearestDcStationDistance(meterPosition)
+            };
+        }
+
+        private List<(VldErrorLog Log, LeakLocationInfo Location)> GetLeakMarkerCandidates()
+        {
+            var candidates = new List<(VldErrorLog Log, LeakLocationInfo Location)>();
+
+            foreach (var leak in _errorLogs)
+            {
+                if (!leak.LeakDetected)
+                    continue;
+
+                if (leak.LeakLocations.Any())
+                {
+                    foreach (var location in leak.LeakLocations)
+                    {
+                        if (!IsValidTrackPosition(location.Position))
+                            continue;
+
+                        if (string.IsNullOrWhiteSpace(location.TrackType))
+                            location.TrackType = GetTrackTypeForLeak(leak, location.Position);
+
+                        candidates.Add((leak, location));
+                    }
+
+                    continue;
+                }
+
+                if (leak.LeakPosition.HasValue && IsValidTrackPosition(leak.LeakPosition.Value))
+                    candidates.Add((leak, CreateFallbackLeakLocation(leak, leak.LeakPosition.Value)));
+            }
+
+            return candidates;
+        }
+
+        private int GetLeakCategoryRank(string? category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+                return 0;
+
+            if (category.Contains("KIRMIZI", StringComparison.OrdinalIgnoreCase))
+                return 3;
+
+            if (category.Contains("SARI", StringComparison.OrdinalIgnoreCase))
+                return 2;
+
+            if (category.Contains("YEŞİL", StringComparison.OrdinalIgnoreCase) || category.Contains("YESIL", StringComparison.OrdinalIgnoreCase))
+                return 1;
+
+            if (category.Contains("NORMAL", StringComparison.OrdinalIgnoreCase))
+                return 0;
+
+            return 1;
+        }
+
+        private string GetLeakCategory(VldErrorLog leak, LeakLocationInfo location)
+        {
+            return string.IsNullOrWhiteSpace(location.Category)
+                ? leak.EffectiveCategory
+                : location.Category;
+        }
+
+        private string GetWorstLeakCategory(IEnumerable<(VldErrorLog Log, LeakLocationInfo Location)> entries)
+        {
+            return entries
+                .Select(e => GetLeakCategory(e.Log, e.Location))
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .OrderByDescending(GetLeakCategoryRank)
+                .FirstOrDefault() ?? "NORMAL";
+        }
+
+        private Brush GetLeakMarkerBrush(string category)
+        {
+            return GetLeakCategoryRank(category) switch
+            {
+                3 => Brushes.Red,
+                2 => Brushes.Orange,
+                1 => new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
+                _ => new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
+            };
+        }
+
+        private string FormatTrainStatus(string status)
+        {
+            return status switch
+            {
+                "STOPPED" => "İstasyonda durdu",
+                "WAITING" => "Bekliyor",
+                "MOVING" => "Seyir halinde",
+                _ => string.IsNullOrWhiteSpace(status) ? "Bilinmiyor" : status
+            };
+        }
+
+        private string FormatLeakHistoryDuration(TimeSpan duration)
+        {
+            if (duration.TotalSeconds < 1)
+                return "Tek kayıt";
+
+            if (duration.TotalMinutes < 1)
+                return $"{duration.TotalSeconds:F1} sn";
+
+            if (duration.TotalHours < 1)
+                return $"{duration.TotalMinutes:F1} dk";
+
+            return $"{duration.TotalHours:F1} saat";
+        }
+
+        private ToolTip CreateLeakToolTip(List<(VldErrorLog Log, LeakLocationInfo Location)> entries, double meterPosition, string trackType, Brush accentBrush)
+        {
+            return new ToolTip
+            {
+                Content = CreateLeakTooltipContent(entries, meterPosition, trackType, accentBrush),
+                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x2E)),
+                Foreground = Brushes.White,
+                BorderBrush = accentBrush,
+                BorderThickness = new Thickness(1.5),
+                Padding = new Thickness(0),
+                HasDropShadow = true,
+                MaxWidth = 460
+            };
+        }
+
+        private UIElement CreateLeakTooltipContent(List<(VldErrorLog Log, LeakLocationInfo Location)> entries, double meterPosition, string trackType, Brush accentBrush)
+        {
+            if (!entries.Any())
+            {
+                return new TextBlock
+                {
+                    Text = "Kaçak bilgisi bulunamadı",
+                    Margin = new Thickness(12),
+                    Foreground = Brushes.White
+                };
+            }
+
+            var logs = entries
+                .Select(e => e.Log)
+                .Distinct()
+                .OrderByDescending(l => l.Timestamp)
+                .ToList();
+
+            var firstTime = logs.Last().Timestamp;
+            var lastTime = logs.First().Timestamp;
+            var historyDuration = lastTime - firstTime;
+            var category = GetWorstLeakCategory(entries);
+
             var nearestStation = _stations
                 .OrderBy(s => Math.Abs(s.GridX - meterPosition))
                 .FirstOrDefault();
@@ -2651,108 +2909,568 @@ namespace VldDataVisualizer.Views
             var nearestDcStation = VldErrorLog.GetNearestDcStationName(meterPosition);
             var nearestDcStationDistance = VldErrorLog.GetNearestDcStationDistance(meterPosition);
 
-            var lastTrainPassText = leak.LeakLocations
-                .Where(l => Math.Abs(l.Position - meterPosition) <= 50)
-                .Select(l => $"{l.TrainId} / {l.TrainStatus}")
-                .FirstOrDefault();
+            var trainIds = entries
+                .OrderByDescending(e => e.Log.Timestamp)
+                .Select(e => e.Location.TrainId)
+                .Where(id => id > 0)
+                .Distinct()
+                .Take(4)
+                .ToList();
 
-            var passTime = DateTime.Now.ToString("dd.MM HH:mm:ss");
-            if (!string.IsNullOrWhiteSpace(lastTrainPassText))
+            if (!trainIds.Any())
             {
-                passTime = DateTime.Now.ToString("dd.MM HH:mm:ss");
+                var logTrainId = logs
+                    .Select(l => l.LeakTrainId)
+                    .FirstOrDefault(id => id.HasValue && id.Value > 0);
+
+                if (logTrainId.HasValue)
+                    trainIds.Add(logTrainId.Value);
             }
 
-            return $"Son tren geçişi: {passTime}\n" +
-                   $"Metraj: {meterPosition:N0} m\n" +
-                   $"En yakın istasyon: {(nearestStation != null ? nearestStation.StationName : "—")}\n" +
-                   $"En yakın CER istasyonu: {nearestDcStation} ({nearestDcStationDistance:N0} m)\n" +
-                   $"Hata: {leak.OverallEN50122Category} | {leak.MaxTouchVoltage:N0} V / {leak.MaxGroundCurrent:N1} A";
+            var trainText = trainIds.Any()
+                ? string.Join(", ", trainIds.Select(id => $"Tren {id}"))
+                : "Bilinmiyor";
+
+            var trainStatusText = entries
+                .Select(e => FormatTrainStatus(e.Location.TrainStatus))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(3)
+                .ToList();
+
+            var devices = logs
+                .SelectMany(l => l.AffectedDevices)
+                .Select(d => string.IsNullOrWhiteSpace(d.DeviceId) ? d.StationName : d.DeviceId)
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(4)
+                .ToList();
+
+            var recentTimes = logs
+                .Take(6)
+                .Select(l => $"{l.Timestamp:dd.MM.yyyy HH:mm:ss} ({l.EffectiveCategory})")
+                .ToList();
+
+            if (logs.Count > recentTimes.Count)
+                recentTimes.Add($"+{logs.Count - recentTimes.Count} eski kayıt");
+
+            var allAffectedDevices = logs.SelectMany(l => l.AffectedDevices).ToList();
+            double maxTouchVoltage = Math.Max(
+                logs.Max(l => l.MaxTouchVoltage),
+                allAffectedDevices.Select(d => d.TouchVoltage).DefaultIfEmpty(0).Max());
+            double maxTouchDuration = Math.Max(
+                logs.Max(l => l.MaxTouchVoltageDuration),
+                allAffectedDevices.Select(d => d.Duration).DefaultIfEmpty(0).Max());
+            double maxGroundCurrent = Math.Max(
+                logs.Max(l => l.MaxGroundCurrent),
+                allAffectedDevices.Select(d => d.GroundCurrent).DefaultIfEmpty(0).Max());
+            double maxDcDeviation = logs.Select(l => l.MaxDcVoltageDeviation).DefaultIfEmpty(0).Max();
+            int maxRepeat = Math.Max(
+                logs.Select(l => l.RepeatCount).DefaultIfEmpty(0).Max(),
+                entries.Select(e => e.Location.RepeatCount).DefaultIfEmpty(0).Max());
+
+            int criticalCount = logs.Sum(l => l.CriticalViolationCount);
+            int warningCount = logs.Sum(l => l.WarningViolationCount);
+
+            var tooltipPanel = new StackPanel { Margin = new Thickness(12, 10, 12, 10), MinWidth = 310, MaxWidth = 430 };
+
+            var headerBorder = new Border
+            {
+                Background = accentBrush,
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            headerBorder.Child = new TextBlock
+            {
+                Text = $"Kaçak Tespiti - {category}",
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                FontFamily = new FontFamily("Segoe UI")
+            };
+            tooltipPanel.Children.Add(headerBorder);
+
+            AddTooltipRow(tooltipPanel, "Metraj", $"{meterPosition:N0} m ({meterPosition / 1000.0:0.000} km)");
+            AddTooltipRow(tooltipPanel, "Ray", trackType);
+            AddTooltipRow(tooltipPanel, "İlk kaçak", $"{firstTime:dd.MM.yyyy HH:mm:ss}");
+            AddTooltipRow(tooltipPanel, "Son kaçak", $"{lastTime:dd.MM.yyyy HH:mm:ss}");
+            AddTooltipRow(tooltipPanel, "Kaçak zamanları", string.Join(Environment.NewLine, recentTimes));
+            AddTooltipRow(tooltipPanel, "Kayıt / tekrar", $"{logs.Count} kayıt | max tekrar {maxRepeat}");
+            AddTooltipRow(tooltipPanel, "Zaman aralığı", FormatLeakHistoryDuration(historyDuration));
+            AddTooltipRow(tooltipPanel, "Tren", trainStatusText.Any()
+                ? $"{trainText} ({string.Join(", ", trainStatusText)})"
+                : trainText);
+            AddTooltipRow(tooltipPanel, "En yakın istasyon", nearestStation != null
+                ? $"{nearestStation.StationName} ({Math.Abs(nearestStation.GridX - meterPosition):N0} m)"
+                : "Bilinmiyor");
+            AddTooltipRow(tooltipPanel, "En yakın CER", $"{nearestDcStation} ({nearestDcStationDistance:N0} m)");
+            AddTooltipRow(tooltipPanel, "Ölçüm", $"Ute {maxTouchVoltage:N0} V/{maxTouchDuration:F1} sn | IG {maxGroundCurrent:N1} A");
+
+            if (maxDcDeviation > 0)
+                AddTooltipRow(tooltipPanel, "DC sapma", $"{maxDcDeviation:N0} V");
+
+            if (criticalCount > 0 || warningCount > 0)
+                AddTooltipRow(tooltipPanel, "EN 50122", $"{criticalCount} kritik | {warningCount} uyarı");
+
+            if (devices.Any())
+                AddTooltipRow(tooltipPanel, "Cihaz/Bölge", string.Join(", ", devices));
+
+            return tooltipPanel;
         }
 
         private void DrawLeakMarkers(double scaleFactor)
         {
-            foreach (var el in _leakUIElements)
-            {
-                RailwayCanvas.Children.Remove(el);
-            }
-            _leakUIElements.Clear();
-
             double x0 = 60;
+            var candidates = GetLeakMarkerCandidates();
+            var activeMarkerKeys = new HashSet<string>();
 
-            foreach (var leak in _errorLogs)
+            var markerGroups = candidates
+                .GroupBy(c => new
+                {
+                    Position = Math.Round(c.Location.Position / 10.0, MidpointRounding.AwayFromZero) * 10.0,
+                    TrackType = NormalizeTrackType(c.Location.TrackType)
+                })
+                .OrderBy(g => g.Key.Position)
+                .ToList();
+
+            foreach (var markerGroup in markerGroups)
             {
-                if (!leak.LeakDetected || !leak.LeakPosition.HasValue) continue;
+                double pos = markerGroup.Key.Position;
+                string trackType = markerGroup.Key.TrackType;
+                string markerKey = $"{trackType}|{pos:0}";
+                activeMarkerKeys.Add(markerKey);
 
-                double pos = leak.LeakPosition.Value;
                 double x = x0 + pos * scaleFactor;
-
-                var matchingLeak = leak.LeakLocations
-                    .OrderBy(l => Math.Abs(l.Position - pos))
-                    .FirstOrDefault(l => Math.Abs(l.Position - pos) <= 50)
-                    ?? new LeakLocationInfo
-                    {
-                        Position = pos,
-                        TrackType = _activeTrains
-                            .Where(t => Math.Abs(t.CurrentPosition - pos) <= 80)
-                            .OrderBy(t => Math.Abs(t.CurrentPosition - pos))
-                            .Select(t => t.TrackType)
-                            .FirstOrDefault() ?? "HAT - 1",
-                        TrainStatus = "MOVING"
-                    };
-
-                bool onUpperTrack = matchingLeak.TrackType == "HAT - 1";
+                bool onUpperTrack = trackType == "HAT - 1";
                 double yTop = onUpperTrack ? UP_TRACK_Y - 16 : DOWN_TRACK_Y - 16;
                 double yBottom = onUpperTrack ? UP_TRACK_Y + 16 : DOWN_TRACK_Y + 16;
 
-                var category = string.IsNullOrWhiteSpace(leak.OverallEN50122Category)
-                    ? leak.EffectiveCategory
-                    : leak.OverallEN50122Category;
+                var relatedEntries = candidates
+                    .Where(c => Math.Abs(c.Location.Position - pos) <= 50 &&
+                                NormalizeTrackType(c.Location.TrackType) == trackType)
+                    .ToList();
 
-                var markerBrush = category switch
-                {
-                    "KIRMIZI" => Brushes.Red,
-                    "SARI" => Brushes.Orange,
-                    "YEŞİL" => Brushes.Green,
-                    "NORMAL" => Brushes.Green,
-                    _ => Brushes.Green
-                };
+                if (!relatedEntries.Any())
+                    relatedEntries = markerGroup.ToList();
+
+                var category = GetWorstLeakCategory(relatedEntries);
+                var markerBrush = GetLeakMarkerBrush(category);
 
                 var crossingTrain = _activeTrains
-                    .Where(t => Math.Abs(t.CurrentPosition - pos) <= 60)
+                    .Where(t => Math.Abs(t.CurrentPosition - pos) <= 60 &&
+                                NormalizeTrackType(t.TrackType) == trackType)
                     .OrderBy(t => Math.Abs(t.CurrentPosition - pos))
                     .FirstOrDefault();
 
                 bool isBlinking = crossingTrain != null;
                 bool blinkVisible = !isBlinking || ((DateTime.Now.Millisecond / 250) % 2 == 0);
 
-                var marker = new Line
+                if (!_leakUIElements.TryGetValue(markerKey, out var marker))
                 {
-                    X1 = x,
-                    X2 = x,
-                    Y1 = yTop,
-                    Y2 = yBottom,
-                    Stroke = markerBrush,
-                    StrokeThickness = 3,
-                    StrokeStartLineCap = PenLineCap.Flat,
-                    StrokeEndLineCap = PenLineCap.Flat,
-                    Opacity = blinkVisible ? 1.0 : 0.2,
-                    ToolTip = new ToolTip
+                    marker = new Line
                     {
-                        Content = GetLeakTooltipText(leak, pos) + $"\nRay: {matchingLeak.TrackType}",
-                        Background = Brushes.White,
-                        Foreground = Brushes.Black,
-                        BorderBrush = Brushes.LightGray,
-                        BorderThickness = new Thickness(1),
-                        Padding = new Thickness(8),
-                        MaxWidth = 300
-                    }
-                };
+                        StrokeStartLineCap = PenLineCap.Flat,
+                        StrokeEndLineCap = PenLineCap.Flat,
+                        StrokeThickness = 5,
+                        Cursor = System.Windows.Input.Cursors.Hand,
+                        Tag = markerKey // Popup'ta veri aramak için
+                    };
 
-                Panel.SetZIndex(marker, 35);
-                RailwayCanvas.Children.Add(marker);
-                _leakUIElements.Add(marker);
+                    marker.MouseEnter += LeakMarker_MouseEnter;
+                    marker.MouseLeave += LeakMarker_MouseLeave;
+
+                    Panel.SetZIndex(marker, 35);
+                    RailwayCanvas.Children.Add(marker);
+                    _leakUIElements[markerKey] = marker;
+                }
+
+                marker.X1 = x;
+                marker.X2 = x;
+                marker.Y1 = yTop;
+                marker.Y2 = yBottom;
+                marker.Stroke = markerBrush;
+                marker.Opacity = blinkVisible ? 1.0 : 0.2;
+
+                // Popup verilerini güncelle (marker hover'da okunacak)
+                _leakMarkerData[markerKey] = (relatedEntries, pos, trackType, markerBrush);
+
+                if (!RailwayCanvas.Children.Contains(marker))
+                    RailwayCanvas.Children.Add(marker);
+            }
+
+            foreach (var key in _leakUIElements.Keys.Except(activeMarkerKeys).ToList())
+            {
+                var removedMarker = _leakUIElements[key];
+                removedMarker.MouseEnter -= LeakMarker_MouseEnter;
+                removedMarker.MouseLeave -= LeakMarker_MouseLeave;
+                RailwayCanvas.Children.Remove(removedMarker);
+                _leakUIElements.Remove(key);
+                _leakMarkerData.Remove(key);
             }
         }
+
+        #region KAÇAK BİLGİ POPUP'I
+
+        private void LeakMarker_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is not Line marker || marker.Tag is not string markerKey) return;
+            if (!_leakMarkerData.TryGetValue(markerKey, out var data)) return;
+
+            // Popup içeriğini oluştur
+            LeakPopupContent.Children.Clear();
+            BuildLeakPopupContent(data.Entries, data.Position, data.TrackType, data.AccentBrush);
+
+            // Border rengini kategori rengine ayarla
+            LeakPopupBorder.BorderBrush = data.AccentBrush;
+
+            LeakInfoPopup.PlacementTarget = marker;
+            LeakInfoPopup.IsOpen = true;
+        }
+
+        private void LeakMarker_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            LeakInfoPopup.IsOpen = false;
+        }
+
+        private void BuildLeakPopupContent(List<(VldErrorLog Log, LeakLocationInfo Location)> entries,
+            double meterPosition, string trackType, Brush accentBrush)
+        {
+            var panel = LeakPopupContent;
+            if (!entries.Any())
+            {
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "Kaçak bilgisi bulunamadı",
+                    Margin = new Thickness(14),
+                    Foreground = Brushes.White,
+                    FontFamily = new FontFamily("Segoe UI")
+                });
+                return;
+            }
+
+            var logs = entries.Select(e => e.Log).Distinct().OrderByDescending(l => l.Timestamp).ToList();
+            var firstTime = logs.Last().Timestamp;
+            var lastTime = logs.First().Timestamp;
+            var historyDuration = lastTime - firstTime;
+            var category = GetWorstLeakCategory(entries);
+
+            var nearestStation = _stations
+                .OrderBy(s => Math.Abs(s.GridX - meterPosition))
+                .FirstOrDefault();
+
+            var nearestDcStation = VldErrorLog.GetNearestDcStationName(meterPosition);
+            var nearestDcStationDistance = VldErrorLog.GetNearestDcStationDistance(meterPosition);
+
+            // ─── BAŞLIK ───
+            var headerPanel = new StackPanel
+            {
+                Background = new SolidColorBrush(Color.FromArgb(220, 0x16, 0x16, 0x25)),
+                Margin = new Thickness(0)
+            };
+
+            var headerBar = new Border
+            {
+                Background = accentBrush,
+                CornerRadius = new CornerRadius(7, 7, 0, 0),
+                Padding = new Thickness(12, 8, 12, 8)
+            };
+
+            var headerContent = new StackPanel { Orientation = Orientation.Horizontal };
+            headerContent.Children.Add(new TextBlock
+            {
+                Text = "⚡ ",
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            headerContent.Children.Add(new TextBlock
+            {
+                Text = $"Kaçak Tespiti — {category}",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                FontFamily = new FontFamily("Segoe UI Semibold"),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            // Tekrar sayısı badge
+            int totalRepeat = Math.Max(
+                logs.Select(l => l.RepeatCount).DefaultIfEmpty(0).Max(),
+                entries.Select(e => e.Location.RepeatCount).DefaultIfEmpty(0).Max());
+            if (totalRepeat > 1)
+            {
+                var badge = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(8, 2, 8, 2),
+                    Margin = new Thickness(8, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                badge.Child = new TextBlock
+                {
+                    Text = $"↺ {totalRepeat}",
+                    FontSize = 11,
+                    Foreground = Brushes.White,
+                    FontFamily = new FontFamily("Segoe UI")
+                };
+                headerContent.Children.Add(badge);
+            }
+
+            headerBar.Child = headerContent;
+            panel.Children.Add(headerBar);
+
+            // ─── KONUM BİLGİLERİ ───
+            var infoPanel = new StackPanel { Margin = new Thickness(14, 10, 14, 6) };
+
+            AddPopupRow(infoPanel, "📍 Metraj", $"{meterPosition:N0} m ({meterPosition / 1000.0:0.000} km)");
+            AddPopupRow(infoPanel, "🛤️ Ray", trackType);
+
+            if (nearestStation != null)
+                AddPopupRow(infoPanel, "🏢 En yakın istasyon",
+                    $"{nearestStation.StationName} ({Math.Abs(nearestStation.GridX - meterPosition):N0} m)");
+
+            AddPopupRow(infoPanel, "⚡ En yakın CER", $"{nearestDcStation} ({nearestDcStationDistance:N0} m)");
+
+            panel.Children.Add(infoPanel);
+            AddPopupSeparator(panel, accentBrush);
+
+            // ─── KAÇAK ZAMANLARI ───
+            var timesPanel = new StackPanel { Margin = new Thickness(14, 6, 14, 6) };
+            timesPanel.Children.Add(new TextBlock
+            {
+                Text = "⏱ Kaçak Zamanları",
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0xCA, 0xF9)),
+                FontFamily = new FontFamily("Segoe UI"),
+                Margin = new Thickness(0, 0, 0, 4)
+            });
+
+            var recentLogs = logs.Take(8).ToList();
+            foreach (var log in recentLogs)
+            {
+                var catColor = log.EffectiveCategory switch
+                {
+                    "KIRMIZI" => Color.FromRgb(0xEF, 0x53, 0x50),
+                    "SARI" => Color.FromRgb(0xFF, 0xC1, 0x07),
+                    _ => Color.FromRgb(0x66, 0xBB, 0x6A)
+                };
+
+                var timeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 1, 0, 1) };
+
+                // Kategori noktası
+                timeRow.Children.Add(new Ellipse
+                {
+                    Width = 8,
+                    Height = 8,
+                    Fill = new SolidColorBrush(catColor),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 6, 0)
+                });
+
+                timeRow.Children.Add(new TextBlock
+                {
+                    Text = $"{log.Timestamp:dd.MM.yyyy HH:mm:ss}",
+                    FontSize = 11,
+                    Foreground = Brushes.White,
+                    FontFamily = new FontFamily("Consolas"),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                // Kategori etiketi
+                var catBadge = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(60, catColor.R, catColor.G, catColor.B)),
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(5, 1, 5, 1),
+                    Margin = new Thickness(6, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                catBadge.Child = new TextBlock
+                {
+                    Text = log.EffectiveCategory,
+                    FontSize = 9,
+                    Foreground = new SolidColorBrush(catColor),
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontWeight = FontWeights.SemiBold
+                };
+                timeRow.Children.Add(catBadge);
+
+                timesPanel.Children.Add(timeRow);
+            }
+
+            if (logs.Count > recentLogs.Count)
+            {
+                timesPanel.Children.Add(new TextBlock
+                {
+                    Text = $"   ... ve {logs.Count - recentLogs.Count} eski kayıt daha",
+                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x78, 0x78, 0x78)),
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontStyle = FontStyles.Italic,
+                    Margin = new Thickness(0, 2, 0, 0)
+                });
+            }
+
+            // Zaman aralığı özeti
+            var durationRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0) };
+            durationRow.Children.Add(new TextBlock
+            {
+                Text = "Aralık: ",
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0xCA, 0xF9)),
+                FontFamily = new FontFamily("Segoe UI"),
+                FontWeight = FontWeights.SemiBold
+            });
+            durationRow.Children.Add(new TextBlock
+            {
+                Text = $"{FormatLeakHistoryDuration(historyDuration)} | {logs.Count} kayıt",
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.FromRgb(0xBB, 0xBB, 0xBB)),
+                FontFamily = new FontFamily("Segoe UI")
+            });
+            timesPanel.Children.Add(durationRow);
+
+            panel.Children.Add(timesPanel);
+            AddPopupSeparator(panel, accentBrush);
+
+            // ─── TREN BİLGİLERİ ───
+            var trainIds = entries
+                .OrderByDescending(e => e.Log.Timestamp)
+                .Select(e => e.Location.TrainId)
+                .Where(id => id > 0)
+                .Distinct()
+                .Take(4)
+                .ToList();
+
+            if (!trainIds.Any())
+            {
+                var logTrainId = logs.Select(l => l.LeakTrainId).FirstOrDefault(id => id.HasValue && id.Value > 0);
+                if (logTrainId.HasValue) trainIds.Add(logTrainId.Value);
+            }
+
+            var trainPanel = new StackPanel { Margin = new Thickness(14, 6, 14, 6) };
+            var trainText = trainIds.Any()
+                ? string.Join(", ", trainIds.Select(id => $"Tren {id}"))
+                : "Bilinmiyor";
+
+            var trainStatusText = entries
+                .Select(e => FormatTrainStatus(e.Location.TrainStatus))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(3)
+                .ToList();
+
+            AddPopupRow(trainPanel, "🚆 Tren", trainStatusText.Any()
+                ? $"{trainText} ({string.Join(", ", trainStatusText)})"
+                : trainText);
+
+            // EN 50122 ölçüm bilgileri
+            var allAffectedDevices = logs.SelectMany(l => l.AffectedDevices).ToList();
+            double maxTouchVoltage = Math.Max(
+                logs.Max(l => l.MaxTouchVoltage),
+                allAffectedDevices.Select(d => d.TouchVoltage).DefaultIfEmpty(0).Max());
+            double maxTouchDuration = Math.Max(
+                logs.Max(l => l.MaxTouchVoltageDuration),
+                allAffectedDevices.Select(d => d.Duration).DefaultIfEmpty(0).Max());
+            double maxGroundCurrent = Math.Max(
+                logs.Max(l => l.MaxGroundCurrent),
+                allAffectedDevices.Select(d => d.GroundCurrent).DefaultIfEmpty(0).Max());
+
+            // İzin verilen dokunma gerilimi (EN 50122-1 Çizelge 6)
+            double allowedVoltage = EN50122Analyzer.GetAllowedTouchVoltage(maxTouchDuration);
+            double voltageRatio = allowedVoltage > 0 ? (maxTouchVoltage / allowedVoltage) * 100.0 : 0;
+
+            AddPopupRow(trainPanel, "⚡ Dokunma gerilimi",
+                $"{maxTouchVoltage:N0} V / {maxTouchDuration:F2} sn");
+            AddPopupRow(trainPanel, "📏 EN 50122 limiti",
+                $"{allowedVoltage:N0} V (Oran: %{voltageRatio:F1})");
+            AddPopupRow(trainPanel, "🌍 Toprak akımı", $"{maxGroundCurrent:N1} A");
+
+            double maxDcDeviation = logs.Select(l => l.MaxDcVoltageDeviation).DefaultIfEmpty(0).Max();
+            if (maxDcDeviation > 0)
+                AddPopupRow(trainPanel, "🔋 DC sapma", $"{maxDcDeviation:N0} V");
+
+            int criticalCount = logs.Sum(l => l.CriticalViolationCount);
+            int warningCount = logs.Sum(l => l.WarningViolationCount);
+            if (criticalCount > 0 || warningCount > 0)
+            {
+                var violationColor = criticalCount > 0
+                    ? new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50))
+                    : new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x07));
+                AddPopupRow(trainPanel, "🚨 EN 50122",
+                    $"{criticalCount} kritik | {warningCount} uyarı", violationColor);
+            }
+
+            // Cihaz/bölge bilgisi
+            var devices = logs
+                .SelectMany(l => l.AffectedDevices)
+                .Select(d => string.IsNullOrWhiteSpace(d.DeviceId) ? d.StationName : d.DeviceId)
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(4)
+                .ToList();
+
+            if (devices.Any())
+                AddPopupRow(trainPanel, "🔧 Cihaz/Bölge", string.Join(", ", devices));
+
+            panel.Children.Add(trainPanel);
+
+            // ─── ALT BİLGİ ÇUBUĞU ───
+            var footerBar = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(80, 0x42, 0xA5, 0xF5)),
+                CornerRadius = new CornerRadius(0, 0, 7, 7),
+                Padding = new Thickness(12, 5, 12, 5)
+            };
+            footerBar.Child = new TextBlock
+            {
+                Text = $"İlk: {firstTime:HH:mm:ss} → Son: {lastTime:HH:mm:ss} | {FormatLeakHistoryDuration(historyDuration)}",
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.FromRgb(0xBB, 0xDE, 0xFB)),
+                FontFamily = new FontFamily("Segoe UI"),
+                TextAlignment = TextAlignment.Center
+            };
+            panel.Children.Add(footerBar);
+        }
+
+        private void AddPopupRow(StackPanel panel, string label, string value, Brush? valueBrush = null)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
+            row.Children.Add(new TextBlock
+            {
+                Text = label + "  ",
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0xCA, 0xF9)),
+                FontFamily = new FontFamily("Segoe UI"),
+                MinWidth = 135
+            });
+            row.Children.Add(new TextBlock
+            {
+                Text = value,
+                FontSize = 11,
+                Foreground = valueBrush ?? Brushes.White,
+                FontFamily = new FontFamily("Segoe UI"),
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 300
+            });
+            panel.Children.Add(row);
+        }
+
+        private void AddPopupSeparator(StackPanel panel, Brush accentBrush)
+        {
+            panel.Children.Add(new Border
+            {
+                Height = 1,
+                Margin = new Thickness(14, 2, 14, 2),
+                Background = new SolidColorBrush(Color.FromArgb(40, 0xFF, 0xFF, 0xFF))
+            });
+        }
+
+        #endregion
 
         private void UpdateTrainsUI(double scaleFactor)
         {
@@ -2790,7 +3508,10 @@ namespace VldDataVisualizer.Views
             // Üst hat gölgesi
             var upGlow = new Line
             {
-                X1 = x0, Y1 = UP_TRACK_Y, X2 = x0 + scaledLength, Y2 = UP_TRACK_Y,
+                X1 = x0,
+                Y1 = UP_TRACK_Y,
+                X2 = x0 + scaledLength,
+                Y2 = UP_TRACK_Y,
                 Stroke = new SolidColorBrush(Color.FromArgb(60, 66, 165, 245)),
                 StrokeThickness = 12
             };
@@ -2799,7 +3520,10 @@ namespace VldDataVisualizer.Views
             // Üst hat çizgisi
             var upTrack = new Line
             {
-                X1 = x0, Y1 = UP_TRACK_Y, X2 = x0 + scaledLength, Y2 = UP_TRACK_Y,
+                X1 = x0,
+                Y1 = UP_TRACK_Y,
+                X2 = x0 + scaledLength,
+                Y2 = UP_TRACK_Y,
                 Stroke = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
                 StrokeThickness = 4,
                 StrokeDashArray = new DoubleCollection { 20, 3 }
@@ -2809,7 +3533,10 @@ namespace VldDataVisualizer.Views
             // Alt hat gölgesi
             var downGlow = new Line
             {
-                X1 = x0, Y1 = DOWN_TRACK_Y, X2 = x0 + scaledLength, Y2 = DOWN_TRACK_Y,
+                X1 = x0,
+                Y1 = DOWN_TRACK_Y,
+                X2 = x0 + scaledLength,
+                Y2 = DOWN_TRACK_Y,
                 Stroke = new SolidColorBrush(Color.FromArgb(60, 239, 83, 80)),
                 StrokeThickness = 12
             };
@@ -2818,7 +3545,10 @@ namespace VldDataVisualizer.Views
             // Alt hat çizgisi
             var downTrack = new Line
             {
-                X1 = x0, Y1 = DOWN_TRACK_Y, X2 = x0 + scaledLength, Y2 = DOWN_TRACK_Y,
+                X1 = x0,
+                Y1 = DOWN_TRACK_Y,
+                X2 = x0 + scaledLength,
+                Y2 = DOWN_TRACK_Y,
                 Stroke = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
                 StrokeThickness = 4,
                 StrokeDashArray = new DoubleCollection { 20, 3 }
@@ -2835,7 +3565,10 @@ namespace VldDataVisualizer.Views
             // İstasyon dikey bağlantı çizgisi (iki hat arasında)
             var connector = new Line
             {
-                X1 = xPos, Y1 = topY, X2 = xPos, Y2 = botY,
+                X1 = xPos,
+                Y1 = topY,
+                X2 = xPos,
+                Y2 = botY,
                 Stroke = new SolidColorBrush(Color.FromRgb(0xBD, 0xBD, 0xBD)),
                 StrokeThickness = 1.5,
                 StrokeDashArray = new DoubleCollection { 4, 3 }
@@ -2845,9 +3578,11 @@ namespace VldDataVisualizer.Views
             // Üst peron marker (yuvarlak)
             var upMarker = new Ellipse
             {
-                Width = 12, Height = 12,
+                Width = 12,
+                Height = 12,
                 Fill = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
-                Stroke = Brushes.White, StrokeThickness = 2
+                Stroke = Brushes.White,
+                StrokeThickness = 2
             };
             Canvas.SetLeft(upMarker, xPos - 6);
             Canvas.SetTop(upMarker, UP_TRACK_Y - 6);
@@ -2857,9 +3592,11 @@ namespace VldDataVisualizer.Views
             // Alt peron marker (yuvarlak)
             var downMarker = new Ellipse
             {
-                Width = 12, Height = 12,
+                Width = 12,
+                Height = 12,
                 Fill = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
-                Stroke = Brushes.White, StrokeThickness = 2
+                Stroke = Brushes.White,
+                StrokeThickness = 2
             };
             Canvas.SetLeft(downMarker, xPos - 6);
             Canvas.SetTop(downMarker, DOWN_TRACK_Y - 6);
@@ -2984,7 +3721,7 @@ namespace VldDataVisualizer.Views
         private void UpdateTrainUI(Border body, TrainInfo train, double scaleFactor)
         {
             double xPos = 60 + (train.CurrentPosition * scaleFactor);
-            
+
             // Ekran dışındaysa gizle
             if (xPos < -60 || xPos > CANVAS_WIDTH + 60)
             {
@@ -3020,7 +3757,7 @@ namespace VldDataVisualizer.Views
 
             body.Background = new SolidColorBrush(trainBodyColor);
             body.BorderBrush = new SolidColorBrush(trainBorderColor);
-            
+
             if (body.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
             {
                 shadow.Color = trainBodyColor;
@@ -3102,6 +3839,147 @@ namespace VldDataVisualizer.Views
 
                 tooltip.Content = tooltipPanel;
             }
+
+            // 2. KAÇAK KONTROLÜ: Tren kaçak bölgesinde mi?
+            bool isInLeak = IsTrainInActiveLeakZone(train.CurrentPosition, train.TrackType);
+
+            if (isInLeak)
+            {
+                // Kaçak bölgesindeki tren için yanıp sönme (Blink / Pulsate) animasyonu
+                if (body.Tag as string != "ANIMATING_LEAK")
+                {
+                    body.Tag = "ANIMATING_LEAK";
+
+                    body.BorderBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x17, 0x44)); // Parlak Kırmızı
+                    body.BorderThickness = new Thickness(2.5);
+
+                    if (body.Effect is System.Windows.Media.Effects.DropShadowEffect leakGlow)
+                    {
+                        leakGlow.Color = Color.FromRgb(0xFF, 0x17, 0x44);
+                        leakGlow.BlurRadius = 24;
+                        leakGlow.Opacity = 1.0;
+                    }
+
+                    // Opacity Yanıp Sönme Animasyonu
+                    var blinkAnim = new System.Windows.Media.Animation.DoubleAnimation
+                    {
+                        From = 1.0,
+                        To = 0.25,
+                        Duration = TimeSpan.FromMilliseconds(350),
+                        AutoReverse = true,
+                        RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+                    };
+                    body.BeginAnimation(UIElement.OpacityProperty, blinkAnim);
+                }
+
+                // 3. Trenin üstünde 5 saniyeliğine metre bilgisi pop-up rozeti göster
+                ShowTrainLeakMeterBadge(train, scaleFactor, xPos, yPos);
+            }
+            else
+            {
+                // Kaçak bittiyse veya tren bölgeden çıktıysa animasyonu durdur
+                if (body.Tag as string == "ANIMATING_LEAK")
+                {
+                    body.Tag = null;
+                    body.BeginAnimation(UIElement.OpacityProperty, null);
+                    body.Opacity = 1.0;
+                    body.BorderThickness = new Thickness(1.5);
+                }
+            }
+        }
+
+        private bool IsTrainInActiveLeakZone(double trainPosition, string? trackType)
+        {
+            // Son 15 saniyedeki aktif kaçak loglarını kontrol et
+            DateTime cutoff = DateTime.Now.AddSeconds(-15);
+            foreach (var leak in _errorLogs.Take(12))
+            {
+                if (leak.Timestamp < cutoff || !leak.LeakDetected) continue;
+
+                foreach (var loc in leak.LeakLocations)
+                {
+                    if (string.Equals(NormalizeTrackType(loc.TrackType), NormalizeTrackType(trackType), StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (Math.Abs(trainPosition - loc.Position) <= 250.0)
+                            return true;
+                    }
+                }
+
+                if (leak.LeakPosition.HasValue && Math.Abs(trainPosition - leak.LeakPosition.Value) <= 250.0)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void ShowTrainLeakMeterBadge(TrainInfo train, double scaleFactor, double xPos, double yPos)
+        {
+            // Son 6 saniye içinde bu tren için zaten rozet açıldıysa mükerrer açma
+            if (_trainLeakBadgeShownTimes.TryGetValue(train.TrainId, out DateTime lastShown) &&
+                (DateTime.Now - lastShown).TotalSeconds < 6.0)
+            {
+                // Varsa konumunu trenle birlikte güncelle
+                if (_activeLeakTrainBadges.TryGetValue(train.TrainId, out var existingBadge))
+                {
+                    Canvas.SetLeft(existingBadge, xPos - 38);
+                    Canvas.SetTop(existingBadge, yPos - 36);
+                }
+                return;
+            }
+
+            _trainLeakBadgeShownTimes[train.TrainId] = DateTime.Now;
+
+            // Şık 5 saniyelik Metre Bilgi Balonu
+            var badge = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0xF0, 0xD5, 0x00, 0x00)), // Canlı Kırmızı
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xD7, 0x00)),      // Altın Sarısı
+                BorderThickness = new Thickness(1.5),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(7, 3, 7, 3),
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 8,
+                    ShadowDepth = 2,
+                    Opacity = 0.75
+                }
+            };
+
+            var badgeText = new TextBlock
+            {
+                Text = $"⚡ {train.CurrentPosition:N0} m ({train.TrainName})",
+                FontSize = 10,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                FontFamily = new FontFamily("Segoe UI"),
+                TextAlignment = TextAlignment.Center
+            };
+            badge.Child = badgeText;
+
+            Canvas.SetLeft(badge, xPos - 38);
+            Canvas.SetTop(badge, yPos - 36);
+            Panel.SetZIndex(badge, 999);
+
+            RailwayCanvas.Children.Add(badge);
+            _activeLeakTrainBadges[train.TrainId] = badge;
+
+            // 5 saniye animasyonu: İlk 4 saniye tam görünür, 4-5. saniyede fade out ile yok olur
+            var fadeOutAnim = new System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames();
+            fadeOutAnim.KeyFrames.Add(new System.Windows.Media.Animation.DiscreteDoubleKeyFrame(1.0, TimeSpan.FromSeconds(0)));
+            fadeOutAnim.KeyFrames.Add(new System.Windows.Media.Animation.DiscreteDoubleKeyFrame(1.0, TimeSpan.FromSeconds(4.0)));
+            fadeOutAnim.KeyFrames.Add(new System.Windows.Media.Animation.LinearDoubleKeyFrame(0.0, TimeSpan.FromSeconds(5.0)));
+
+            fadeOutAnim.Completed += (s, e) =>
+            {
+                RailwayCanvas.Children.Remove(badge);
+                if (_activeLeakTrainBadges.TryGetValue(train.TrainId, out var b) && b == badge)
+                {
+                    _activeLeakTrainBadges.Remove(train.TrainId);
+                }
+            };
+
+            badge.BeginAnimation(UIElement.OpacityProperty, fadeOutAnim);
         }
 
         private void AddTooltipRow(StackPanel panel, string label, string value)
@@ -3121,7 +3999,9 @@ namespace VldDataVisualizer.Views
                 Text = value,
                 FontSize = 11,
                 Foreground = Brushes.White,
-                FontFamily = new FontFamily("Segoe UI")
+                FontFamily = new FontFamily("Segoe UI"),
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 280
             });
             panel.Children.Add(row);
         }
@@ -3135,8 +4015,10 @@ namespace VldDataVisualizer.Views
 
                 var line = new Line
                 {
-                    X1 = x, Y1 = UP_TRACK_Y - 30,
-                    X2 = x, Y2 = DOWN_TRACK_Y + 40,
+                    X1 = x,
+                    Y1 = UP_TRACK_Y - 30,
+                    X2 = x,
+                    Y2 = DOWN_TRACK_Y + 40,
                     Stroke = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                     StrokeThickness = 1,
                     StrokeDashArray = new DoubleCollection { 4, 4 }
@@ -3146,8 +4028,10 @@ namespace VldDataVisualizer.Views
                 // Kilometre çentiği (üstte)
                 var tick = new Line
                 {
-                    X1 = x, Y1 = DOWN_TRACK_Y + 40,
-                    X2 = x, Y2 = DOWN_TRACK_Y + 48,
+                    X1 = x,
+                    Y1 = DOWN_TRACK_Y + 40,
+                    X2 = x,
+                    Y2 = DOWN_TRACK_Y + 48,
                     Stroke = new SolidColorBrush(Color.FromRgb(0xBD, 0xBD, 0xBD)),
                     StrokeThickness = 1.5
                 };
@@ -3168,8 +4052,10 @@ namespace VldDataVisualizer.Views
             // Alt cetvel çizgisi
             var ruler = new Line
             {
-                X1 = 60, Y1 = DOWN_TRACK_Y + 45,
-                X2 = 60 + (TOTAL_TRACK_LENGTH * scaleFactor), Y2 = DOWN_TRACK_Y + 45,
+                X1 = 60,
+                Y1 = DOWN_TRACK_Y + 45,
+                X2 = 60 + (TOTAL_TRACK_LENGTH * scaleFactor),
+                Y2 = DOWN_TRACK_Y + 45,
                 Stroke = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                 StrokeThickness = 1
             };
@@ -3304,15 +4190,19 @@ namespace VldDataVisualizer.Views
 
         private void ShowStatusMessage(string message, StatusType type)
         {
-            if (type == StatusType.Error || type == StatusType.Emergency)
-                ShowToastNotification(message, isError: true);
+            string category = type switch
+            {
+                StatusType.Emergency or StatusType.Error => "KIRMIZI",
+                StatusType.Warning => "SARI",
+                _ => "YEŞİL"
+            };
+            ShowToastNotification(message, category);
         }
 
         private System.Threading.CancellationTokenSource? _toastCts;
 
-        private void ShowToastNotification(string message, bool isError = false)
+        private void ShowToastNotification(string message, string category = "NORMAL")
         {
-            // Önceki toast timer'ını iptal et
             _toastCts?.Cancel();
             _toastCts = new System.Threading.CancellationTokenSource();
             var token = _toastCts.Token;
@@ -3321,24 +4211,40 @@ namespace VldDataVisualizer.Views
             {
                 ToastNotificationText.Text = message;
 
-                var severity = isError ? "KIRMIZI" : message.Contains("SARI", StringComparison.OrdinalIgnoreCase) ? "SARI" : "NORMAL";
-
-                Color bgColor = severity switch
+                string normalizedCategory = category.ToUpperInvariant();
+                if (normalizedCategory != "KIRMIZI" && normalizedCategory != "SARI" && normalizedCategory != "YEŞİL")
                 {
-                    "KIRMIZI" => Color.FromRgb(0xB0, 0x00, 0x20),
-                    "SARI" => Color.FromRgb(0xD9, 0x8A, 0x00),
-                    _ => Color.FromRgb(0x1B, 0x7A, 0x3A)
+                    if (message.Contains("KIRMIZI", StringComparison.OrdinalIgnoreCase) || message.Contains("KRİTİK", StringComparison.OrdinalIgnoreCase))
+                        normalizedCategory = "KIRMIZI";
+                    else if (message.Contains("SARI", StringComparison.OrdinalIgnoreCase) || message.Contains("UYARI", StringComparison.OrdinalIgnoreCase))
+                        normalizedCategory = "SARI";
+                    else
+                        normalizedCategory = "YEŞİL";
+                }
+
+                Color bgColor = normalizedCategory switch
+                {
+                    "KIRMIZI" => Color.FromRgb(0xC6, 0x28, 0x28), // Kırmızı (#C62828)
+                    "SARI" => Color.FromRgb(0xE6, 0x8A, 0x00),    // Belirgin Sarı/Turuncu (#E68A00)
+                    _ => Color.FromRgb(0x2E, 0x7D, 0x32)          // Yeşil (#2E7D32)
+                };
+
+                Color borderColor = normalizedCategory switch
+                {
+                    "KIRMIZI" => Color.FromRgb(0xFF, 0x52, 0x52),
+                    "SARI" => Color.FromRgb(0xFF, 0xD7, 0x00),
+                    _ => Color.FromRgb(0x81, 0xC7, 0x84)
                 };
 
                 ToastNotificationBorder.Background = new SolidColorBrush(bgColor);
-                ToastNotificationBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF));
-                ToastNotificationBorder.BorderThickness = new Thickness(1.5);
+                ToastNotificationBorder.BorderBrush = new SolidColorBrush(borderColor);
+                ToastNotificationBorder.BorderThickness = new Thickness(2.0);
                 ToastNotificationText.Foreground = Brushes.White;
                 ToastNotificationBorder.Visibility = Visibility.Visible;
             });
 
-            // 5 saniye sonra gizle
-            System.Threading.Tasks.Task.Delay(10000, token).ContinueWith(t =>
+            // 8 saniye sonra gizle
+            System.Threading.Tasks.Task.Delay(8000, token).ContinueWith(t =>
             {
                 if (!t.IsCanceled)
                 {
@@ -3357,20 +4263,98 @@ namespace VldDataVisualizer.Views
         private Dictionary<string, int> _errorRepeatCounts = new();
         private ObservableCollection<VldErrorLog> _errorLogs = new();
         private const string LOG_FILE = "VLD_TFPR_ErrorLog.txt";
-
+        private ICollectionView? _errorLogView;
         private bool _isLogPanelOpen = false;
 
         private void ToggleLogPanel(bool open)
         {
             _isLogPanelOpen = open;
-
-            ErrorSummaryGrid.ItemsSource = _errorLogs;
-            ErrorSummaryGrid.Items.Refresh();
-            ErrorSummaryGrid.Items.SortDescriptions.Clear();
-            ErrorSummaryGrid.Items.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            ConfigureErrorLogView();
         }
 
-        // GridSplitter'ı bulmak için yardımcı metod
+        private void ConfigureErrorLogView()
+        {
+            if (!IsInitialized)
+                return;
+
+            _errorLogView ??= CollectionViewSource.GetDefaultView(_errorLogs);
+            _errorLogView.SortDescriptions.Clear();
+            _errorLogView.SortDescriptions.Add(new SortDescription(nameof(VldErrorLog.Timestamp), ListSortDirection.Descending));
+            _errorLogView.Filter = IsLogVisible;
+            ErrorLogList.ItemsSource = _errorLogView;
+            UpdateLogStationFilterOptions();
+            _errorLogView.Refresh();
+        }
+
+        private bool IsLogVisible(object item)
+        {
+            if (item is not VldErrorLog log)
+                return false;
+
+            string category = (LogCategoryComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty;
+            if (category is not ("Tüm kategoriler" or null or "") && log.EffectiveCategory != category)
+                return false;
+
+            string station = (LogStationComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty;
+            if (station is not ("Tüm istasyonlar" or null or "") && !log.StationNames.Contains(station, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (CriticalOnlyCheckBox.IsChecked == true && log.EffectiveCategory != "KIRMIZI")
+                return false;
+
+            string search = LogSearchTextBox.Text.Trim();
+            if (search.Length > 0 && !string.Join(" ", log.StationNames, log.EffectiveCategory, log.LeakDisplay, log.EN50122Summary)
+                .Contains(search, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (LogTimeRangeComboBox.SelectedIndex == 1 && log.Timestamp < DateTime.Now.AddHours(-1))
+                return false;
+            if (LogTimeRangeComboBox.SelectedIndex == 2 && log.Timestamp < DateTime.Now.AddHours(-24))
+                return false;
+
+            return true;
+        }
+
+        private void UpdateLogStationFilterOptions()
+        {
+            if (LogStationComboBox == null)
+                return;
+
+            string? selectedStation = (LogStationComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var stations = _errorLogs
+                .SelectMany(log => log.StationNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(station => station)
+                .ToList();
+
+            LogStationComboBox.Items.Clear();
+            LogStationComboBox.Items.Add(new ComboBoxItem { Content = "Tüm istasyonlar" });
+            foreach (string station in stations)
+                LogStationComboBox.Items.Add(new ComboBoxItem { Content = station });
+
+            int selectedIndex = selectedStation == null ? 0 : LogStationComboBox.Items
+                .Cast<ComboBoxItem>()
+                .ToList()
+                .FindIndex(item => string.Equals(item.Content?.ToString(), selectedStation, StringComparison.OrdinalIgnoreCase));
+            LogStationComboBox.SelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        }
+
+        private void LogFilterChanged(object sender, RoutedEventArgs e)
+        {
+            _errorLogView?.Refresh();
+        }
+
+        private void LogSelectionFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _errorLogView?.Refresh();
+        }
+
+        private void ErrorLogList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ErrorLogList.SelectedItem is VldErrorLog selectedLog)
+                ErrorLogList.ScrollIntoView(selectedLog);
+        }
+
         private T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             if (parent == null) return null;
@@ -3390,121 +4374,37 @@ namespace VldDataVisualizer.Views
             return null;
         }
 
-        private string GetVoltageCategory(double dcVoltage)
-        {
-            // Müsaade edilebilir limitleri al
-            double longLimit = GetLongTermLimit(dcVoltage);
-            double shortLimit = GetShortTermLimit(dcVoltage);
-
-            // KIRMIZI — kısa süreli limit aşıldı
-            if (dcVoltage > shortLimit)
-                return "KIRMIZI";
-
-            // SARI — uzun süreli limit aşıldı ama kısa süreli aşılmadı
-            if (dcVoltage > longLimit)
-                return "SARI";
-
-            // NORMAL — hiçbir limiti aşmıyor
-            return "NORMAL";
-        }
-
-        private double GetAllowedDuration(double voltage)
-        {
-            // Uzun ve kısa süreli limitleri al
-            double longLimit = GetLongTermLimit(voltage);
-            double shortLimit = GetShortTermLimit(voltage);
-
-            // Eğer kısa süreli limiti aşmış → hiç bekleme yok → anında alarm
-            if (voltage > shortLimit)
-                return 0.0;
-
-            // Eğer uzun süreli limiti aşmış → cuma süresine bak
-            if (voltage > longLimit)
-            {
-                // Tabloya göre uzun süreli bölge → zaman = 0.7 s
-                return 0.7;
-            }
-
-            // Hiçbir limit aşılmamış → anomali yok
-            return double.MaxValue;
-        }
-
-        private double GetLongTermLimit(double voltage)
-        {
-            // Uzun süreli limit 300V / 120V gibi sabittir
-            if (voltage > 300) return 120;
-            return 150;
-        }
-
-        private double GetShortTermLimit(double voltage)
-        {
-            // Kısa süreli limit aşağıdaki tabloya göre
-
-            // (t, Ute_kısa)
-            var table = new (double t, double u)[]
-            {
-        (0.7, 350),
-        (0.6, 360),
-        (0.5, 385),
-        (0.4, 420),
-        (0.3, 460),
-        (0.2, 520),
-        (0.1, 625),
-        (0.05, 735),
-        (0.02, 870)
-            };
-
-            // En düşük limit seçilir (yani gereksinim daha katı)
-            double minShort = table.Min(row => row.u);
-            return minShort;
-        }
-
         private int CalculateRepeatCount(List<EN50122AnomalyDevice> anomalyDevices)
         {
-            // Tren konumlarına göre tekrar sayısını hesapla
             int totalRepeatCount = 0;
-
-            // Tüm aktif trenleri al
             var activeTrains = _activeTrains.ToList();
 
-            // Her anomali cihazı için
             foreach (var device in anomalyDevices)
             {
-                // Bu cihazın kontrol bölgesindeki trenleri bul
                 var trainsInSection = activeTrains
                     .Where(train =>
                         train.CurrentPosition >= Math.Min(device.StartPosition, device.EndPosition) &&
                         train.CurrentPosition <= Math.Max(device.StartPosition, device.EndPosition))
                     .ToList();
 
-                // Her trenin konumuna göre tekrar sayısını hesapla
                 foreach (var train in trainsInSection)
                 {
-                    // Konumu metre cinsinden yuvarla (örn: 12554.3)
                     double roundedPosition = Math.Round(train.CurrentPosition, 1);
-
-                    // Anahtar: Tren konumu + Hata kategorisi
-                    string category = GetVoltageCategory(device.DcVoltage);
+                    string category = device.OverallCategory ?? "SARI";
                     string positionKey = $"{roundedPosition:N1}_{category}";
 
-                    // Eski Dictionary'yi kullanmaya devam et
                     if (!_errorRepeatCounts.ContainsKey(positionKey))
                     {
                         _errorRepeatCounts[positionKey] = 0;
                     }
 
-                    // Tekrar sayısını artır
                     _errorRepeatCounts[positionKey]++;
-
-                    // En yüksek tekrar sayısını sakla
                     totalRepeatCount = Math.Max(totalRepeatCount, _errorRepeatCounts[positionKey]);
                 }
             }
 
-            // Eğer hiç tren yoksa veya hata yoksa, mevcut mantığa dön
             if (totalRepeatCount == 0 && anomalyDevices.Any())
             {
-                // Eski mantık (konum bazlı)
                 string positionKey = string.Join("|",
                     anomalyDevices.Select(d => $"{d.StartPosition:N0}-{d.EndPosition:N0}"));
 
@@ -3520,13 +4420,11 @@ namespace VldDataVisualizer.Views
             return totalRepeatCount;
         }
 
-        // Aç/Kapa butonu
         private void OpenErrorLogWindow_Click(object sender, RoutedEventArgs e)
         {
             ToggleLogPanel(!_isLogPanelOpen);
         }
 
-        // Kapat butonu
         private void CloseLogPanel_Click(object sender, RoutedEventArgs e)
         {
             ToggleLogPanel(false);
@@ -3551,10 +4449,7 @@ namespace VldDataVisualizer.Views
                 _voltageStartTimes.Clear();
                 _errorRepeatCounts.Clear();
 
-                // DataGrid'i yenile
-                ErrorSummaryGrid.ItemsSource = null;
-                ErrorSummaryGrid.ItemsSource = _errorLogs;
-                ErrorSummaryGrid.Items.Refresh();
+                ConfigureErrorLogView();
             }
         }
         #endregion
@@ -3564,94 +4459,9 @@ namespace VldDataVisualizer.Views
         private Dictionary<int, DateTime> _faultStartTimes = new Dictionary<int, DateTime>();
         private Dictionary<int, double> _faultDurations = new Dictionary<int, double>();
 
-        // EN 50122-1 Çizelge 6: Dokunma gerilimi limitleri
-        private static readonly List<(double timeS, double longTermV, double shortTermV)> _touchVoltageLimits = new()
-        {
-            // Zaman (s) | Uzun Süreli (V) | Kısa Süreli (V)
-            (double.MaxValue, 120, 0),      // > 300 s
-            (300, 150, 0),                  // 300 s
-            (1, 160, 0),                    // 1 s
-            (0.9, 165, 0),                  // 0.9 s
-            (0.8, 170, 0),                  // 0.8 s
-            (0.7, 175, 0),                  // 0.7 s
-            (0.6, 0, 360),                  // 0.6 s (kısa süreli)
-            (0.5, 0, 385),                  // 0.5 s
-            (0.4, 0, 420),                  // 0.4 s
-            (0.3, 0, 460),                  // 0.3 s
-            (0.2, 0, 520),                  // 0.2 s
-            (0.1, 0, 625),                  // 0.1 s
-            (0.05, 0, 735),                 // 0.05 s
-            (0.02, 0, 870),                 // 0.02 s
-        };
-
-        private string GetTouchVoltageCategory(double touchVoltage, double duration)
-        {
-            var limits = GetTouchVoltageLimits(duration);
-
-            if (touchVoltage > limits.shortTermLimit && limits.shortTermLimit > 0)
-                return "KIRMIZI";
-
-            if (touchVoltage > limits.longTermLimit && limits.longTermLimit > 0)
-                return "SARI";
-
-            return "NORMAL";
-        }
-
-        private (double longTermLimit, double shortTermLimit) GetTouchVoltageLimits(double duration)
-        {
-            foreach (var limit in _touchVoltageLimits.OrderBy(l => l.timeS))
-            {
-                if (duration <= limit.timeS)
-                    return (limit.longTermV, limit.shortTermV);
-            }
-
-            return (120, 0);
-        }
-
-        private string GetDcVoltageCategory(double dcVoltage)
-        {
-            // EN 50122-1'e göre DC cer sistemleri için gerilim limitleri
-            const double NOMINAL_DC_VOLTAGE = 1500.0; // V
-            const double NORMAL_TOLERANCE_PERCENT = 20.0; // %20
-            const double WARNING_TOLERANCE_PERCENT = 30.0; // %30
-
-            double normalMin = NOMINAL_DC_VOLTAGE * (1 - NORMAL_TOLERANCE_PERCENT / 100);
-            double normalMax = NOMINAL_DC_VOLTAGE * (1 + NORMAL_TOLERANCE_PERCENT / 100);
-            double warningMin = NOMINAL_DC_VOLTAGE * (1 - WARNING_TOLERANCE_PERCENT / 100);
-            double warningMax = NOMINAL_DC_VOLTAGE * (1 + WARNING_TOLERANCE_PERCENT / 100);
-
-            // ALARM (KIRMIZI) - %30'dan fazla sapma
-            if (dcVoltage < warningMin || dcVoltage > warningMax)
-                return "KIRMIZI";
-
-            // WARNING (SARI) - %20-%30 arası sapma
-            if (dcVoltage < normalMin || dcVoltage > normalMax)
-                return "SARI";
-
-            // NORMAL - %20 içinde
-            return "NORMAL";
-        }
-
-        private string GetGroundCurrentCategory(double groundCurrent)
-        {
-            const double NORMAL_LIMIT = 5.0;     // A
-            const double WARNING_LIMIT = 10.0;   // A
-
-            if (groundCurrent > WARNING_LIMIT)
-                return "KIRMIZI";
-
-            if (groundCurrent > NORMAL_LIMIT)
-                return "SARI";
-
-            return "NORMAL";
-        }
-
         private void CheckEN50122Compliance(VldData data)
         {
-            // Hata süresini hesapla - sadece gerçek bir hata varsa
             double faultDuration = 0.0;
-
-            // Gerçek bir toprak arızası kontrolü
             bool isRealFault = data.GroundCurrent >= 3.0 && data.TouchVoltage >= 50;
 
             if (isRealFault)
@@ -3668,48 +4478,58 @@ namespace VldDataVisualizer.Views
                 _faultDurations.Remove(data.StationId);
             }
 
-            // EN 50122 analizleri - YENİ FONKSİYONLAR
             string touchVoltageCategory = EN50122Analyzer.GetTouchVoltageCategory(data.TouchVoltage, faultDuration);
             string dcVoltageCategory = EN50122Analyzer.GetDcVoltageCategory(data.DcVoltage);
             string groundCurrentCategory = EN50122Analyzer.GetGroundCurrentCategory(data.GroundCurrent);
 
-            // Genel durum
             string overallStatus = EN50122Analyzer.GetOverallStatus(
                 data.TouchVoltage,
                 faultDuration,
                 data.DcVoltage,
                 data.GroundCurrent);
 
-            // Data'nın status'unu güncelle
             data.Status = overallStatus;
 
-            // Sadece gerçek hatalar için alarm ekle
             if (overallStatus == "KIRMIZI")
             {
-                // Önceki alarmları temizle (aynı tip alarmları)
                 data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122"));
-
-                // Yeni alarm ekle
                 data.ActiveAlarms.Add($"[EN50122-KRİTİK] {data.StationName} - " +
                                    $"UDC: {data.DcVoltage:N0}V ({dcVoltageCategory}), " +
                                    $"Ute: {data.TouchVoltage:N0}V/{faultDuration:F1}s ({touchVoltageCategory}), " +
                                    $"IG: {data.GroundCurrent:N1}A ({groundCurrentCategory})");
             }
-            else if (overallStatus == "SARI" && faultDuration > 1.0) // 1 saniyeden uzun süren uyarılar
+            else if (overallStatus == "SARI" && faultDuration > 1.0)
             {
                 data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122-UYARI"));
-
                 data.ActiveAlarms.Add($"[EN50122-UYARI] {data.StationName} - " +
                                    $"UDC: {data.DcVoltage:N0}V, " +
                                    $"Ute: {data.TouchVoltage:N0}V/{faultDuration:F1}s");
             }
             else if (overallStatus == "NORMAL")
             {
-                // Normal durumda EN50122 alarmlarını temizle
                 data.ActiveAlarms.RemoveAll(a => a.Contains("EN50122"));
             }
         }
 
+        private string GetVoltageCategory(double dcVoltage)
+        {
+            return EN50122Analyzer.GetDcVoltageCategory(dcVoltage);
+        }
+
+        private double GetAllowedDuration(double touchVoltage)
+        {
+            return EN50122Analyzer.GetAllowedDurationForTouchVoltage(touchVoltage);
+        }
+
+        private double GetLongTermLimit(double _)
+        {
+            return EN50122Analyzer.GetAllowedTouchVoltage(300);
+        }
+
+        private double GetShortTermLimit(double duration)
+        {
+            return EN50122Analyzer.GetAllowedTouchVoltage(duration);
+        }
         #endregion
 
         protected override void OnClosed(EventArgs e)

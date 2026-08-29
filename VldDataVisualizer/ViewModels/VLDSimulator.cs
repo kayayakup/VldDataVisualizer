@@ -17,10 +17,11 @@ namespace VldDataVisualizer.ViewModels
         private Dictionary<int, double> _energyCounters = new Dictionary<int, double>();
         private Dictionary<int, double> _reactiveEnergyCounters = new Dictionary<int, double>();
         private Dictionary<int, DateTime?> _leakStartTimes = new Dictionary<int, DateTime?>();
+        private Dictionary<int, bool> _vldThyristorTripped = new Dictionary<int, bool>();
 
-        // ✅ DÜZELTİLDİ: Simülasyon yeşil/sarı uyarılar üretmek üzere ayarlandı
-        private const double _leakThresholdA = 1.2; // sarı uyarı için erken başlatma
-        private const double _touchResistance = 20.0; // daha gerçekçi temas gerilimi için düşürüldü
+        // EN 50122-1 ve Ray Fiziksel Parametreleri
+        private const double _leakThresholdA = 1.0; // 1.0A üzeri kaçak izleme
+        private const double _railResistancePerKm = 0.025; // 60 kg/m paralel çift ray direnci (Ω/km)
 
         // AC SİSTEM - kV cinsinden
         private double _systemLineVoltage = 34.5;
@@ -63,6 +64,7 @@ namespace VldDataVisualizer.ViewModels
                 _reactiveEnergyCounters[i] = 0.0;
                 _deviceDataHistory[i] = new List<VldData>();
                 _leakStartTimes[i] = null;
+                _vldThyristorTripped[i] = false;
             }
         }
 
@@ -150,8 +152,8 @@ namespace VldDataVisualizer.ViewModels
                 newData.THDVoltage = GenerateTHD(stationId);
                 newData.THDCurrent = GenerateTHD(stationId);
 
-                // ✅ DÜZELTİLDİ: TouchVoltage hesaplama
-                newData.TouchVoltage = CalculateTouchVoltage(newData.GroundCurrent);
+                // EN 50122-1 ve Ray Fiziksel Parametrelerine Göre Dokunma Gerilimi
+                newData.TouchVoltage = CalculateTouchVoltage(stationId, newData.GroundCurrent);
 
                 // DC SİSTEM DEĞERLERİ
                 newData.DcVoltage = GenerateDcVoltage(stationId);
@@ -379,20 +381,67 @@ namespace VldDataVisualizer.ViewModels
 
         #region HELPER FUNCTIONS
 
-        private double CalculateTouchVoltage(double groundCurrentA)
+        /*
+         * EN 50122-1, Fiziksel Ray Direnci ve VLD Tristör Koruması Hesaplaması (4 Temel Mühendislik Prensibi):
+         * 1. Fiziksel Ray Direnci & Ohm Kanunu:
+         *    - 2 adet 60 kg/m paralel çelik ray direnci r_ray ≈ 0.025 Ω/km.
+         *    - Cer alt istasyonları arası mesafe 2.0-2.5 km (orta nokta x ≈ 1.2 km).
+         *    - Tren ivmelenme akımı I ≈ 2500-3500 A, çift yönlü beslemede alt istasyon başına I/2 ≈ 1500 A.
+         *    - V_pik = (I/2) * r_ray * x = 1500 A * 0.025 Ω/km * 1.2 km ≈ 45 V - 75 V.
+         *    - Ray eskimeleri, temas dirençleri ve ani yük artışlarıyla bu değer 60V - 90V bandına oturur.
+         * 2. EN 50122-1 İnsan Dokunma Güvenliği Standart Sınırları:
+         *    - Kalıcı/Sürekli limit 120 Vdc (Yolcular için 60 Vdc). Hat tasarımı gerilimi 60V - 90V seviyesinde tutar.
+         * 3. Drenaj ve Sızıntı Diyotlarının (Stray Current) Etkisi:
+         *    - Ray potansiyeli 80V - 90V üzerine çıktığında elastomer pedler, beton traversler ve drenaj diyotları voltaj tırmanmasını frenler.
+         * 4. VLD Panosunun Tetiklenme (Trip) Eşiği:
+         *    - Voltaj 90V'u aşıp 120V eşiğine yaklaşırsa VLD panosu tristörü ateşlenir, ray doğrudan toprağa kısa devre edilir ve voltaj anında 0 V'a indirilir.
+         */
+        private double CalculateTouchVoltage(int stationId, double groundCurrentA)
         {
-            // EN 50122-1 Çizelge 7'ye uygun dokunma gerilimi (Ute) hesabı (AC sistemi)
-            // Ute,azami = Uc1 + Ra1 × Ic1 × 10⁻³
-            // 3A × 50Ω = 150V (uzun süreli limit: 60V-90V aralığında → UYARI)
-            // 10A × 50Ω = 500V (kısa süreli limit aralığında)
-            // EN 50122-1 Çizelge 7 azami kısa süreli dokunma gerilimi: 865 V (0.02s)
-            double ute = groundCurrentA * _touchResistance;
-            return Math.Round(Math.Min(865.0, ute), 1);
+            // 4. VLD Panosu Tristör Koruması: Önceki adımda tetiklendiyse ray topraklanmıştır -> 0 V
+            if (_vldThyristorTripped.ContainsKey(stationId) && _vldThyristorTripped[stationId])
+            {
+                _vldThyristorTripped[stationId] = false; // Tristör söndü/resetlendi
+                return 0.0; // VLD panosu rayı doğrudan toprağa kısa devre etti -> 0 Volt
+            }
+
+            // 1. Fiziksel Ray Direnci ve Çekilen Cer Akımı Hesabı (Ohm Kanunu)
+            // Alt istasyon başına çekilen akım (1200 A - 1750 A)
+            double iHalf = 1200.0 + groundCurrentA * 120.0 + (_random.NextDouble() - 0.5) * 150.0;
+            double rRay = _railResistancePerKm; // 0.025 Ω/km
+            double xDist = 1.2; // km (orta nokta mesafesi)
+
+            // Temel voltaj düşümü: V = (I/2) * r_ray * x (≈ 45V - 65V)
+            double vBase = (iHalf * rRay * xDist);
+            // Ray eskimesi, temas dirençleri ve ani yüklenme artışları (≈ 15V - 25V)
+            double contactAndAging = groundCurrentA * 8.0 + (_random.NextDouble() * 12.0);
+            double vPeak = vBase + contactAndAging; // Tipik 60V - 90V bandı
+
+            // 3. Drenaj ve Sızıntı Diyotlarının Frenleme Etkisi (80V - 90V bandında doyum)
+            if (vPeak > 80.0 && vPeak < 95.0)
+            {
+                vPeak = 80.0 + (vPeak - 80.0) * 0.35; // Sızıntı diyotları tırmanmayı frenler
+            }
+
+            // 4. VLD Panosu Tristör Tetiklenme Eşiği (90V - 120V eşiğine yaklaşırsa trip)
+            if (vPeak >= 95.0 || (_random.NextDouble() < 0.01 && groundCurrentA > 2.8))
+            {
+                _vldThyristorTripped[stationId] = true;
+                return Math.Round(vPeak, 1); // Bu adımda pik görüldü, hemen ardından VLD tristörü rayı 0V'a çeker
+            }
+
+            return Math.Round(Math.Max(0.0, vPeak), 1);
         }
 
         private List<string> CheckForAlarms(VldData data, double leakDuration)
         {
             var alarms = new List<string>();
+
+            // VLD Tristör Koruması (Trip) Bildirimi
+            if (_vldThyristorTripped.ContainsKey(data.StationId) && _vldThyristorTripped[data.StationId])
+            {
+                alarms.Add($"[{data.StationName}] ⚡ VLD_TRISTOR_TRIP (Ute={data.TouchVoltage:N0}V -> Ray Topraklandı, 0V'a Çekildi)");
+            }
 
             // AC ALARMLARI
             if (data.VoltageOut < _systemLineVoltage * 0.9)
@@ -412,11 +461,13 @@ namespace VldDataVisualizer.ViewModels
             if (data.DcCurrent > 1000)
                 alarms.Add($"[{data.StationName}] ASIRI_DC_AKIM ({data.DcCurrent} A)");
 
-            // ✅ GÜNCELLENDİ: Kaçak ihtimalinden önce erken uyarı verilir.
-            if (data.GroundCurrent > 3.0)
-                alarms.Add($"[{data.StationName}] 🚨 TOPRAK_ARIZASI ({data.GroundCurrent} A, {leakDuration:F1}s)");
-            else if (data.GroundCurrent > 1.5)
-                alarms.Add($"[{data.StationName}] ⚠️ ERKEN_UYARI_TOPRAK_AKIMI ({data.GroundCurrent} A)");
+            // TOPRAK AKIMI & KAÇAK UYARILARI
+            if (data.GroundCurrent >= 3.0)
+                alarms.Add($"[{data.StationName}] 🚨 KRITIK_TOPRAK_AKIMI ({data.GroundCurrent:N1} A, {leakDuration:F1}s)");
+            else if (data.GroundCurrent >= 1.2)
+                alarms.Add($"[{data.StationName}] ⚠️ YUKSEK_TOPRAK_AKIMI ({data.GroundCurrent:N1} A)");
+            else if (data.GroundCurrent >= 0.3)
+                alarms.Add($"[{data.StationName}] ℹ️ DUSUK_KACAK_IZLEME ({data.GroundCurrent:N1} A)");
 
             // SICAKLIK
             if (data.Temperature > 80.0)

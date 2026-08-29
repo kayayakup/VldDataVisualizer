@@ -49,6 +49,13 @@
             <Setter Property="Width" Value="280"/>
             <Setter Property="Height" Value="220"/>
         </Style>
+
+        <DropShadowEffect x:Key="PopupDropShadow" 
+                          Color="#000000" 
+                          BlurRadius="24" 
+                          ShadowDepth="6" 
+                          Opacity="0.6"
+                          Direction="270"/>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -191,6 +198,29 @@
                                         </Canvas.RenderTransform>
                                     </Canvas>
                                 </Border>
+
+                                <!-- Kaçak Bilgi Popup'ı -->
+                                <Popup x:Name="LeakInfoPopup" 
+                                       Grid.Row="0"
+                                       AllowsTransparency="True" 
+                                       PopupAnimation="Fade"
+                                       Placement="Mouse"
+                                       HorizontalOffset="12"
+                                       VerticalOffset="12"
+                                       StaysOpen="False"
+                                       IsHitTestVisible="False">
+                                    <Border x:Name="LeakPopupBorder"
+                                            Background="#F0161625"
+                                            BorderThickness="1.5"
+                                            BorderBrush="#FF42A5F5"
+                                            CornerRadius="8"
+                                            Padding="0"
+                                            MaxWidth="520"
+                                            MinWidth="340"
+                                            Effect="{StaticResource PopupDropShadow}">
+                                        <StackPanel x:Name="LeakPopupContent" />
+                                    </Border>
+                                </Popup>
 
                                 <Border Grid.Row="1" Background="#f8f9fa" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="5">
                                     <StackPanel Orientation="Horizontal">
@@ -359,58 +389,118 @@
                 <!-- SEKME 3: Hata Özeti (sağda) -->
                 <TabItem Header="🧾 Hata Özeti">
                     <Grid Margin="6">
-                        <DataGrid x:Name="ErrorSummaryGrid"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  AlternatingRowBackground="#F5F5F5"
-                                  GridLinesVisibility="None">
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Background" Value="#FFFFFF"/>
-                                    <Setter Property="BorderBrush" Value="#D9D9D9"/>
-                                    <Setter Property="Foreground" Value="#1F1F1F"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="KIRMIZI">
-                                            <Setter Property="Background" Value="#FFEBEE"/>
-                                            <Setter Property="BorderBrush" Value="#F44336"/>
-                                            <Setter Property="Foreground" Value="#3B1A1A"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="SARI">
-                                            <Setter Property="Background" Value="#FFF8E1"/>
-                                            <Setter Property="BorderBrush" Value="#FFC107"/>
-                                            <Setter Property="Foreground" Value="#3C2A00"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="YEŞİL">
-                                            <Setter Property="Background" Value="#E8F5E9"/>
-                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
-                                            <Setter Property="Foreground" Value="#1B3A1D"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding EffectiveCategory}" Value="NORMAL">
-                                            <Setter Property="Background" Value="#E8F5E9"/>
-                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
-                                            <Setter Property="Foreground" Value="#1B3A1D"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Zaman" Binding="{Binding Timestamp, StringFormat=HH:mm:ss}" Width="80"/>
-                                <DataGridTextColumn Header="Kategori" Binding="{Binding OverallEN50122Category}" Width="90"/>
-                                <DataGridTextColumn Header="İstasyonlar" Binding="{Binding StationNames}" Width="200"/>
-                                <DataGridTextColumn Header="Tekrar" Binding="{Binding RepeatCount}" Width="60"/>
-                                <DataGridTextColumn Header="Tren Konumları" Binding="{Binding TrainPositionsDisplay}" Width="250"/>
-                                <DataGridTemplateColumn Header="Hata / Gerilim-Akım" Width="425">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding LeakDisplay}"
-                                                       Foreground="{Binding CategoryBrush}"
-                                                       TextWrapping="NoWrap"
-                                                       FontWeight="SemiBold"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                            <TextBox x:Name="LogSearchTextBox" Width="220" Margin="0,0,6,0"
+                                     ToolTip="İstasyon, kategori veya hata ara"
+                                     TextChanged="LogFilterChanged"/>
+                            <ComboBox x:Name="LogCategoryComboBox" Width="125" Margin="0,0,6,0"
+                                      SelectedIndex="0" SelectionChanged="LogSelectionFilterChanged">
+                                <ComboBoxItem Content="Tüm kategoriler"/>
+                                <ComboBoxItem Content="KIRMIZI"/>
+                                <ComboBoxItem Content="SARI"/>
+                                <ComboBoxItem Content="NORMAL"/>
+                            </ComboBox>
+                            <ComboBox x:Name="LogStationComboBox" Width="180" Margin="0,0,6,0"
+                                      SelectedIndex="0" SelectionChanged="LogSelectionFilterChanged">
+                                <ComboBoxItem Content="Tüm istasyonlar"/>
+                            </ComboBox>
+                            <ComboBox x:Name="LogTimeRangeComboBox" Width="125" Margin="0,0,6,0"
+                                      SelectedIndex="0" SelectionChanged="LogSelectionFilterChanged">
+                                <ComboBoxItem Content="Tüm zamanlar"/>
+                                <ComboBoxItem Content="Son 1 saat"/>
+                                <ComboBoxItem Content="Son 24 saat"/>
+                            </ComboBox>
+                            <CheckBox x:Name="CriticalOnlyCheckBox" Content="Sadece kritik" VerticalAlignment="Center"
+                                      Margin="4,0,12,0" Checked="LogFilterChanged" Unchecked="LogFilterChanged"/>
+                            <Button Content="🗑 Logları Temizle" Click="ClearLogsButton_Click" Padding="10,4"/>
+                        </WrapPanel>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" MinWidth="420"/>
+                                <ColumnDefinition Width="3"/>
+                                <ColumnDefinition Width="*" MinWidth="300"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ListBox x:Name="ErrorLogList" Grid.Column="0" BorderThickness="0"
+                                     SelectionChanged="ErrorLogList_SelectionChanged"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{Binding CategoryBrush}" BorderThickness="4,0,0,0"
+                                                Background="#FAFAFA" Padding="10,7" Margin="0,0,0,5">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="86"/>
+                                                    <ColumnDefinition Width="105"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Timestamp, StringFormat=HH:mm:ss}"
+                                                           FontWeight="Bold" VerticalAlignment="Top"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding EffectiveCategory}"
+                                                           Foreground="{Binding CategoryBrush}" FontWeight="Bold"/>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="{Binding StationNames}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding CriticalDeviceCount, StringFormat={}{0} veri noktası}"
+                                                               Foreground="#666666" FontSize="11"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="3" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding RepeatCount, StringFormat=Tekrar: {0}}" FontSize="11"/>
+                                                    <TextBlock Text="DETAY" Foreground="#1976D2" FontWeight="Bold" FontSize="11"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Border Grid.Column="2" Background="#F7F9FA" BorderBrush="#D5DDE2" BorderThickness="1" Padding="14">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel DataContext="{Binding ElementName=ErrorLogList, Path=SelectedItem}">
+                                        <TextBlock Text="Olay detayı" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm:ss}}" FontSize="13" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding StationNames}" Foreground="#555555" Margin="0,0,0,12"/>
+                                        <TextBlock Text="Tren konumları" FontWeight="Bold" Margin="0,0,0,5"/>
+                                        <ItemsControl ItemsSource="{Binding AllTrains}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{Binding CardBackground}" 
+                                                            BorderBrush="{Binding CardBorderBrush}" 
+                                                            BorderThickness="{Binding CardBorderThickness}" 
+                                                            CornerRadius="6"
+                                                            Padding="8,6" Margin="0,0,6,6" MinWidth="135">
+                                                        <StackPanel>
+                                                            <DockPanel LastChildFill="True">
+                                                                <Border Background="{Binding BadgeBackground}" CornerRadius="3" Padding="4,1" Margin="4,0,0,0" DockPanel.Dock="Right"
+                                                                        Visibility="{Binding BadgeVisibility}">
+                                                                    <TextBlock Text="{Binding RepeatBadge}" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                                                </Border>
+                                                                <TextBlock Text="{Binding TrainId, StringFormat=Tren {0}}" FontWeight="Bold" FontSize="12"/>
+                                                            </DockPanel>
+                                                            <TextBlock Text="{Binding Position, StringFormat={}{0:N0} m}" Foreground="#1976D2" FontWeight="SemiBold" FontSize="11" Margin="0,2,0,0"/>
+                                                            <TextBlock Text="{Binding TrackType}" Foreground="#666666" FontSize="10"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock Text="Teknik özet" FontWeight="Bold" Margin="0,10,0,5"/>
+                                        <TextBlock Text="{Binding LeakDisplay}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding MaxValuesDisplay}" Foreground="#555555" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding EN50122Summary}" Foreground="#555555" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </TabItem>
 

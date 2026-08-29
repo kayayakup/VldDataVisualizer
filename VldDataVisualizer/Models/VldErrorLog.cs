@@ -367,7 +367,19 @@ namespace VldDataVisualizer.Models
 
         public double Kilometer => Position / 1000.0;
 
-        // EN 50122 bağlamsal analiz
+        // EN 50122 bağlamsal analiz ve Tekrar Sayısı
+        public int RepeatCount { get; set; } = 1;
+        public bool IsRepeated => RepeatCount > 1;
+        public string RepeatBadge => RepeatCount > 1 ? $"↺ {RepeatCount}x Tekrar" : string.Empty;
+        public bool HasRepeatBadge => RepeatCount > 1;
+        public string BadgeVisibility => HasRepeatBadge ? "Visible" : "Collapsed";
+
+        // Belirgin çerçeve ve arka plan renkleri (2 tekrar: Sarı/Turuncu, 3+ tekrar: Kırmızı)
+        public string CardBorderBrush => RepeatCount >= 3 ? "#F44336" : (RepeatCount == 2 ? "#FF9800" : "#D5DDE2");
+        public string CardBorderThickness => RepeatCount > 1 ? "2.5" : "1";
+        public string CardBackground => RepeatCount >= 3 ? "#FFF0F0" : (RepeatCount == 2 ? "#FFFDF0" : "White");
+        public string BadgeBackground => RepeatCount >= 3 ? "#F44336" : "#FF9800";
+
         public bool IsInCriticalZone { get; set; }
         public double DistanceToNearestFault { get; set; }
         public string NearestFaultDeviceId { get; set; } = string.Empty;
