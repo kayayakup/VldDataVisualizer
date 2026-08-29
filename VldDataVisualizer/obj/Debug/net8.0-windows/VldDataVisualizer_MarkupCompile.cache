@@ -1,20 +1,20 @@
 ﻿VldDataVisualizer
-
+1.0.0.0
 
 winexe
 C#
 .cs
-C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\
+c:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\
 VldDataVisualizer
 none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
-C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\App.xaml
+c:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\App.xaml
 1-1644662438
 
-21866399354
+23320246611
 204346919200
 Views\MainWindow.xaml;
 
-False
+True
 

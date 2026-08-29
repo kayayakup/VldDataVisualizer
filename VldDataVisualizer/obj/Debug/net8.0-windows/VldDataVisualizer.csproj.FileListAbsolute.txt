@@ -61,8 +61,6 @@ C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer_MarkupCompile.cache
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer_MarkupCompile.lref
-C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\Views\MainWindow.baml
-C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.g.resources
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.AssemblyInfoInputs.cache
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.AssemblyInfo.cs
@@ -74,3 +72,5 @@ C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.pdb
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.genruntimeconfig.cache
 C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\ref\VldDataVisualizer.dll
+C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\Views\MainWindow.baml
+C:\Users\yakup\OneDrive\Belgeler\GitHub\VldDataVisualizer\VldDataVisualizer\obj\Debug\net8.0-windows\VldDataVisualizer.g.resources
