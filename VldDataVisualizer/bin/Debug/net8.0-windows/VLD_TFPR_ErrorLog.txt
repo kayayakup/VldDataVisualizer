@@ -107656,3 +107656,1769 @@ Tren Hızları:
  - 863: 0 km/h
 
 ======================================================================
+2026-08-30 15:46:11
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Depo | DC: 1.516 V | Ig: 1,4 A
+ - OSB | DC: 1.505 V | Ig: 1,3 A
+ - Fatih Devlet Hastanesi | DC: 1.508 V | Ig: 1,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.566 m
+ - 487: 3.068 m
+ - 799: 7.077 m
+ - 187: 8.941 m
+ - 1093: 11.937 m
+ - 844: 14.931 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 50 km/h
+ - 187: 46 km/h
+ - 1031: 0 km/h
+ - 282: 52 km/h
+ - 487: 61 km/h
+ - 799: 62 km/h
+
+======================================================================
+2026-08-30 15:46:12
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 8
+ - Depo | DC: 1.511 V | Ig: 1,2 A
+ - OSB | DC: 1.523 V | Ig: 1,9 A
+ - Mutlukent | DC: 1.513 V | Ig: 3,4 A
+ - Gebze Stadyum | DC: 1.480 V | Ig: 2,2 A
+ - Fatih Devlet Hastanesi | DC: 1.505 V | Ig: 2,0 A
+ - Farabi Devlet Hastanesi | DC: 1.507 V | Ig: 4,2 A
+ - Darıca Cumhuriyet | DC: 1.524 V | Ig: 3,8 A
+ - Darıca Sahil | DC: 1.506 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.619 m
+ - 487: 3.133 m
+ - 799: 7.085 m
+ - 187: 8.900 m
+ - 1093: 11.891 m
+ - 844: 14.862 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 34 km/h
+ - 187: 30 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 53 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:13
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.489 V | Ig: 2,5 A
+ - Akse Sapağı | DC: 1.503 V | Ig: 1,8 A
+ - Gebze Kent Meydanı | DC: 1.484 V | Ig: 2,4 A
+ - Darıca Cumhuriyet | DC: 1.502 V | Ig: 2,2 A
+ - Darıca Sahil | DC: 1.525 V | Ig: 1,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.673 m
+ - 487: 3.182 m
+ - 799: 7.085 m
+ - 187: 8.875 m
+ - 1093: 11.859 m
+ - 844: 14.793 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 37 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:14
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 6
+ - OSB | DC: 1.496 V | Ig: 2,2 A
+ - Akse Sapağı | DC: 1.508 V | Ig: 3,6 A
+ - Gebze Stadyum | DC: 1.500 V | Ig: 1,8 A
+ - Gebze Kent Meydanı | DC: 1.488 V | Ig: 1,7 A
+ - Fatih Devlet Hastanesi | DC: 1.484 V | Ig: 1,6 A
+ - TCDD Gar | DC: 1.496 V | Ig: 1,8 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.786 m
+ - 487: 3.238 m
+ - 799: 7.085 m
+ - 187: 8.828 m
+ - 1093: 11.793 m
+ - 844: 14.647 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 20 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 1.790 m | Tren: 282
+
+======================================================================
+2026-08-30 15:46:15
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Gebze Kent Meydanı | DC: 1.478 V | Ig: 2,5 A
+ - Fatih Devlet Hastanesi | DC: 1.484 V | Ig: 4,3 A
+ - TCDD Gar | DC: 1.503 V | Ig: 1,6 A
+ - Darıca Sahil | DC: 1.527 V | Ig: 2,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.846 m
+ - 487: 3.263 m
+ - 799: 7.085 m
+ - 187: 8.803 m
+ - 1093: 11.758 m
+ - 844: 14.569 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 20 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 1.850 m | Tren: 282
+
+======================================================================
+2026-08-30 15:46:16
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 1
+ - Depo | DC: 1.526 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.906 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.778 m
+ - 1093: 11.723 m
+ - 844: 14.492 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:17
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 8
+ - Depo | DC: 1.523 V | Ig: 1,7 A
+ - OSB | DC: 1.495 V | Ig: 2,2 A
+ - Akse Sapağı | DC: 1.496 V | Ig: 2,1 A
+ - Fatih Devlet Hastanesi | DC: 1.498 V | Ig: 1,6 A
+ - TCDD Gar | DC: 1.482 V | Ig: 3,9 A
+ - Farabi Devlet Hastanesi | DC: 1.502 V | Ig: 2,5 A
+ - Darıca Cumhuriyet | DC: 1.506 V | Ig: 1,5 A
+ - Darıca Sahil | DC: 1.509 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 1.966 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.753 m
+ - 1093: 11.688 m
+ - 844: 14.414 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:18
+KIRMIZI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 3
+ - Depo | DC: 1.491 V | Ig: 2,4 A
+ - Akse Sapağı | DC: 1.487 V | Ig: 1,8 A
+ - Darıca Cumhuriyet | DC: 1.505 V | Ig: 3,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.026 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.728 m
+ - 1093: 11.653 m
+ - 844: 14.337 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:19
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.499 V | Ig: 4,1 A
+ - Mutlukent | DC: 1.496 V | Ig: 2,4 A
+ - Gebze Stadyum | DC: 1.500 V | Ig: 1,8 A
+ - Gebze Kent Meydanı | DC: 1.474 V | Ig: 2,2 A
+ - Farabi Devlet Hastanesi | DC: 1.510 V | Ig: 1,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.086 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.703 m
+ - 1093: 11.618 m
+ - 844: 14.259 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:20
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Mutlukent | DC: 1.503 V | Ig: 3,7 A
+ - Gebze Stadyum | DC: 1.491 V | Ig: 3,9 A
+ - Gebze Kent Meydanı | DC: 1.505 V | Ig: 1,9 A
+ - Farabi Devlet Hastanesi | DC: 1.507 V | Ig: 2,4 A
+ - Darıca Sahil | DC: 1.518 V | Ig: 1,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.146 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.678 m
+ - 1093: 11.583 m
+ - 844: 14.182 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:21
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 2
+ - Farabi Devlet Hastanesi | DC: 1.520 V | Ig: 1,7 A
+ - Darıca Cumhuriyet | DC: 1.528 V | Ig: 1,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.199 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.656 m
+ - 1093: 11.552 m
+ - 844: 14.113 m
+
+Tren Hızları:
+ - 844: 62 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:22
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.498 V | Ig: 3,9 A
+ - Akse Sapağı | DC: 1.477 V | Ig: 1,6 A
+ - Gebze Kent Meydanı | DC: 1.508 V | Ig: 2,0 A
+ - Darıca Cumhuriyet | DC: 1.494 V | Ig: 1,7 A
+ - Darıca Sahil | DC: 1.501 V | Ig: 2,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.253 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.633 m
+ - 1093: 11.521 m
+ - 844: 14.046 m
+
+Tren Hızları:
+ - 844: 56 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 48 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:23
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 3
+ - Akse Sapağı | DC: 1.479 V | Ig: 2,3 A
+ - Gebze Stadyum | DC: 1.473 V | Ig: 2,4 A
+ - Gebze Kent Meydanı | DC: 1.486 V | Ig: 3,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.608 m
+ - 1093: 11.486 m
+ - 844: 13.988 m
+
+Tren Hızları:
+ - 844: 38 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 7.090 m | Tren: 799
+
+======================================================================
+2026-08-30 15:46:24
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Depo | DC: 1.513 V | Ig: 1,3 A
+ - OSB | DC: 1.491 V | Ig: 1,7 A
+ - Adliye | DC: 1.508 V | Ig: 4,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.583 m
+ - 1093: 11.451 m
+ - 844: 13.953 m
+
+Tren Hızları:
+ - 844: 20 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:25
+SARI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 6
+ - Depo | DC: 1.526 V | Ig: 1,4 A
+ - OSB | DC: 1.529 V | Ig: 2,2 A
+ - Gebze Kent Meydanı | DC: 1.487 V | Ig: 1,3 A
+ - Fatih Devlet Hastanesi | DC: 1.498 V | Ig: 1,5 A
+ - TCDD Gar | DC: 1.495 V | Ig: 1,7 A
+ - Farabi Devlet Hastanesi | DC: 1.502 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.558 m
+ - 1093: 11.416 m
+ - 844: 13.928 m
+
+Tren Hızları:
+ - 844: 20 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:26
+KIRMIZI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 5
+ - OSB | DC: 1.507 V | Ig: 1,9 A
+ - Adliye | DC: 1.516 V | Ig: 1,3 A
+ - Gebze Kent Meydanı | DC: 1.501 V | Ig: 2,1 A
+ - TCDD Gar | DC: 1.512 V | Ig: 4,5 A
+ - Darıca Cumhuriyet | DC: 1.518 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.536 m
+ - 1093: 11.385 m
+ - 844: 13.906 m
+
+Tren Hızları:
+ - 844: 20 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:27
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.502 V | Ig: 1,5 A
+ - OSB | DC: 1.510 V | Ig: 1,5 A
+ - TCDD Gar | DC: 1.511 V | Ig: 2,2 A
+ - Farabi Devlet Hastanesi | DC: 1.507 V | Ig: 1,9 A
+ - Darıca Cumhuriyet | DC: 1.524 V | Ig: 3,9 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.511 m
+ - 1093: 11.350 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:28
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 3
+ - OSB | DC: 1.507 V | Ig: 1,6 A
+ - Gebze Stadyum | DC: 1.488 V | Ig: 1,6 A
+ - Farabi Devlet Hastanesi | DC: 1.489 V | Ig: 2,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.486 m
+ - 1093: 11.315 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:29
+SARI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 6
+ - Adliye | DC: 1.520 V | Ig: 1,5 A
+ - Gebze Stadyum | DC: 1.487 V | Ig: 1,8 A
+ - Gebze Kent Meydanı | DC: 1.482 V | Ig: 2,4 A
+ - Fatih Devlet Hastanesi | DC: 1.500 V | Ig: 1,7 A
+ - TCDD Gar | DC: 1.517 V | Ig: 2,5 A
+ - Farabi Devlet Hastanesi | DC: 1.506 V | Ig: 1,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.461 m
+ - 1093: 11.280 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:30
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 3
+ - Depo | DC: 1.517 V | Ig: 1,2 A
+ - Akse Sapağı | DC: 1.498 V | Ig: 1,7 A
+ - Darıca Cumhuriyet | DC: 1.504 V | Ig: 1,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.436 m
+ - 1093: 11.245 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:31
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Gebze Stadyum | DC: 1.475 V | Ig: 2,1 A
+ - Gebze Kent Meydanı | DC: 1.482 V | Ig: 1,3 A
+ - TCDD Gar | DC: 1.497 V | Ig: 1,8 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.411 m
+ - 1093: 11.210 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:46:32
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 7
+ - Mutlukent | DC: 1.519 V | Ig: 1,9 A
+ - Adliye | DC: 1.484 V | Ig: 1,9 A
+ - Akse Sapağı | DC: 1.495 V | Ig: 1,5 A
+ - Gebze Stadyum | DC: 1.485 V | Ig: 3,6 A
+ - Fatih Devlet Hastanesi | DC: 1.476 V | Ig: 1,7 A
+ - Farabi Devlet Hastanesi | DC: 1.500 V | Ig: 1,8 A
+ - Darıca Sahil | DC: 1.492 V | Ig: 2,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.386 m
+ - 1093: 11.175 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:33
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Adliye | DC: 1.503 V | Ig: 1,4 A
+ - Akse Sapağı | DC: 1.498 V | Ig: 2,5 A
+ - Gebze Kent Meydanı | DC: 1.480 V | Ig: 2,4 A
+ - Fatih Devlet Hastanesi | DC: 1.480 V | Ig: 1,8 A
+ - Farabi Devlet Hastanesi | DC: 1.509 V | Ig: 1,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.361 m
+ - 1093: 11.140 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:34
+KIRMIZI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 4
+ - Depo | DC: 1.487 V | Ig: 3,2 A
+ - Mutlukent | DC: 1.491 V | Ig: 2,0 A
+ - Akse Sapağı | DC: 1.504 V | Ig: 4,1 A
+ - Fatih Devlet Hastanesi | DC: 1.492 V | Ig: 1,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.336 m
+ - 1093: 11.105 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:35
+KIRMIZI
+Tekrar: 3
+
+Anomali Cihaz Sayısı: 5
+ - Akse Sapağı | DC: 1.492 V | Ig: 2,4 A
+ - Fatih Devlet Hastanesi | DC: 1.511 V | Ig: 1,7 A
+ - TCDD Gar | DC: 1.487 V | Ig: 2,3 A
+ - Farabi Devlet Hastanesi | DC: 1.525 V | Ig: 2,0 A
+ - Darıca Cumhuriyet | DC: 1.492 V | Ig: 4,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.311 m
+ - 1093: 11.070 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:36
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - OSB | DC: 1.491 V | Ig: 1,5 A
+ - Gebze Stadyum | DC: 1.485 V | Ig: 1,7 A
+ - Fatih Devlet Hastanesi | DC: 1.474 V | Ig: 2,0 A
+ - TCDD Gar | DC: 1.513 V | Ig: 2,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.286 m
+ - 1093: 11.035 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:46:37
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Akse Sapağı | DC: 1.513 V | Ig: 2,3 A
+ - Gebze Stadyum | DC: 1.483 V | Ig: 2,2 A
+ - Darıca Cumhuriyet | DC: 1.529 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.261 m
+ - 1093: 11.000 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 20 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:38
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 3
+ - Mutlukent | DC: 1.523 V | Ig: 1,8 A
+ - Gebze Kent Meydanı | DC: 1.505 V | Ig: 1,4 A
+ - Farabi Devlet Hastanesi | DC: 1.507 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.984 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:40
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Depo | DC: 1.512 V | Ig: 1,6 A
+ - Akse Sapağı | DC: 1.502 V | Ig: 2,2 A
+ - Gebze Stadyum | DC: 1.492 V | Ig: 1,7 A
+ - Darıca Sahil | DC: 1.496 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.973 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 7.090 m | Tren: 799
+
+======================================================================
+2026-08-30 15:46:41
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 7
+ - Depo | DC: 1.507 V | Ig: 3,2 A
+ - Mutlukent | DC: 1.491 V | Ig: 2,2 A
+ - Akse Sapağı | DC: 1.516 V | Ig: 2,4 A
+ - Gebze Kent Meydanı | DC: 1.485 V | Ig: 1,8 A
+ - Farabi Devlet Hastanesi | DC: 1.518 V | Ig: 1,7 A
+ - Darıca Cumhuriyet | DC: 1.524 V | Ig: 1,6 A
+ - Darıca Sahil | DC: 1.495 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.973 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:43
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Depo | DC: 1.517 V | Ig: 1,9 A
+ - OSB | DC: 1.515 V | Ig: 3,6 A
+ - Darıca Cumhuriyet | DC: 1.506 V | Ig: 1,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.969 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:43
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Mutlukent | DC: 1.505 V | Ig: 2,3 A
+ - Adliye | DC: 1.497 V | Ig: 2,3 A
+ - Farabi Devlet Hastanesi | DC: 1.495 V | Ig: 2,4 A
+ - Darıca Cumhuriyet | DC: 1.528 V | Ig: 2,0 A
+ - Darıca Sahil | DC: 1.519 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.938 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:48
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 1
+ - Darıca Sahil | DC: 1.491 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.085 m
+ - 187: 8.253 m
+ - 1093: 10.833 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+======================================================================
+2026-08-30 15:46:53
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 1
+ - Gebze Kent Meydanı | DC: 1.502 V | Ig: 1,8 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.133 m
+ - 187: 8.253 m
+ - 1093: 10.728 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+======================================================================
+2026-08-30 15:46:54
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 3
+ - Mutlukent | DC: 1.493 V | Ig: 2,2 A
+ - Darıca Cumhuriyet | DC: 1.513 V | Ig: 3,0 A
+ - Darıca Sahil | DC: 1.501 V | Ig: 1,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.181 m
+ - 187: 8.253 m
+ - 1093: 10.708 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:55
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - OSB | DC: 1.505 V | Ig: 1,2 A
+ - Mutlukent | DC: 1.491 V | Ig: 3,3 A
+ - Gebze Stadyum | DC: 1.482 V | Ig: 1,9 A
+ - Fatih Devlet Hastanesi | DC: 1.510 V | Ig: 1,4 A
+ - Darıca Cumhuriyet | DC: 1.526 V | Ig: 1,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.238 m
+ - 187: 8.253 m
+ - 1093: 10.685 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:56
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 8
+ - Depo | DC: 1.522 V | Ig: 1,6 A
+ - Adliye | DC: 1.509 V | Ig: 2,2 A
+ - Gebze Stadyum | DC: 1.490 V | Ig: 2,4 A
+ - Gebze Kent Meydanı | DC: 1.490 V | Ig: 1,4 A
+ - TCDD Gar | DC: 1.515 V | Ig: 1,7 A
+ - Farabi Devlet Hastanesi | DC: 1.499 V | Ig: 1,4 A
+ - Darıca Cumhuriyet | DC: 1.524 V | Ig: 3,2 A
+ - Darıca Sahil | DC: 1.510 V | Ig: 2,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.286 m
+ - 187: 8.253 m
+ - 1093: 10.665 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:57
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Mutlukent | DC: 1.497 V | Ig: 2,4 A
+ - Adliye | DC: 1.496 V | Ig: 2,1 A
+ - Fatih Devlet Hastanesi | DC: 1.477 V | Ig: 3,9 A
+ - Farabi Devlet Hastanesi | DC: 1.524 V | Ig: 1,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.334 m
+ - 187: 8.253 m
+ - 1093: 10.646 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:58
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 6
+ - Depo | DC: 1.501 V | Ig: 1,3 A
+ - OSB | DC: 1.508 V | Ig: 1,8 A
+ - Adliye | DC: 1.513 V | Ig: 1,6 A
+ - Gebze Kent Meydanı | DC: 1.483 V | Ig: 1,4 A
+ - Darıca Cumhuriyet | DC: 1.527 V | Ig: 1,3 A
+ - Darıca Sahil | DC: 1.522 V | Ig: 2,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.411 m
+ - 187: 8.253 m
+ - 1093: 10.615 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:46:59
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Adliye | DC: 1.487 V | Ig: 1,8 A
+ - Akse Sapağı | DC: 1.510 V | Ig: 2,0 A
+ - Gebze Kent Meydanı | DC: 1.470 V | Ig: 4,4 A
+ - TCDD Gar | DC: 1.488 V | Ig: 1,6 A
+ - Darıca Sahil | DC: 1.526 V | Ig: 2,5 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.468 m
+ - 187: 8.253 m
+ - 1093: 10.591 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 28 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:47:00
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 6
+ - Depo | DC: 1.487 V | Ig: 1,3 A
+ - Gebze Stadyum | DC: 1.485 V | Ig: 2,0 A
+ - Gebze Kent Meydanı | DC: 1.485 V | Ig: 1,2 A
+ - Fatih Devlet Hastanesi | DC: 1.510 V | Ig: 2,0 A
+ - TCDD Gar | DC: 1.491 V | Ig: 2,0 A
+ - Darıca Sahil | DC: 1.492 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.279 m
+ - 799: 7.516 m
+ - 187: 8.253 m
+ - 1093: 10.574 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 22 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:47:01
+KIRMIZI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 4
+ - Mutlukent | DC: 1.510 V | Ig: 2,4 A
+ - Gebze Stadyum | DC: 1.489 V | Ig: 3,7 A
+ - Farabi Devlet Hastanesi | DC: 1.495 V | Ig: 2,0 A
+ - Darıca Sahil | DC: 1.527 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.334 m
+ - 799: 7.583 m
+ - 187: 8.253 m
+ - 1093: 10.554 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:02
+KIRMIZI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 5
+ - OSB | DC: 1.525 V | Ig: 3,5 A
+ - Akse Sapağı | DC: 1.509 V | Ig: 1,9 A
+ - Gebze Kent Meydanı | DC: 1.484 V | Ig: 1,6 A
+ - Fatih Devlet Hastanesi | DC: 1.509 V | Ig: 1,9 A
+ - Darıca Sahil | DC: 1.508 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.388 m
+ - 799: 7.631 m
+ - 187: 8.253 m
+ - 1093: 10.540 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 3.390 m | Tren: 487
+
+======================================================================
+2026-08-30 15:47:03
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Depo | DC: 1.523 V | Ig: 1,4 A
+ - Adliye | DC: 1.504 V | Ig: 2,9 A
+ - Akse Sapağı | DC: 1.478 V | Ig: 3,6 A
+ - Gebze Kent Meydanı | DC: 1.472 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.453 m
+ - 799: 7.689 m
+ - 187: 8.253 m
+ - 1093: 10.524 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 7.690 m | Tren: 799
+
+======================================================================
+2026-08-30 15:47:04
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Depo | DC: 1.498 V | Ig: 1,7 A
+ - OSB | DC: 1.517 V | Ig: 3,4 A
+ - Farabi Devlet Hastanesi | DC: 1.505 V | Ig: 2,0 A
+ - Darıca Cumhuriyet | DC: 1.527 V | Ig: 2,0 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.529 m
+ - 799: 7.756 m
+ - 187: 8.253 m
+ - 1093: 10.504 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:05
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Gebze Kent Meydanı | DC: 1.476 V | Ig: 2,0 A
+ - Fatih Devlet Hastanesi | DC: 1.506 V | Ig: 4,0 A
+ - TCDD Gar | DC: 1.507 V | Ig: 2,0 A
+ - Darıca Sahil | DC: 1.518 V | Ig: 1,9 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.594 m
+ - 799: 7.813 m
+ - 187: 8.253 m
+ - 1093: 10.488 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:47:07
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - Gebze Stadyum | DC: 1.477 V | Ig: 1,8 A
+ - TCDD Gar | DC: 1.515 V | Ig: 1,8 A
+ - Farabi Devlet Hastanesi | DC: 1.512 V | Ig: 1,9 A
+ - Darıca Sahil | DC: 1.495 V | Ig: 1,9 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.734 m
+ - 799: 7.938 m
+ - 187: 8.253 m
+ - 1093: 10.451 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:08
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 2
+ - Mutlukent | DC: 1.521 V | Ig: 2,1 A
+ - Gebze Kent Meydanı | DC: 1.487 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.810 m
+ - 799: 8.005 m
+ - 187: 8.253 m
+ - 1093: 10.432 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 69 km/h
+
+======================================================================
+2026-08-30 15:47:09
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - OSB | DC: 1.527 V | Ig: 2,3 A
+ - Adliye | DC: 1.512 V | Ig: 1,2 A
+ - Farabi Devlet Hastanesi | DC: 1.520 V | Ig: 1,6 A
+ - Darıca Cumhuriyet | DC: 1.530 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 3.908 m
+ - 799: 8.087 m
+ - 187: 8.253 m
+ - 1093: 10.407 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 20 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 59 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:10
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 7
+ - Depo | DC: 1.507 V | Ig: 2,5 A
+ - OSB | DC: 1.490 V | Ig: 2,5 A
+ - Adliye | DC: 1.523 V | Ig: 1,4 A
+ - Gebze Stadyum | DC: 1.498 V | Ig: 2,1 A
+ - Fatih Devlet Hastanesi | DC: 1.511 V | Ig: 1,9 A
+ - TCDD Gar | DC: 1.506 V | Ig: 1,9 A
+ - Darıca Cumhuriyet | DC: 1.521 V | Ig: 1,6 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.005 m
+ - 799: 8.148 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 41 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:11
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 2
+ - OSB | DC: 1.510 V | Ig: 1,9 A
+ - Akse Sapağı | DC: 1.510 V | Ig: 2,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.103 m
+ - 799: 8.187 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 78 km/h
+ - 799: 23 km/h
+
+KAÇAK TESPİTİ: 8.190 m | Tren: 799
+
+======================================================================
+2026-08-30 15:47:13
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 2
+ - Akse Sapağı | DC: 1.510 V | Ig: 1,2 A
+ - Farabi Devlet Hastanesi | DC: 1.490 V | Ig: 2,9 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.274 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.892 m
+
+Tren Hızları:
+ - 844: 0 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 60 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:16
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 3
+ - Akse Sapağı | DC: 1.492 V | Ig: 2,1 A
+ - Gebze Kent Meydanı | DC: 1.473 V | Ig: 3,0 A
+ - TCDD Gar | DC: 1.490 V | Ig: 1,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.370 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.721 m
+
+Tren Hızları:
+ - 844: 77 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 2.290 m | Tren: 282
+
+======================================================================
+2026-08-30 15:47:16
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.511 V | Ig: 1,6 A
+ - OSB | DC: 1.505 V | Ig: 2,1 A
+ - Gebze Stadyum | DC: 1.482 V | Ig: 2,1 A
+ - Gebze Kent Meydanı | DC: 1.497 V | Ig: 1,6 A
+ - Darıca Cumhuriyet | DC: 1.505 V | Ig: 2,3 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.370 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.625 m
+
+Tren Hızları:
+ - 844: 77 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:17
+SARI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 4
+ - OSB | DC: 1.522 V | Ig: 1,5 A
+ - Akse Sapağı | DC: 1.498 V | Ig: 1,4 A
+ - Gebze Stadyum | DC: 1.496 V | Ig: 1,9 A
+ - Darıca Sahil | DC: 1.515 V | Ig: 2,1 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.370 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.529 m
+
+Tren Hızları:
+ - 844: 77 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 8.220 m | Tren: 799
+
+======================================================================
+2026-08-30 15:47:18
+SARI
+Tekrar: 1
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.489 V | Ig: 1,9 A
+ - Mutlukent | DC: 1.498 V | Ig: 2,3 A
+ - Fatih Devlet Hastanesi | DC: 1.505 V | Ig: 1,5 A
+ - Farabi Devlet Hastanesi | DC: 1.524 V | Ig: 1,5 A
+ - Darıca Sahil | DC: 1.493 V | Ig: 1,4 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.370 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.432 m
+
+Tren Hızları:
+ - 844: 77 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
+2026-08-30 15:47:19
+KIRMIZI
+Tekrar: 2
+
+Anomali Cihaz Sayısı: 5
+ - Depo | DC: 1.490 V | Ig: 2,0 A
+ - Mutlukent | DC: 1.499 V | Ig: 1,8 A
+ - Adliye | DC: 1.502 V | Ig: 1,8 A
+ - Farabi Devlet Hastanesi | DC: 1.526 V | Ig: 2,9 A
+ - Darıca Sahil | DC: 1.502 V | Ig: 3,2 A
+
+Tren Konumları:
+ - 1031: 552 m
+ - 282: 2.286 m
+ - 487: 4.370 m
+ - 799: 8.215 m
+ - 187: 8.253 m
+ - 1093: 10.404 m
+ - 844: 13.336 m
+
+Tren Hızları:
+ - 844: 77 km/h
+ - 1093: 0 km/h
+ - 187: 0 km/h
+ - 1031: 0 km/h
+ - 282: 0 km/h
+ - 487: 0 km/h
+ - 799: 0 km/h
+
+KAÇAK TESPİTİ: 550 m | Tren: 1031
+
+======================================================================
